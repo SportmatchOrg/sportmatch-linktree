@@ -1,0 +1,82 @@
+Índice,Descripción,DO,DM,DP,Justificación,Estimación
+1.1.1,"Project Charter: documento con objetivo, alcance, supuestos, restricciones, stakeholders, entregables principales y requerimientos.",4,7,10,Documento avanzado; IA acelera revisión y ajustes finales.,7
+1.1.2,WBS: descomposición del trabajo del proyecto en paquetes ejecutables orientados a entregables.,4,6,10,IA ayuda a estructurar la descomposición; revisión humana de consistencia.,6.33
+1.1.3,"Cronograma y PERT: cronograma del proyecto, secuencia, duración estimada y camino crítico identificado.",4,8,12,"IA acelera armado, pero estimaciones y validación dependen del equipo.",8
+1.2.1,"Backlog priorizado: épicas, historias de usuario y tareas priorizadas para el MVP.",4,6,10,IA descompone épicas a historias; priorización la define el equipo.,6.33
+1.2.2,Plan de sprints: distribución de funcionalidades en 3 sprints de un mes priorizando los flujos centrales.,3,4,8,Planificación acotada; IA ayuda a balancear capacidad.,4.5
+1.2.3,"Reportes de avance y control de desvíos: monitoreo recurrente de avance, bloqueos, riesgos y cronograma.",8,14,24,Hamaca de seguimiento; IA acelera redacción pero coordinación queda.,14.67
+1.2.4,"Registro de riesgos: identificación, evaluación y actualización periódica de riesgos técnicos, funcionales y de gestión.",4,6,10,"Hamaca de riesgos; IA sugiere riesgos típicos, equipo evalúa contexto.",6.33
+1.3.1,"Acta de kick-off: alineamiento de objetivos, roles, alcance, expectativas y forma de trabajo.",2,3,4,Reunión puntual; impacto bajo de IA.,3
+1.3.2,Minutas quincenales de seguimiento: registro de revisión de avance y próximos pasos.,5,8,12,Reuniones recurrentes; IA ayuda con minutas pero presencia es obligada.,8.17
+1.3.3,Sprint reviews: demostración de los incrementos funcionales desarrollados al cierre de cada sprint.,3,5,8,"Reuniones por sprint; IA prepara material, demo es manual.",5.17
+1.4.1,"Informe final del proyecto: resultados, desvíos, aprendizajes, cumplimiento de objetivos y estado final del MVP.",5,7,12,IA acelera mucho integración y redacción; revisión humana final.,7.5
+1.4.2,"Presentación final: presentación ejecutiva con explicación del proyecto, alcance desarrollado y demo funcional.",4,6,10,IA arma slides y narrativa; demo y ensayo manuales.,6.33
+2.1.1,"Perfiles de usuario principales: jugador y organizador, formalizados y validados.",2,4,6,IA ayuda a formalizar perfiles; validación con stakeholders manual.,4
+2.1.2,"Sistema visual base: paleta, tipografías y estilos base del MVP.",3,4,7,IA propone paletas y referencias; decisiones estéticas humanas.,4.33
+2.2.1,Pantallas de autenticación: registro/login y estados de error.,3,4,6,Flujo estándar; IA acelera con generadores de UI.,4.17
+2.2.2,"Pantallas de perfil: visualización y edición de perfil, historial y rating.",3,5,9,Varias secciones; IA acelera mockups y estados.,5.33
+2.2.3,Pantallas de creación y edición de partido: flujo paso a paso.,4,6,10,"Flujo multi-paso; IA acelera prototipo, validaciones requieren iteración.",6.33
+2.2.4,Pantalla de solicitudes: vista para aceptar/rechazar y ver estado de solicitud.,3,5,8,IA acelera variantes (organizador/jugador).,5.17
+2.2.5,Vista swipe: experiencia de descubrimiento mediante tarjetas navegables.,4,6,10,Interacción no estándar; IA acelera prototipo pero requiere iteración UX.,6.33
+2.2.6,Vista mapa interactivo: visualización de partidos disponibles en mapa.,4,6,10,"Visualización geográfica; IA ayuda con patrones, mapa requiere prueba.",6.33
+2.3.1,"Diagrama Entidad-Relación: usuarios, perfiles, partidos, solicitudes, ratings e historial.",3,5,9,IA propone modelo base; revisión humana de relaciones.,5.33
+2.3.2,"Reglas de negocio: cupos, solicitudes, rating, no-show, edición de partidos y visibilidad.",4,6,10,Decisión de producto; IA documenta pero acuerdo es humano.,6.33
+3.1.1,"Stack tecnológico definido: tecnologías para frontend, backend, base de datos, hosting y herramientas.",2,4,6,Decisión acotada; IA orienta sobre trade-offs.,4
+3.1.2,Equipo capacitado en stack: nivelación de conocimientos en framework FE/BE y base de datos.,2,4,6,IA como tutor reduce mucho la curva por tecnología.,7.83
+3.1.3,"Equipo capacitado en buenas prácticas: uso de issue tracker, Git, PRs, branches y convenciones.",1,2,3,IA explica convenciones y ayuda con configuración.,6.33
+3.2.1,"Repositorios y entornos: repos creados, frontend/backend inicializados, dependencias y entornos dev/main.",1,2,4,IA genera scaffolding y configuración inicial.,6
+3.2.2,Base de datos inicial con seed mínima: BD creada con migraciones iniciales y dataset semilla mínimo para arrancar el sistema.,1,2,3,IA genera migraciones y seed; queda configuración local.,6.17
+3.2.3,"Pipeline de CI: workflow con build, lint y typecheck automáticos.",1,3,5,IA genera workflow CI; troubleshooting requiere ejecución real.,4.5
+4.1.1,Modelo de usuario: entidad con campos mínimos del MVP y CRUD.,2,4,5,Entidad base; IA genera modelo y CRUD muy rápido.,4
+4.1.2,"Servicio de registro, login y logout: endpoints para registrar un nuevo usuario, iniciar sesión generando sesión válida y cerrar sesión.",2,3,4,IA genera endpoints de auth estándar; revisar seguridad.,6.33
+4.1.3,Middleware de rutas privadas: restricción de acceso a funcionalidades autenticadas.,2,3,5,Implementación corta; IA genera middleware base.,3.17
+4.2.1,Pantalla de registro e inicio de sesión: formularios conectados al backend con feedback de errores.,2,3,5,IA genera formularios y manejo de errores; integración FE-BE.,6.17
+5.1.1,"Modelo de perfil: datos personales, deportes, nivel y ubicación.",1,2,3,IA extiende modelo de usuario rápidamente.,4
+5.1.2,API de visualización y edición de perfil: endpoints para obtener y editar el perfil del usuario autenticado.,2,3,4,IA genera CRUD; validaciones y permisos a revisar.,5.33
+5.1.3,"API de historial de partidos: partidos creados, solicitados o jugados por el usuario.",2,3,4,Consulta compleja; IA acelera queries y serialización.,5.33
+5.1.4,Servicio de cálculo de rating: rating visible a partir de calificaciones y penalizaciones por no-show.,2,4,6,Lógica agregada; IA propone fórmula y tests.,6.17
+5.2.1,"Vista de perfil: datos del usuario, deportes, nivel, ubicación y rating.",1,3,5,Pantalla informativa; IA acelera componentes.,4.5
+5.2.2,Edición de perfil: formulario para modificar información básica del perfil.,2,3,4,Form estándar; IA genera con validaciones.,4.5
+5.2.3,Vista de historial: historial de partidos y estados relevantes.,1,2,3,Componente con estados; IA acelera renderizado.,4.5
+5.2.4,"Visualización de rating: promedio, cantidad de calificaciones y estado reputacional.",1,2,4,Componente acotado generado por IA.,3.33
+6.1.1,"Modelo de partido: deporte, fecha, ubicación, cupo, nivel, descripción y organizador.",1,2,3,Entidad central; IA modela y genera CRUD rápido.,4
+6.1.2,"CRUD de partidos: endpoints para crear, editar y eliminar partidos.",2,4,6,CRUD con permisos y estados; IA genera base.,7.33
+6.1.3,Endpoint de listado de partidos disponibles: consulta de partidos activos para descubrimiento.,1,3,6,Endpoint de listado; IA arma query con filtros.,4.17
+6.2.1,Formulario de creación de partido: flujo paso a paso desde la interfaz.,3,5,8,"Flujo multi-paso; IA acelera componentes, validaciones a probar.",8.17
+6.2.2,Formulario de edición de partido: edición de partidos existentes desde la interfaz.,2,4,6,Reutiliza creación; IA adapta para carga inicial.,4.5
+6.2.3,Detalle de partido: información completa antes de solicitar unirse.,1,3,4,Pantalla informativa; IA arma layout.,4.5
+6.3.1,"Modelo de solicitud: solicitud con estados pendiente, aceptada o rechazada.",2,3,5,Modelo simple; IA lo genera rápido.,4
+6.3.2,Envío de solicitud para unirse a partido: solicitud con control de cupo disponible.,3,5,8,Validaciones de cupo; IA implementa lógica con tests.,5.33
+6.3.3,Gestión de solicitudes por el organizador: aceptación o rechazo de solicitudes recibidas.,2,3,4,Permisos y estados; IA genera endpoints.,5.33
+6.3.4,"Visualización de estado de solicitud: pendiente, aceptada o rechazada para el jugador.",2,3,6,Componente acotado; IA lo genera con estados.,3.33
+6.4.1,Modelo de calificación: calificación 1 a 5 estrellas relacionada con usuarios y partidos.,1,3,5,Modelo con relaciones; IA lo genera rápido.,4
+6.4.2,Interfaz de calificación: pantalla para calificar participantes luego del partido.,1,2,4,Pantalla post-partido; IA arma UI con estados.,4.5
+6.4.3,Regla de penalización por no-show: definición e implementación de una regla simple para penalizar el rating de usuarios que no se presentan.,2,3,5,Regla backend acotada; IA implementa lógica.,3.17
+7.1.1,"Búsqueda de partidos: consulta por deporte, ubicación, fecha, nivel y cupo.",3,6,10,Filtros combinados; IA arma queries y tests.,6.17
+7.1.2,"Filtros (deporte, nivel, fecha): aplicación de filtros del usuario sobre los resultados de búsqueda; expuestos en swipe y mapa.",2,4,7,Filtros + UI compartida; IA acelera ambos lados.,4.17
+7.1.3,Ordenamiento por rating y compatibilidad: ordena partidos sugeridos según rating del organizador y compatibilidad de nivel con el usuario.,1,2,4,Ranking acotado; IA implementa scoring.,3.17
+7.2.1,Tarjeta de partido: información resumida y mensaje cuando no hay partidos compatibles.,3,4,6,Componente con estados; IA acelera UI.,4.5
+7.2.2,"Navegación tipo swipe: solicitar, descartar o abrir detalle desde la vista swipe.",3,6,10,Interacción swipe no estándar; IA acelera pero requiere iteración.,10.5
+7.3.1,Integración con proveedor de mapa: configuración del mapa interactivo y credenciales.,4,5,10,Integración con API externa; IA orienta pero requiere config real.,6.67
+7.3.2,Visualización de partidos en mapa: marcadores de partidos disponibles según ubicación.,2,3,6,Mapa con marcadores; IA acelera pero requiere prueba en device.,8.67
+7.3.3,Detalle de partido desde mapa: información resumida o completa desde un marcador.,3,5,8,Interacción acotada sobre mapa; IA acelera.,5.17
+8.1.1,"Dataset de demo: usuarios, perfiles y partidos representativos para validar flujos principales y para la demo final.",2,3,6,IA genera dataset realista rápidamente.,3.33
+8.1.2,"Prueba manual de autenticación: registro, login, logout, errores y rutas protegidas.",2,4,6,Ejecución manual de flujo definido.,4
+8.1.3,"Prueba manual de perfil: visualización, edición, historial y rating.",3,5,8,Ejecución manual cubriendo secciones del perfil.,5.17
+8.1.4,"Prueba manual de creación y edición de partidos: creación, edición, permisos y detalle.",3,6,10,Ejecución manual del flujo central.,6.17
+8.1.5,"Prueba manual de solicitudes: solicitud, aceptación, rechazo, estado y control de cupos.",3,6,10,Ejecución manual con dos roles.,6.17
+8.1.6,"Prueba manual de matchmaking: swipe, mapa, filtros y resultados.",4,6,11,"Ejecución manual combinando descubrimiento, filtros y mapa.",6.5
+8.1.7,Prueba manual de rating post-partido: calificación y actualización del rating en perfil.,3,5,8,Ejecución manual del flujo de rating.,5.17
+8.2.1,Guion de prueba: tareas que los usuarios deberán completar durante la validación.,3,4,6,IA ayuda a redactar guion; diseño del test es humano.,4.17
+8.2.2,"Ejecución de pruebas con usuarios: registro, búsqueda, solicitud, creación y rating.",7,11,18,Coordinación con usuarios reales; impacto bajo de IA.,11.5
+8.2.3,"Registro de feedback: problemas, fricciones, dudas y oportunidades de mejora.",3,5,8,IA estructura feedback; recolección depende de usuarios.,5.17
+8.2.4,"Backlog de ajustes finales priorizado: ajustes según impacto, esfuerzo y tiempo disponible.",3,4,7,Análisis y decisión; IA propone priorización.,4.33
+9.1.1,"Ambiente productivo configurado: hosting, base de datos y variables productivas.",4,6,10,IA orienta configuración; depende de servicios cloud.,6.67
+9.1.2,Deploy final del MVP: publicación accesible mediante URL.,3,4,8,IA ayuda con scripts; publicación es puntual.,4.5
+9.1.3,Smoke test manual post-deploy: validación manual de flujos críticos luego del deploy.,3,4,7,Validación corta post-deploy.,4.33
+10.1.1,"Manual de uso y descripción de funcionalidades: funcionalidades incluidas, fuera de alcance y flujos principales.",3,6,9,IA redacta manual a partir del producto.,6
+10.1.2,Entrega final de diseño UX/UI: archivo Figma consolidado con todos los flujos y pantallas finales del MVP.,2,3,5,Consolidación de Figma; IA orienta pero curación humana.,3.17
+10.2.1,"README del proyecto: instalación, configuración y ejecución local.",1,2,3,IA genera README desde el código.,2.33
+10.2.2,"Documentación de APIs: endpoints principales, parámetros, respuestas y errores. Documentación del modelo de datos: entidades, relaciones y reglas principales. Documentación de deployment: despliegue, variables y validación básica.",1,2,3,IA genera doc de APIs desde el código.,4
+TOTAL,,208,347,568,,433.17
+,TOTAL LAB 4,84,147,241,,224.67

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PERT — SportMatch v3</title>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
+
+#toolbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  background: #0270C2; color: white;
+  display: flex; align-items: center; padding: 0 20px; height: 48px;
+  gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+#toolbar h1 { font-size: 15px; font-weight: 700; }
+.sep { width: 1px; height: 22px; background: rgba(255,255,255,.3); }
+.stat { font-size: 12px; }
+.stat b { font-weight: 700; }
+.crit-badge {
+  background: #cc0000; color: white; font-size: 11px; font-weight: 700;
+  padding: 2px 10px; border-radius: 10px;
+}
+.btn {
+  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
+  color: white; padding: 5px 14px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+}
+.btn:hover { background: rgba(255,255,255,.32); }
+.btn.active { background: #cc0000; border-color: #aa0000; }
+.spacer { flex: 1; }
+#zoom-info { font-size: 12px; opacity: .8; min-width: 50px; text-align: right; }
+
+#viewport {
+  position: fixed; top: 48px; left: 0; right: 0; bottom: 0;
+  overflow: hidden; cursor: grab;
+  background: #eef2f6;
+  background-image:
+    linear-gradient(rgba(2,112,194,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(2,112,194,.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+#viewport.dragging { cursor: grabbing; }
+#canvas { position: absolute; transform-origin: 0 0; }
+#svg-layer { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+
+/* AoN Node */
+.node {
+  position: absolute; width: 180px;
+  border: 2px solid #b0c8e0; border-radius: 6px;
+  background: white; overflow: hidden; user-select: none;
+  box-shadow: 0 1px 5px rgba(0,0,0,.12);
+  transition: box-shadow .15s;
+}
+.node:hover { box-shadow: 0 4px 18px rgba(0,0,0,.22); z-index: 20; }
+.node.critical { border: 3px solid #cc0000; box-shadow: 0 2px 10px rgba(204,0,0,.25); }
+.node.critical:hover { box-shadow: 0 4px 20px rgba(204,0,0,.4); }
+
+.node-top { display: flex; border-bottom: 1px solid rgba(0,0,0,.1); }
+.node-mid { padding: 4px 8px 5px; background: white; text-align: center; border-bottom: 1px solid rgba(0,0,0,.1); }
+.node.critical .node-mid { background: #fff4f4; }
+.node-mid .nid  { font-size: 12px; font-weight: 800; color: #0270C2; line-height: 1.3; }
+.node.critical .node-mid .nid { color: #cc0000; }
+.node-mid .nname { font-size: 9.5px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node-bot { display: flex; }
+
+.cell { flex: 1; text-align: center; padding: 4px 2px 3px; font-size: 10.5px; font-weight: 700; color: white; line-height: 1.2; }
+.cell .lbl { display: block; font-size: 8px; font-weight: 400; opacity: .88; margin-bottom: 1px; }
+.c-es { background: #3DADFF; }
+.c-dr { background: #0270C2; }
+.c-ef { background: #3DADFF; }
+.c-ls { background: #3DADFF; }
+.c-tf { background: #3DADFF; }
+.c-tf.crit { background: #cc0000; color: white; }
+.c-lf { background: #3DADFF; }
+
+#legend {
+  position: fixed; bottom: 16px; right: 16px; z-index: 100;
+  background: white; border: 1px solid #d0dae4; border-radius: 8px;
+  padding: 12px 16px; font-size: 11px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.12);
+}
+#legend h4 { font-size: 12px; font-weight: 700; color: #0270C2; margin-bottom: 10px; }
+.lg-row { display: flex; }
+.lg-cell { flex: 1; text-align: center; padding: 3px 2px; font-weight: 700; font-size: 9px; color: white; }
+.lg-mid { background: white; color: #333; font-size: 9px; padding: 2px 6px; text-align: center; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+.lg-mid.crit { background: #fff4f4; }
+.lg-frame { border: 2px solid #b0c8e0; border-radius: 3px; overflow: hidden; margin-bottom: 3px; }
+.lg-frame.crit { border-color: #cc0000; }
+.lrow { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 11px; color: #444; }
+.lsw { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1>PERT — SportMatch v3</h1>
+  <div class="sep"></div>
+  <div class="stat">Grupos WBS: <b>25</b></div>
+  <div class="stat">Esfuerzo total: <b>433 h</b></div>
+  <div class="stat">Camino crítico: <b>92.5 h</b></div>
+  <div class="crit-badge">★ 9 grupos críticos</div>
+  <div class="sep"></div>
+  <button class="btn" id="btn-fit">Ajustar pantalla</button>
+  <button class="btn" id="btn-crit">Solo camino crítico</button>
+  <button class="btn" id="btn-export-png">PNG</button>
+  <button class="btn" id="btn-export-svg">SVG</button>
+  <div class="spacer"></div>
+  <div id="zoom-info">100%</div>
+</div>
+
+<div id="viewport">
+  <div id="canvas">
+    <svg id="svg-layer"></svg>
+  </div>
+</div>
+
+<div id="legend">
+  <h4>Nodo AoN</h4>
+  <div class="lg-frame">
+    <div class="lg-row">
+      <div class="lg-cell" style="background:#3DADFF">ES</div>
+      <div class="lg-cell" style="background:#0270C2">DR</div>
+      <div class="lg-cell" style="background:#3DADFF">EF</div>
+    </div>
+    <div class="lg-mid">ID · Nombre</div>
+    <div class="lg-row">
+      <div class="lg-cell" style="background:#3DADFF">LS</div>
+      <div class="lg-cell" style="background:#3DADFF">TF</div>
+      <div class="lg-cell" style="background:#3DADFF">LF</div>
+    </div>
+  </div>
+  <div class="lg-frame crit" style="margin-top:4px">
+    <div class="lg-row">
+      <div class="lg-cell" style="background:#3DADFF">ES</div>
+      <div class="lg-cell" style="background:#0270C2">DR</div>
+      <div class="lg-cell" style="background:#3DADFF">EF</div>
+    </div>
+    <div class="lg-mid crit">ID · Nombre</div>
+    <div class="lg-row">
+      <div class="lg-cell" style="background:#3DADFF">LS</div>
+      <div class="lg-cell" style="background:#cc0000">TF</div>
+      <div class="lg-cell" style="background:#3DADFF">LF</div>
+    </div>
+  </div>
+  <div class="lrow"><div class="lsw" style="border:2px solid #cc0000;background:#fff4f4"></div>Crítico (TF = 0)</div>
+  <div class="lrow"><div class="lsw" style="border:2px solid #3DADFF;background:white"></div>No crítico</div>
+  <div class="lrow">
+    <svg width="30" height="10"><line x1="0" y1="5" x2="25" y2="5" stroke="#cc0000" stroke-width="2.5"/><polygon points="23,2 30,5 23,8" fill="#cc0000"/></svg>
+    Arco crítico
+  </div>
+  <div class="lrow">
+    <svg width="30" height="10"><line x1="0" y1="5" x2="25" y2="5" stroke="#3DADFF" stroke-width="1.5" stroke-dasharray="4,2"/><polygon points="23,2 30,5 23,8" fill="#3DADFF"/></svg>
+    Arco no crítico
+  </div>
+</div>
+
+<script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+<script>
+// ── Level-3 data ─────────────────────────────────────────────────────────────
+const TASKS3 = {
+  '1.1.1':{ dur:7.00,  es:0.00,  ef:7.00,  ls:0.00,  lf:7.00,  tf:0.00 },
+  '1.1.2':{ dur:6.33,  es:7.00,  ef:13.33, ls:78.17, lf:84.50, tf:71.17 },
+  '1.1.3':{ dur:8.00,  es:13.33, ef:21.33, ls:84.50, lf:92.50, tf:71.17 },
+  '1.2.1':{ dur:6.33,  es:7.00,  ef:13.33, ls:67.00, lf:73.33, tf:60.00 },
+  '1.2.2':{ dur:4.50,  es:13.33, ef:17.83, ls:73.33, lf:77.83, tf:60.00 },
+  '1.2.3':{ dur:14.67, es:17.83, ef:32.50, ls:77.83, lf:92.50, tf:60.00 },
+  '1.2.4':{ dur:6.33,  es:7.00,  ef:13.33, ls:86.17, lf:92.50, tf:79.17 },
+  '1.3.1':{ dur:3.00,  es:7.00,  ef:10.00, ls:81.33, lf:84.33, tf:74.33 },
+  '1.3.2':{ dur:8.17,  es:10.00, ef:18.17, ls:84.33, lf:92.50, tf:74.33 },
+  '1.3.3':{ dur:5.17,  es:17.83, ef:23.00, ls:87.33, lf:92.50, tf:69.50 },
+  '1.4.1':{ dur:7.50,  es:85.00, ef:92.50, ls:85.00, lf:92.50, tf:0.00 },
+  '1.4.2':{ dur:6.33,  es:51.00, ef:57.33, ls:86.17, lf:92.50, tf:35.17 },
+  '2.1.1':{ dur:4.00,  es:7.00,  ef:11.00, ls:18.34, lf:22.34, tf:11.34 },
+  '2.1.2':{ dur:4.33,  es:11.00, ef:15.33, ls:22.34, lf:26.67, tf:11.34 },
+  '2.2.1':{ dur:4.17,  es:15.33, ef:19.50, ls:45.49, lf:49.66, tf:30.16 },
+  '2.2.2':{ dur:5.33,  es:15.33, ef:20.66, ls:35.33, lf:40.66, tf:20.00 },
+  '2.2.3':{ dur:6.33,  es:15.33, ef:21.66, ls:26.67, lf:33.00, tf:11.34 },
+  '2.2.4':{ dur:5.17,  es:15.33, ef:20.50, ls:32.33, lf:37.50, tf:17.00 },
+  '2.2.5':{ dur:6.33,  es:15.33, ef:21.66, ls:32.00, lf:38.33, tf:16.67 },
+  '2.2.6':{ dur:6.33,  es:15.33, ef:21.66, ls:33.16, lf:39.49, tf:17.83 },
+  '2.3.1':{ dur:5.33,  es:7.00,  ef:12.33, ls:10.01, lf:15.34, tf:3.01 },
+  '2.3.2':{ dur:6.33,  es:12.33, ef:18.66, ls:15.34, lf:21.67, tf:3.01 },
+  '3.1.1':{ dur:4.00,  es:7.00,  ef:11.00, ls:7.00,  lf:11.00, tf:0.00 },
+  '3.1.2':{ dur:7.83,  es:11.00, ef:18.83, ls:21.67, lf:29.50, tf:10.67 },
+  '3.1.3':{ dur:6.33,  es:11.00, ef:17.33, ls:11.00, lf:17.33, tf:0.00 },
+  '3.2.1':{ dur:6.00,  es:17.33, ef:23.33, ls:17.33, lf:23.33, tf:0.00 },
+  '3.2.2':{ dur:6.17,  es:23.33, ef:29.50, ls:23.33, lf:29.50, tf:0.00 },
+  '3.2.3':{ dur:4.50,  es:23.33, ef:27.83, ls:28.32, lf:32.82, tf:4.99 },
+  '4.1.1':{ dur:4.00,  es:29.50, ef:33.50, ls:29.50, lf:33.50, tf:0.00 },
+  '4.1.2':{ dur:6.33,  es:33.50, ef:39.83, ls:35.33, lf:41.66, tf:1.83 },
+  '4.1.3':{ dur:3.17,  es:39.83, ef:43.00, ls:41.66, lf:44.83, tf:1.83 },
+  '4.2.1':{ dur:6.17,  es:39.83, ef:46.00, ls:49.66, lf:55.83, tf:9.83 },
+  '5.1.1':{ dur:4.00,  es:33.50, ef:37.50, ls:40.83, lf:44.83, tf:7.33 },
+  '5.1.2':{ dur:5.33,  es:43.00, ef:48.33, ls:44.83, lf:50.16, tf:1.83 },
+  '5.1.3':{ dur:5.33,  es:37.50, ef:42.83, ls:44.83, lf:50.16, tf:7.33 },
+  '5.1.4':{ dur:6.17,  es:42.00, ef:48.17, ls:45.16, lf:51.33, tf:3.16 },
+  '5.2.1':{ dur:4.50,  es:48.33, ef:52.83, ls:50.16, lf:54.66, tf:1.83 },
+  '5.2.2':{ dur:4.50,  es:48.33, ef:52.83, ls:50.16, lf:54.66, tf:1.83 },
+  '5.2.3':{ dur:4.50,  es:42.83, ef:47.33, ls:50.16, lf:54.66, tf:7.33 },
+  '5.2.4':{ dur:3.33,  es:48.17, ef:51.50, ls:51.33, lf:54.66, tf:3.16 },
+  '6.1.1':{ dur:4.00,  es:18.66, ef:22.66, ls:21.67, lf:25.67, tf:3.01 },
+  '6.1.2':{ dur:7.33,  es:22.66, ef:29.99, ls:25.67, lf:33.00, tf:3.01 },
+  '6.1.3':{ dur:4.17,  es:22.66, ef:26.83, ls:27.99, lf:32.16, tf:5.33 },
+  '6.2.1':{ dur:8.17,  es:29.99, ef:38.16, ls:45.49, lf:53.66, tf:15.50 },
+  '6.2.2':{ dur:4.50,  es:29.99, ef:34.49, ls:49.16, lf:53.66, tf:19.17 },
+  '6.2.3':{ dur:4.50,  es:29.99, ef:34.49, ls:33.00, lf:37.50, tf:3.01 },
+  '6.3.1':{ dur:4.00,  es:33.50, ef:37.50, ls:33.50, lf:37.50, tf:0.00 },
+  '6.3.2':{ dur:5.33,  es:37.50, ef:42.83, ls:37.50, lf:42.83, tf:0.00 },
+  '6.3.3':{ dur:5.33,  es:42.83, ef:48.16, ls:45.00, lf:50.33, tf:2.17 },
+  '6.3.4':{ dur:3.33,  es:48.16, ef:51.49, ls:50.33, lf:53.66, tf:2.17 },
+  '6.4.1':{ dur:4.00,  es:33.50, ef:37.50, ls:36.66, lf:40.66, tf:3.16 },
+  '6.4.2':{ dur:4.50,  es:37.50, ef:42.00, ls:40.66, lf:45.16, tf:3.16 },
+  '6.4.3':{ dur:3.17,  es:37.50, ef:40.67, ls:41.99, lf:45.16, tf:4.49 },
+  '7.1.1':{ dur:6.17,  es:26.83, ef:33.00, ls:32.16, lf:38.33, tf:5.33 },
+  '7.1.2':{ dur:4.17,  es:33.00, ef:37.17, ls:84.33, lf:88.50, tf:51.33 },
+  '7.1.3':{ dur:3.17,  es:48.17, ef:51.34, ls:85.33, lf:88.50, tf:37.16 },
+  '7.2.1':{ dur:4.50,  es:33.00, ef:37.50, ls:38.33, lf:42.83, tf:5.33 },
+  '7.2.2':{ dur:10.50, es:42.83, ef:53.33, ls:42.83, lf:53.33, tf:0.00 },
+  '7.3.1':{ dur:6.67,  es:27.83, ef:34.50, ls:32.82, lf:39.49, tf:4.99 },
+  '7.3.2':{ dur:8.67,  es:34.50, ef:43.17, ls:39.49, lf:48.16, tf:4.99 },
+  '7.3.3':{ dur:5.17,  es:43.17, ef:48.34, ls:48.16, lf:53.33, tf:4.99 },
+  '8.1.1':{ dur:3.33,  es:37.50, ef:40.83, ls:89.17, lf:92.50, tf:51.67 },
+  '8.1.2':{ dur:4.00,  es:46.00, ef:50.00, ls:55.83, lf:59.83, tf:9.83 },
+  '8.1.3':{ dur:5.17,  es:52.83, ef:58.00, ls:54.66, lf:59.83, tf:1.83 },
+  '8.1.4':{ dur:6.17,  es:38.16, ef:44.33, ls:53.66, lf:59.83, tf:15.50 },
+  '8.1.5':{ dur:6.17,  es:51.49, ef:57.66, ls:53.66, lf:59.83, tf:2.17 },
+  '8.1.6':{ dur:6.50,  es:53.33, ef:59.83, ls:53.33, lf:59.83, tf:0.00 },
+  '8.1.7':{ dur:5.17,  es:51.50, ef:56.67, ls:54.66, lf:59.83, tf:3.16 },
+  '8.2.1':{ dur:4.17,  es:59.83, ef:64.00, ls:59.83, lf:64.00, tf:0.00 },
+  '8.2.2':{ dur:11.50, es:64.00, ef:75.50, ls:64.00, lf:75.50, tf:0.00 },
+  '8.2.3':{ dur:5.17,  es:75.50, ef:80.67, ls:75.50, lf:80.67, tf:0.00 },
+  '8.2.4':{ dur:4.33,  es:80.67, ef:85.00, ls:80.67, lf:85.00, tf:0.00 },
+  '9.1.1':{ dur:6.67,  es:29.50, ef:36.17, ls:64.67, lf:71.34, tf:35.17 },
+  '9.1.2':{ dur:4.50,  es:36.17, ef:40.67, ls:71.34, lf:75.84, tf:35.17 },
+  '9.1.3':{ dur:4.33,  es:40.67, ef:45.00, ls:75.84, lf:80.17, tf:35.17 },
+  '10.1.1':{ dur:6.00, es:45.00, ef:51.00, ls:80.17, lf:86.17, tf:35.17 },
+  '10.1.2':{ dur:3.17, es:21.66, ef:24.83, ls:89.33, lf:92.50, tf:67.67 },
+  '10.2.1':{ dur:2.33, es:27.83, ef:30.16, ls:90.17, lf:92.50, tf:62.34 },
+  '10.2.2':{ dur:4.00, es:51.49, ef:55.49, ls:88.50, lf:92.50, tf:37.01 },
+};
+
+const DEPS3 = {
+  '1.1.1':[], '1.1.2':['1.1.1'], '1.1.3':['1.1.2'],
+  '1.2.1':['1.1.1'], '1.2.2':['1.2.1'], '1.2.3':['1.2.2'], '1.2.4':['1.1.1'],
+  '1.3.1':['1.1.1'], '1.3.2':['1.3.1'], '1.3.3':['1.2.2'],
+  '1.4.1':['8.2.4','9.1.3'], '1.4.2':['9.1.2','9.1.3','10.1.1'],
+  '2.1.1':['1.1.1'], '2.1.2':['1.1.1','2.1.1'],
+  '2.2.1':['2.1.2'], '2.2.2':['2.1.2'], '2.2.3':['2.1.2'],
+  '2.2.4':['2.1.2'], '2.2.5':['2.1.2'], '2.2.6':['2.1.2'],
+  '2.3.1':['1.1.1'], '2.3.2':['2.3.1'],
+  '3.1.1':['1.1.1'], '3.1.2':['3.1.1'], '3.1.3':['3.1.1'],
+  '3.2.1':['3.1.1','3.1.3'], '3.2.2':['2.3.1','3.2.1'], '3.2.3':['3.2.1'],
+  '4.1.1':['3.2.2','3.1.2'], '4.1.2':['4.1.1'], '4.1.3':['4.1.2'],
+  '4.2.1':['2.2.1','4.1.2'],
+  '5.1.1':['4.1.1','2.3.1'], '5.1.2':['5.1.1','4.1.3'],
+  '5.1.3':['6.1.1','6.3.1'], '5.1.4':['6.4.1','6.4.2','6.4.3'],
+  '5.2.1':['2.2.2','5.1.2'], '5.2.2':['2.2.2','5.1.2'],
+  '5.2.3':['5.1.3','2.2.2'], '5.2.4':['5.1.4','2.2.2'],
+  '6.1.1':['2.3.1','2.3.2'], '6.1.2':['6.1.1'], '6.1.3':['6.1.1'],
+  '6.2.1':['2.2.3','6.1.2'], '6.2.2':['2.2.3','6.1.2'],
+  '6.2.3':['6.1.2','6.1.3','2.2.3'],
+  '6.3.1':['4.1.1','6.1.1'], '6.3.2':['6.3.1','6.2.3','2.2.4'],
+  '6.3.3':['6.3.2','2.2.4'], '6.3.4':['6.3.2','6.3.3','2.2.4'],
+  '6.4.1':['4.1.1','6.1.1'], '6.4.2':['2.2.2','6.4.1'], '6.4.3':['6.4.1'],
+  '7.1.1':['6.1.3'], '7.1.2':['7.1.1'], '7.1.3':['7.1.1','5.1.4'],
+  '7.2.1':['2.2.5','7.1.1'], '7.2.2':['7.2.1','6.3.2'],
+  '7.3.1':['3.2.1','3.2.3'], '7.3.2':['7.3.1','7.1.1','2.2.6'],
+  '7.3.3':['7.3.2','6.2.3'],
+  '8.1.1':['3.2.2','4.1.1','5.1.1','6.1.2'],
+  '8.1.2':['4.2.1','4.1.3'], '8.1.3':['5.2.1','5.2.2','5.2.3','5.2.4'],
+  '8.1.4':['6.2.1','6.2.2','6.2.3'], '8.1.5':['6.3.2','6.3.3','6.3.4'],
+  '8.1.6':['7.2.2','7.3.3'], '8.1.7':['6.4.2','6.4.3','5.1.4','5.2.4'],
+  '8.2.1':['8.1.2','8.1.3','8.1.4','8.1.5','8.1.6','8.1.7'],
+  '8.2.2':['8.2.1'], '8.2.3':['8.2.2'], '8.2.4':['8.2.3'],
+  '9.1.1':['3.2.1','3.2.2','3.2.3'], '9.1.2':['9.1.1'], '9.1.3':['9.1.2'],
+  '10.1.1':['9.1.2','9.1.3'],
+  '10.1.2':['2.2.1','2.2.2','2.2.3','2.2.4','2.2.5','2.2.6'],
+  '10.2.1':['3.2.3'],
+  '10.2.2':['4.1.1','4.1.2','4.1.3','5.1.1','5.1.2','5.1.3','5.1.4',
+             '6.1.1','6.1.2','6.1.3','6.3.1','6.3.2','6.3.3','6.3.4',
+             '7.1.1','7.1.2','7.1.3'],
+};
+
+const GROUP_NAMES = {
+  '1.1':'Planificación técnica',  '1.2':'Gestión del proyecto',
+  '1.3':'Comunicación',           '1.4':'Cierre del proyecto',
+  '2.1':'Identidad y perfiles',   '2.2':'Diseño de pantallas',
+  '2.3':'Modelo de datos',
+  '3.1':'Configuración técnica',  '3.2':'Setup del entorno',
+  '4.1':'Autenticación backend',  '4.2':'Auth frontend',
+  '5.1':'Backend de perfil',      '5.2':'Frontend de perfil',
+  '6.1':'Backend de partidos',    '6.2':'Frontend de partidos',
+  '6.3':'Solicitudes',            '6.4':'Calificación',
+  '7.1':'Motor de búsqueda',      '7.2':'Experiencia swipe',
+  '7.3':'Visualización en mapa',
+  '8.1':'QA manual',              '8.2':'Pruebas con usuarios',
+  '9.1':'Despliegue',
+  '10.1':'Docs de usuario',       '10.2':'Docs técnicas',
+};
+
+// ── Aggregate to level 2 ─────────────────────────────────────────────────────
+function l2(id) { const p = id.split('.'); return p[0]+'.'+p[1]; }
+
+const TASKS2 = {};
+for (const [id, t] of Object.entries(TASKS3)) {
+  const g = l2(id);
+  if (!TASKS2[g]) TASKS2[g] = { es:Infinity, ef:-Infinity, ls:Infinity, lf:-Infinity, tf:Infinity };
+  const r = TASKS2[g];
+  r.es = Math.min(r.es, t.es); r.ef = Math.max(r.ef, t.ef);
+  r.ls = Math.min(r.ls, t.ls); r.lf = Math.max(r.lf, t.lf);
+  r.tf = Math.min(r.tf, t.tf);
+}
+for (const [id, r] of Object.entries(TASKS2)) {
+  r.dur  = +(r.ef - r.es).toFixed(2);
+  r.name = GROUP_NAMES[id] || id;
+}
+
+// ── Cross-group deps ──────────────────────────────────────────────────────────
+const DEPS2 = {};
+for (const g of Object.keys(TASKS2)) DEPS2[g] = new Set();
+for (const [succ3, preds3] of Object.entries(DEPS3)) {
+  const sg = l2(succ3);
+  for (const pred3 of preds3) {
+    const pg = l2(pred3);
+    if (pg !== sg) DEPS2[sg].add(pg);
+  }
+}
+for (const g of Object.keys(DEPS2)) DEPS2[g] = [...DEPS2[g]];
+
+// Compute critical groups first so we can protect critical→critical edges below
+const CRIT2 = new Set(Object.keys(TASKS2).filter(g => TASKS2[g].tf < 0.01));
+
+// ── Transitive reduction: remove edges implied by longer paths ────────────────
+// Critical→critical edges are always preserved to keep the path visually connected.
+const succ2 = {};
+for (const g of Object.keys(DEPS2)) succ2[g] = new Set();
+for (const [s, preds] of Object.entries(DEPS2))
+  for (const p of preds) { if (succ2[p]) succ2[p].add(s); }
+
+const redundant = new Set();
+for (const [u, succs] of Object.entries(succ2)) {
+  for (const v of [...succs]) {
+    if (CRIT2.has(u) && CRIT2.has(v)) continue; // never remove critical→critical edges
+    // BFS from u's other neighbors; if v is reachable, u→v is redundant
+    const visited = new Set();
+    const queue = [];
+    for (const n of succ2[u]) {
+      if (n !== v && !visited.has(n)) { visited.add(n); queue.push(n); }
+    }
+    while (queue.length) {
+      const cur = queue.shift();
+      if (cur === v) { redundant.add(`${u}→${v}`); break; }
+      for (const n of (succ2[cur] || new Set()))
+        if (!visited.has(n)) { visited.add(n); queue.push(n); }
+    }
+  }
+}
+// DEPS2R = reduced dependency map (successor → [direct predecessors])
+const DEPS2R = {};
+for (const g of Object.keys(DEPS2)) DEPS2R[g] = [];
+for (const [s, preds] of Object.entries(DEPS2))
+  for (const p of preds)
+    if (!redundant.has(`${p}→${s}`)) DEPS2R[s].push(p);
+
+// ── Dagre layout ──────────────────────────────────────────────────────────────
+const NODE_W = 180, NODE_H = 88;
+const X_GAP  = 60,  Y_GAP  = 28;
+
+const gr = new dagre.graphlib.Graph({ multigraph: false });
+gr.setGraph({ rankdir:'LR', nodesep: Y_GAP, ranksep: X_GAP, marginx:40, marginy:40 });
+gr.setDefaultEdgeLabel(() => ({}));
+for (const id of Object.keys(TASKS2)) gr.setNode(id, { width:NODE_W, height:NODE_H });
+for (const [succ, preds] of Object.entries(DEPS2))
+  for (const pred of preds) gr.setEdge(pred, succ);
+dagre.layout(gr);
+
+// ── Post-process: equal vertical spacing within each column ───────────────────
+// Group nodes by their dagre x (same x = same rank column)
+const colMap = new Map();
+for (const id of gr.nodes()) {
+  const nd = gr.node(id);
+  const col = Math.round(nd.x); // dagre assigns identical x to same-rank nodes
+  if (!colMap.has(col)) colMap.set(col, []);
+  colMap.get(col).push(nd);
+}
+
+// Find tallest column to use as reference height
+let maxNodes = 0;
+for (const nodes of colMap.values()) maxNodes = Math.max(maxNodes, nodes.length);
+
+const totalMaxH = maxNodes * NODE_H + (maxNodes - 1) * Y_GAP;
+const MARGIN_Y  = 40;
+const centerY   = MARGIN_Y + totalMaxH / 2;
+
+for (const nodes of colMap.values()) {
+  nodes.sort((a, b) => a.y - b.y); // keep dagre's relative vertical order
+  const n = nodes.length;
+  const colH  = n * NODE_H + (n - 1) * Y_GAP;
+  const startY = centerY - colH / 2 + NODE_H / 2;
+  nodes.forEach((nd, i) => { nd.y = startY + i * (NODE_H + Y_GAP); });
+}
+
+// Recompute SVG size from updated positions
+let svgMaxX = 0, svgMaxY = 0;
+for (const id of gr.nodes()) {
+  const nd = gr.node(id);
+  svgMaxX = Math.max(svgMaxX, nd.x + NODE_W / 2);
+  svgMaxY = Math.max(svgMaxY, nd.y + NODE_H / 2);
+}
+const svgW = svgMaxX + 50;
+const svgH = svgMaxY + 50;
+
+// ── Render nodes ──────────────────────────────────────────────────────────────
+const canvas   = document.getElementById('canvas');
+const svgEl    = document.getElementById('svg-layer');
+const nodesDiv = document.createElement('div');
+nodesDiv.style.cssText = 'position:absolute;top:0;left:0;';
+canvas.appendChild(nodesDiv);
+
+const fmt = v => (+v).toFixed(2);
+
+for (const id of gr.nodes()) {
+  const nd   = gr.node(id);
+  const t    = TASKS2[id];
+  const crit = CRIT2.has(id);
+
+  const div = document.createElement('div');
+  div.className = 'node' + (crit ? ' critical' : '');
+  div.style.left = (nd.x - NODE_W / 2) + 'px';
+  div.style.top  = (nd.y - NODE_H / 2) + 'px';
+  div.dataset.id = id;
+  div.title = `${id} · ${t.name}\nES=${fmt(t.es)}  EF=${fmt(t.ef)}  DR=${fmt(t.dur)}h\nLS=${fmt(t.ls)}  LF=${fmt(t.lf)}  TF=${fmt(t.tf)}h`;
+
+  div.innerHTML = `
+    <div class="node-top">
+      <div class="cell c-es"><span class="lbl">ES</span>${fmt(t.es)}</div>
+      <div class="cell c-dr"><span class="lbl">DR</span>${fmt(t.dur)}</div>
+      <div class="cell c-ef"><span class="lbl">EF</span>${fmt(t.ef)}</div>
+    </div>
+    <div class="node-mid">
+      <div class="nid">${id}</div>
+      <div class="nname" title="${t.name}">${t.name}</div>
+    </div>
+    <div class="node-bot">
+      <div class="cell c-ls"><span class="lbl">LS</span>${fmt(t.ls)}</div>
+      <div class="cell c-tf${crit ? ' crit' : ''}"><span class="lbl">TF</span>${fmt(t.tf)}</div>
+      <div class="cell c-lf"><span class="lbl">LF</span>${fmt(t.lf)}</div>
+    </div>`;
+  nodesDiv.appendChild(div);
+}
+
+// ── Render edges ──────────────────────────────────────────────────────────────
+svgEl.setAttribute('width',  svgW);
+svgEl.setAttribute('height', svgH);
+
+const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+function mkArrow(aid, col) {
+  const m = document.createElementNS('http://www.w3.org/2000/svg','marker');
+  m.setAttribute('id',aid); m.setAttribute('viewBox','0 0 10 10');
+  m.setAttribute('refX','9'); m.setAttribute('refY','5');
+  m.setAttribute('markerWidth','6'); m.setAttribute('markerHeight','6');
+  m.setAttribute('orient','auto');
+  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d','M 0 0 L 10 5 L 0 10 z'); p.setAttribute('fill',col);
+  m.appendChild(p); defs.appendChild(m);
+}
+mkArrow('arr-crit','#cc0000');
+mkArrow('arr-norm','#3DADFF');
+svgEl.appendChild(defs);
+
+// Orthogonal elbow path (right-angle bends, no curves)
+function orthoPath(x1, y1, x2, y2) {
+  if (Math.abs(y1 - y2) < 2) return `M ${x1} ${y1} H ${x2}`;
+  const midX = (x1 + x2) / 2;
+  const r = Math.min(10, Math.abs(y2 - y1) / 2, (x2 - x1) / 2);
+  const dy = y2 > y1 ? 1 : -1;
+  return [
+    `M ${x1} ${y1}`,
+    `H ${midX - r}`,
+    `Q ${midX} ${y1} ${midX} ${y1 + dy * r}`,
+    `V ${y2 - dy * r}`,
+    `Q ${midX} ${y2} ${midX + r} ${y2}`,
+    `H ${x2}`
+  ].join(' ');
+}
+
+// Draw only reduced edges (transitive-reduced, orthogonal routing)
+for (const [s, preds] of Object.entries(DEPS2R)) {
+  for (const p of preds) {
+    const src = gr.node(p);
+    const dst = gr.node(s);
+    if (!src || !dst) continue;
+    const isCrit = CRIT2.has(p) && CRIT2.has(s);
+    const x1 = src.x + NODE_W / 2;
+    const y1 = src.y;
+    const x2 = dst.x - NODE_W / 2;
+    const y2 = dst.y;
+    const d = orthoPath(x1, y1, x2, y2);
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.classList.add('edge-path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', isCrit ? '#cc0000' : '#3DADFF');
+    path.setAttribute('stroke-width', isCrit ? 2.5 : 1.2);
+    path.setAttribute('marker-end', isCrit ? 'url(#arr-crit)' : 'url(#arr-norm)');
+    if (!isCrit) path.setAttribute('stroke-dasharray','5,3');
+    path.setAttribute('opacity', isCrit ? '1' : '0.85');
+    path.dataset.crit = isCrit ? '1' : '0';
+    svgEl.appendChild(path);
+  }
+}
+
+// ── Zoom / pan ────────────────────────────────────────────────────────────────
+const viewport = document.getElementById('viewport');
+let scale = 1, tx = 0, ty = 0, dragging = false, lx = 0, ly = 0;
+
+function applyT() {
+  canvas.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  document.getElementById('zoom-info').textContent = Math.round(scale * 100) + '%';
+}
+viewport.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  dragging = true; lx = e.clientX; ly = e.clientY;
+  viewport.classList.add('dragging');
+});
+window.addEventListener('mouseup', () => { dragging = false; viewport.classList.remove('dragging'); });
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  tx += e.clientX - lx; ty += e.clientY - ly;
+  lx = e.clientX; ly = e.clientY; applyT();
+});
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r  = viewport.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const f  = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const ns = Math.min(5, Math.max(0.1, scale * f));
+  tx = mx - (mx - tx) * ns / scale;
+  ty = my - (my - ty) * ns / scale;
+  scale = ns; applyT();
+}, { passive: false });
+
+function fitScreen() {
+  const r = viewport.getBoundingClientRect();
+  scale = Math.min((r.width - 60) / svgW, (r.height - 60) / svgH);
+  tx = (r.width  - svgW * scale) / 2;
+  ty = (r.height - svgH * scale) / 2;
+  applyT();
+}
+document.getElementById('btn-fit').addEventListener('click', fitScreen);
+
+// ── Critical-only toggle ──────────────────────────────────────────────────────
+let critOnly = false;
+document.getElementById('btn-crit').addEventListener('click', function () {
+  critOnly = !critOnly;
+  this.classList.toggle('active', critOnly);
+
+  for (const div of nodesDiv.querySelectorAll('.node')) {
+    const isCrit = CRIT2.has(div.dataset.id);
+    div.style.opacity = critOnly && !isCrit ? '0.12' : '1';
+  }
+  for (const path of svgEl.querySelectorAll('.edge-path')) {
+    const isCritEdge = path.dataset.crit === '1';
+    path.style.opacity = critOnly && !isCritEdge ? '0.05' : (isCritEdge ? '1' : '0.85');
+  }
+});
+
+// ── Export helpers ────────────────────────────────────────────────────────────
+async function withResetTransform(fn) {
+  const saved = canvas.style.transform;
+  canvas.style.transform = 'none';
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  try { return await fn(); } finally { canvas.style.transform = saved; }
+}
+
+function exportBtn(id, label) {
+  const btn = document.getElementById(id);
+  btn.disabled = true; btn.textContent = 'Exportando…';
+  return { btn, restore() { btn.disabled = false; btn.textContent = label; } };
+}
+
+document.getElementById('btn-export-png').addEventListener('click', async () => {
+  const { btn, restore } = exportBtn('btn-export-png', '↓ PNG');
+  try {
+    const dataUrl = await withResetTransform(() =>
+      htmlToImage.toPng(canvas, { backgroundColor: null, pixelRatio: 2, width: svgW, height: svgH })
+    );
+    Object.assign(document.createElement('a'), { download: 'sportmatch-pert.png', href: dataUrl }).click();
+  } catch (e) { alert('Error PNG: ' + e.message); }
+  finally { restore(); }
+});
+
+document.getElementById('btn-export-svg').addEventListener('click', async () => {
+  const { btn, restore } = exportBtn('btn-export-svg', '↓ SVG');
+  try {
+    const dataUrl = await withResetTransform(() =>
+      htmlToImage.toSvg(canvas, { backgroundColor: null, width: svgW, height: svgH })
+    );
+    // dataUrl is a data:image/svg+xml,... — decode and force download
+    const svg = decodeURIComponent(dataUrl.split(',').slice(1).join(','));
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    Object.assign(document.createElement('a'), { download: 'sportmatch-pert.svg', href: URL.createObjectURL(blob) }).click();
+  } catch (e) { alert('Error SVG: ' + e.message); }
+  finally { restore(); }
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+fitScreen();
+</script>
+</body>
+</html>
