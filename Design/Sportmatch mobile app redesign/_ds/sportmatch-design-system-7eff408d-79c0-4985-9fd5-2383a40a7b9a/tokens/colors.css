@@ -1,0 +1,72 @@
+/* ============================================================
+   SportMatch — Color System
+   Dark-first. Pure black canvas, white ink, frosted glass
+   surfaces, one electric-blue accent. Color is rationed:
+   photography carries the energy, UI stays monochrome + glass.
+   ============================================================ */
+
+:root {
+  /* ---- Base ---- */
+  --color-black: #000000;
+  --color-white: #ffffff;
+
+  /* ---- Canvas / backdrops ---- */
+  --bg-base: #000000;        /* the app canvas — always true black   */
+  --bg-raised: #0b0b0e;      /* sheets / modals over a dimmed canvas  */
+  --bg-sunken: #060608;      /* map shells, media wells               */
+  --scrim: rgba(0, 0, 0, 0.55);   /* dim behind sheets & modals       */
+
+  /* ---- Ink (white text & icons over dark) ---- */
+  --ink-100: rgba(255, 255, 255, 1);
+  --ink-80:  rgba(255, 255, 255, 0.80);
+  --ink-64:  rgba(255, 255, 255, 0.64);
+  --ink-46:  rgba(255, 255, 255, 0.46);
+  --ink-32:  rgba(255, 255, 255, 0.32);
+  --ink-16:  rgba(255, 255, 255, 0.16);
+
+  /* ---- Glass surfaces (frosted, sit on photography) ---- */
+  --glass-thin:    rgba(255, 255, 255, 0.03);
+  --glass:         rgba(255, 255, 255, 0.05);
+  --glass-strong:  rgba(255, 255, 255, 0.10);
+  --glass-solid:   rgba(22, 22, 26, 0.60);   /* sheets where legibility wins */
+  --glass-border:        rgba(255, 255, 255, 0.15);
+  --glass-border-strong: rgba(255, 255, 255, 0.26);
+  --glass-highlight:     rgba(255, 255, 255, 0.40); /* top hairline sheen */
+
+  /* ---- Accent — Electric Blue ---- */
+  --accent:        #4ea8ff;
+  --accent-bright: #7cc0ff;
+  --accent-deep:   #2c84e0;
+  --accent-ink:    #001226;               /* text on a solid accent fill */
+  --accent-tint:   rgba(78, 168, 255, 0.16);
+  --accent-glow:   rgba(78, 168, 255, 0.45);
+
+  /* ---- Semantic ---- */
+  --success:  #66d575;
+  --success-tint: rgba(102, 213, 117, 0.16);
+  --warning:  #ffcb57;
+  --danger:   #ff5a5f;
+  --danger-tint: rgba(255, 90, 95, 0.16);
+
+  /* ---- Swipe affordances ---- */
+  --swipe-yes:  #66d575;   /* interested → right */
+  --swipe-no:   #ff5a6a;   /* skip → left        */
+  --swipe-info: #4ea8ff;   /* details → up/tap   */
+
+  /* ============================================================
+     Semantic aliases — reference these in components
+     ============================================================ */
+  --text-primary:   var(--ink-100);
+  --text-secondary: var(--ink-64);
+  --text-tertiary:  var(--ink-46);
+  --text-disabled:  var(--ink-32);
+  --text-on-accent: var(--color-white);
+
+  --surface-glass:        var(--glass);
+  --surface-glass-strong: var(--glass-strong);
+  --surface-sheet:        var(--glass-solid);
+  --border-hairline:      var(--glass-border);
+  --border-emphasis:      var(--glass-border-strong);
+
+  --focus-ring: var(--accent);
+}

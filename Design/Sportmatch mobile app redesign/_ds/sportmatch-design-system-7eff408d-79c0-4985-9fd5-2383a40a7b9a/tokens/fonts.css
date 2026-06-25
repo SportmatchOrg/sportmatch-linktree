@@ -1,0 +1,13 @@
+/* SportMatch webfonts
+   ------------------------------------------------------------------
+   Design intent is SF Pro Display (Apple's system face). SF Pro is
+   proprietary and cannot be redistributed, so the shipped system uses
+   Inter Tight (display) + Inter (text) — the closest open-source match
+   in proportion, x-height and tracking. On Apple devices the stack
+   falls through to -apple-system / SF Pro automatically.
+
+   Loaded from Google Fonts CDN. If you need fully offline binaries,
+   drop the .woff2 files in /assets/fonts and replace these @import /
+   @font-face rules. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&display=swap');
