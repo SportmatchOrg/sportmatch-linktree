@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportMatch — Mobile Wireframes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #05060a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      color: #e2e8f0;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .hdr-left { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #4EA8FF 0%, #0270C2 100%);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .hdr-title { font-size: 14px; font-weight: 700; color: #f1f5f9; }
+    .hdr-sub   { font-size: 11px; color: #475569; margin-top: 1px; }
+    .counter   { font-size: 12px; color: #334155; font-variant-numeric: tabular-nums; }
+
+    /* ── Main layout ── */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 24px 28px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ── Screen list ── */
+    .screen-list {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      width: 168px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 900px) { .screen-list { display: none; } }
+
+    .s-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none; background: transparent;
+      color: #4a5568;
+      font-size: 12.5px; font-weight: 500;
+      text-align: left; white-space: nowrap;
+      transition: background 0.14s, color 0.14s;
+      font-family: inherit;
+    }
+    .s-item:hover { background: rgba(255,255,255,0.05); color: #94a3b8; }
+    .s-item.active { background: rgba(78,168,255,0.1); color: #4EA8FF; }
+    .s-num {
+      width: 18px; height: 18px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9.5px; font-weight: 600; flex-shrink: 0;
+    }
+    .s-item.active .s-num { background: rgba(78,168,255,0.18); }
+
+    /* ── Phone frame ── */
+    .phone-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Dynamic sizing: fill available height */
+    .phone-frame {
+      --ph: min(780px, calc(100vh - 148px));
+      --pw: calc(var(--ph) * 390 / 844);
+      --pr: calc(var(--ph) * 50 / 844);
+      width:  var(--pw);
+      height: var(--ph);
+      border-radius: var(--pr);
+      border: calc(var(--ph) * 9 / 844) solid #18192a;
+      background: #000;
+      position: relative;
+      box-shadow:
+        0 0 0 1.5px #2a2a4a,
+        0 32px 80px rgba(0,0,0,0.7),
+        inset 0 0 0 1px rgba(255,255,255,0.05);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    /* Dynamic island / notch */
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: calc(var(--pw) * 110 / 370);
+      height: calc(var(--ph) * 28 / 844);
+      background: #18192a;
+      border-radius: 50px;
+      z-index: 10;
+    }
+    .phone-screen {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: opacity 0.18s ease;
+    }
+    .phone-screen.fade { opacity: 0; }
+
+    /* Arrow buttons */
+    .arrow {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.14s, color 0.14s, opacity 0.14s;
+      font-size: 20px; line-height: 1;
+    }
+    .arrow:hover { background: rgba(255,255,255,0.12); color: #f1f5f9; }
+    .arrow:disabled { opacity: 0.18; pointer-events: none; }
+    .arrow.prev { right: calc(100% + 14px); }
+    .arrow.next { left:  calc(100% + 14px); }
+
+    /* ── Info panel ── */
+    .info {
+      width: 196px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 1100px) { .info { display: none; } }
+
+    .info-label {
+      font-size: 20px; font-weight: 700;
+      color: #f1f5f9; line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .info-desc {
+      font-size: 12.5px; color: #64748b;
+      line-height: 1.55; margin-bottom: 24px;
+    }
+    .dots {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 28px;
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      cursor: pointer;
+      transition: background 0.18s, transform 0.18s;
+    }
+    .dot.active { background: #4EA8FF; transform: scale(1.3); }
+    .info-ver {
+      font-size: 11px; color: #1e293b;
+      font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    }
+
+    /* ── Footer ── */
+    .ftr {
+      padding: 10px 28px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11.5px; color: #1e3a5f;
+      flex-shrink: 0;
+    }
+    .key {
+      display: inline-block;
+      padding: 1px 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 4px;
+      color: #334155;
+      font-size: 10.5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo">SM</div>
+    <div>
+      <div class="hdr-title">SportMatch</div>
+      <div class="hdr-sub">Mobile wireframes · 390 px canvas</div>
+    </div>
+  </div>
+  <div class="counter" id="counter">1 / 8</div>
+</div>
+
+<div class="main">
+
+  <!-- Screen list -->
+  <div class="screen-list" id="screen-list"></div>
+
+  <!-- Phone -->
+  <div class="phone-wrap">
+    <button class="arrow prev" id="prev" aria-label="Previous">&#8249;</button>
+    <div class="phone-frame">
+      <img class="phone-screen" id="screen-img" src="" alt="Wireframe" draggable="false">
+    </div>
+    <button class="arrow next" id="next" aria-label="Next">&#8250;</button>
+  </div>
+
+  <!-- Info panel -->
+  <div class="info" id="info">
+    <div class="info-label" id="info-label"></div>
+    <div class="info-desc"  id="info-desc"></div>
+    <div class="dots" id="dots"></div>
+    <div class="info-ver"  id="info-ver"></div>
+  </div>
+
+</div>
+
+<div class="ftr">
+  <span><span class="key">←</span> <span class="key">→</span> &nbsp;navigate screens</span>
+  <span>390 × 844 · iPhone 14</span>
+</div>
+
+<script>
+const BASE = 'Design/Sportmatch%20mobile%20app%20redesign/Screenshots/';
+
+const SCREENS = [
+  { file: 'v7-swipe.png',       label: 'Swipe Deck',    desc: 'Main discovery screen. Swipe through nearby matches to find a game.', ver: 'v7 · latest' },
+  { file: '01-v7-matches.png',  label: 'My Matches',    desc: 'Upcoming and past matches the user has joined or created.', ver: 'v7 · latest' },
+  { file: '02-v7-matches.png',  label: 'Matches List',  desc: 'Browse all nearby matches with sport, level, and time filters.', ver: 'v7 · latest' },
+  { file: 'v4-map.png',         label: 'Map View',      desc: 'Spatial discovery — matches pinned on a map, filterable by radius.', ver: 'v4' },
+  { file: '01-v6-detail.png',   label: 'Match Detail',  desc: 'Full match info: sport, level, location, roster, and join CTA.', ver: 'v6' },
+  { file: '01-v6-time.png',     label: 'Create Match',  desc: 'Publish a new match — set sport, time, location, level, and cap.', ver: 'v6' },
+  { file: 'v4-cta.png',         label: 'Join Match',    desc: 'Confirmation step when tapping Join — shows match summary.', ver: 'v4' },
+  { file: 'check.png',          label: 'Confirmed',     desc: 'Success state after joining or creating a match.', ver: 'v4' },
+];
+
+let cur = 0;
+
+const img      = document.getElementById('screen-img');
+const lbl      = document.getElementById('info-label');
+const dsc      = document.getElementById('info-desc');
+const ver      = document.getElementById('info-ver');
+const dotsEl   = document.getElementById('dots');
+const listEl   = document.getElementById('screen-list');
+const counter  = document.getElementById('counter');
+const prevBtn  = document.getElementById('prev');
+const nextBtn  = document.getElementById('next');
+
+// Build dots
+SCREENS.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot';
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+});
+
+// Build screen list
+SCREENS.forEach((s, i) => {
+  const el = document.createElement('button');
+  el.className = 's-item';
+  el.innerHTML = `<span class="s-num">${i + 1}</span>${s.label}`;
+  el.addEventListener('click', () => goTo(i));
+  listEl.appendChild(el);
+});
+
+function goTo(i) {
+  cur = i;
+  const s = SCREENS[i];
+
+  // Fade transition
+  img.classList.add('fade');
+  setTimeout(() => {
+    img.src = BASE + s.file;
+    img.classList.remove('fade');
+  }, 90);
+
+  lbl.textContent = s.label;
+  dsc.textContent = s.desc;
+  ver.textContent = s.ver;
+  counter.textContent = `${i + 1} / ${SCREENS.length}`;
+
+  dotsEl.querySelectorAll('.dot').forEach((d, di) => d.classList.toggle('active', di === i));
+  listEl.querySelectorAll('.s-item').forEach((el, ei) => el.classList.toggle('active', ei === i));
+
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === SCREENS.length - 1;
+}
+
+prevBtn.addEventListener('click', () => cur > 0 && goTo(cur - 1));
+nextBtn.addEventListener('click', () => cur < SCREENS.length - 1 && goTo(cur + 1));
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft'  && cur > 0)                    goTo(cur - 1);
+  if (e.key === 'ArrowRight' && cur < SCREENS.length - 1)   goTo(cur + 1);
+});
+
+goTo(0);
+</script>
+
+</body>
+</html>
