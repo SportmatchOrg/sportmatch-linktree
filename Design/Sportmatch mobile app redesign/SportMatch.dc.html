@@ -34,9 +34,13 @@
     }
     /* Tablet / desktop — present as a real device on the dark backdrop. */
     @media (min-width: 760px) {
-      .sm-stage { padding: 32px; }
+      .sm-stage { padding: 16px; overflow: hidden; }
       .sm-device {
-        width: 390px; height: 844px; border-radius: 54px;
+        width: min(390px, 42vh, calc(100vw - 56px));
+        width: min(390px, 42dvh, calc(100vw - 56px));
+        height: auto;
+        aspect-ratio: 390 / 844;
+        border-radius: 54px;
         box-shadow: 0 0 0 11px #15171c, 0 0 0 13px #2a2d34, 0 50px 120px rgba(0,0,0,0.7);
       }
     }
