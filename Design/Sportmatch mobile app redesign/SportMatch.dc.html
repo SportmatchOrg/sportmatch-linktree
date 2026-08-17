@@ -36,12 +36,12 @@
     @media (min-width: 760px) {
       .sm-stage { padding: 16px; overflow: hidden; }
       .sm-device {
-        width: min(390px, 42vh, calc(100vw - 56px));
-        width: min(390px, 42dvh, calc(100vw - 56px));
-        height: auto;
-        aspect-ratio: 390 / 844;
+        width: 390px;
+        height: 844px;
         border-radius: 54px;
         box-shadow: 0 0 0 11px #15171c, 0 0 0 13px #2a2d34, 0 50px 120px rgba(0,0,0,0.7);
+        transform: scale(var(--sm-device-scale, 1));
+        transform-origin: center;
       }
     }
     /* Leaflet panes must sit under the glass chrome. */
@@ -53,6 +53,34 @@
     <x-import component="SportMatchApp" from="./SportMatchApp.jsx" hint-size="100%,100%" style="position:absolute; inset:0; width:100%; height:100%"></x-import>
   </div>
 </div>
+<script>
+  (function () {
+    var device = document.querySelector('.sm-device');
+    var desktop = window.matchMedia('(min-width: 760px)');
+
+    function fitDevice() {
+      if (!device) return;
+      if (!desktop.matches) {
+        device.style.setProperty('--sm-device-scale', '1');
+        return;
+      }
+
+      var frameWidth = 416;
+      var frameHeight = 870;
+      var breathingRoom = 24;
+      var availableWidth = Math.max(0, window.innerWidth - breathingRoom);
+      var availableHeight = Math.max(0, window.innerHeight - breathingRoom);
+      var scale = Math.min(1, availableWidth / frameWidth, availableHeight / frameHeight);
+      device.style.setProperty('--sm-device-scale', scale.toFixed(3));
+    }
+
+    window.addEventListener('resize', fitDevice);
+    window.addEventListener('load', fitDevice);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', fitDevice);
+    if (desktop.addEventListener) desktop.addEventListener('change', fitDevice);
+    fitDevice();
+  })();
+</script>
 </x-dc>
 </body>
 </html>
