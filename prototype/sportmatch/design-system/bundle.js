@@ -34,7 +34,7 @@ try { (() => {
   function resolveBase() {
     try {
       var el = [].slice.call(document.scripts || []).filter(function (x) {
-        return x.src && /(^|\/)imagery\.js(\?|$)/.test(x.src);
+        return x.src && /(^|\/)(imagery|bundle|_ds_bundle)\.js(\?|$)/.test(x.src);
       }).pop();
       var s = el && el.src || document.currentScript && document.currentScript.src;
       if (s) return s.slice(0, s.lastIndexOf('/') + 1);
