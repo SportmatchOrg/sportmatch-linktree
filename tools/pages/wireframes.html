@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportMatch — Interactive Prototype</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #05060a; overflow: hidden; }
+    :root { --phone-scale: 1; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    /* --- mobile: 416 × 870 phone shell, scaled to fit --------------------- */
+    .phone-shell {
+      position: relative;
+      width: calc(416px * var(--phone-scale));
+      height: calc(870px * var(--phone-scale));
+    }
+    .phone-shell iframe {
+      position: absolute;
+      inset: 0;
+      width: 416px;
+      height: 870px;
+      border: none;
+      display: block;
+      transform: scale(var(--phone-scale));
+      transform-origin: top left;
+    }
+
+    /* --- desktop: the web-app viewer fills the window --------------------- */
+    .desktop-shell {
+      position: fixed;
+      inset: 0;
+    }
+    .desktop-shell iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    body[data-view="mobile"] .desktop-shell,
+    body[data-view="desktop"] .phone-shell { display: none; }
+
+    /* --- view switch ------------------------------------------------------ */
+    #view-switch {
+      position: fixed;
+      /* 10 + 3px of pill padding puts the buttons at y=13, the same band as
+         the desktop view's .dv-arrow / .dv-tab controls in its 56px chrome. */
+      top: 10px;
+      right: 16px;
+      z-index: 20;
+      display: flex;
+      gap: 2px;
+      padding: 3px;
+      border-radius: 99px;
+      background: rgba(12,14,18,0.86);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10), 0 8px 26px rgba(0,0,0,0.5);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+    }
+    #view-switch button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 30px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 99px;
+      background: transparent;
+      color: rgba(255,255,255,0.46);
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background 0.14s, color 0.14s;
+    }
+    #view-switch button:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.06); }
+    #view-switch button.on {
+      background: rgba(78,168,255,0.18);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(78,168,255,0.36);
+    }
+    #view-switch svg { flex: none; }
+    #figma-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 30px;
+      margin-left: 4px;
+      padding: 0 10px 0 12px;
+      border-radius: 99px;
+      background: #fff;
+      color: #1e1e1e;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      transition: background 0.14s, transform 0.14s;
+    }
+    #figma-link:hover { background: #f0f0f0; transform: translateY(-1px); }
+    #figma-link:focus-visible { outline: 2px solid #4ea8ff; outline-offset: 2px; }
+    #figma-link img { display: block; width: 40px; height: 20px; }
+  </style>
+</head>
+<body data-view="mobile">
+
+  <div id="view-switch">
+    <button type="button" data-view="mobile" class="on">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+        <rect x="4.25" y="1.25" width="7.5" height="13.5" rx="2" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M7 12.6h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Mobile
+    </button>
+    <button type="button" data-view="desktop">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+        <rect x="1.25" y="2.25" width="13.5" height="9" rx="1.8" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M5.5 14h5M8 11.5V14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Desktop
+    </button>
+    <a
+      id="figma-link"
+      href="https://www.figma.com/design/OITJ34nYxSHoWDpniG0XqV/SportMatch?t=Nj749fAiQb68M7wZ-0"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Open SportMatch in Figma"
+    >
+      <span>Open in</span>
+      <img src="/assets/vendor/figma-logo.svg" alt="Figma">
+    </a>
+  </div>
+
+  <div class="phone-shell">
+    <iframe
+      data-src="/prototype/sportmatch/mobile.html?frame=1"
+      title="SportMatch — prototipo mobile"
+      allow="geolocation"
+    ></iframe>
+  </div>
+
+  <div class="desktop-shell">
+    <iframe
+      data-src="/prototype/sportmatch/desktop.html"
+      title="SportMatch — pantallas desktop"
+      allow="geolocation"
+    ></iframe>
+  </div>
+
+  <script>
+    (function () {
+      function fitPhone() {
+        var safeMargin = 96;
+        var scale = Math.min(1, (window.innerWidth - safeMargin) / 416, (window.innerHeight - safeMargin) / 870);
+        document.documentElement.style.setProperty('--phone-scale', Math.max(0.1, scale).toFixed(4));
+      }
+
+      window.addEventListener('resize', fitPhone);
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', fitPhone);
+      fitPhone();
+
+      var buttons = [].slice.call(document.querySelectorAll('#view-switch button'));
+      var frames = {
+        mobile: document.querySelector('.phone-shell iframe'),
+        desktop: document.querySelector('.desktop-shell iframe')
+      };
+
+      // Each view loads on first use and then stays mounted, so switching back
+      // and forth doesn't reset the prototype.
+      function setView(view) {
+        if (!frames[view]) view = 'mobile';
+        document.body.setAttribute('data-view', view);
+        buttons.forEach(function (b) { b.classList.toggle('on', b.dataset.view === view); });
+        var f = frames[view];
+        if (!f.src) f.src = f.dataset.src;
+        try { localStorage.setItem('sm.wireframes.view', view); } catch (e) {}
+      }
+
+      buttons.forEach(function (b) {
+        b.addEventListener('click', function () { setView(b.dataset.view); });
+      });
+
+      var initial = 'mobile';
+      try {
+        var q = new URLSearchParams(location.search).get('view');
+        initial = q || localStorage.getItem('sm.wireframes.view') || 'mobile';
+      } catch (e) {}
+      setView(initial);
+    })();
+  </script>
+</body>
+</html>

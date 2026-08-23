@@ -1,0 +1,53 @@
+/* ============================================================
+   SportMatch — Base layer
+   Minimal resets + the default dark canvas. Consumers get a
+   true-black, white-ink, Inter-by-default surface for free.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font: var(--text-body);
+  letter-spacing: var(--tracking-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, p, figure {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Tabular, heavy numerals wherever a stat is shown */
+.sm-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Selection picks up the brand accent */
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}

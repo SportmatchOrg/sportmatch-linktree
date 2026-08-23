@@ -1,6 +1,17 @@
 {
   "version": 2,
   "routes": [
+    { "src": "/pert_diagram\\.html", "dest": "/leadership/pert.html" },
+    { "src": "/Gantt Devs\\.html", "dest": "/leadership/gantt.html" },
+    { "src": "/wireframes\\.html", "dest": "/tools/pages/wireframes.html" },
+    { "src": "/devtools\\.html", "dest": "/tools/pages/devtools.html" },
+    { "src": "/ai\\.html", "dest": "/tools/pages/ai.html" },
+    { "src": "/assets\\.html", "dest": "/tools/pages/assets.html" },
+    { "src": "/criteria\\.html", "dest": "/tools/pages/criteria.html" },
+    { "src": "/figma_logo_icon_171159\\.svg", "dest": "/assets/vendor/figma-logo.svg" },
+    { "src": "/export-assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/Design/sportmatch-mobile-app-redesign/SportMatch\\.dc\\.html", "dest": "/prototype/sportmatch/mobile.html" },
+    { "src": "/Design/sportmatch-mobile-app-redesign/SportMatch\\.desktop\\.html", "dest": "/prototype/sportmatch/desktop.html" },
     { "src": "/tools/?", "dest": "/tools/index.html" },
     { "src": "/", "dest": "/index.html" }
   ]

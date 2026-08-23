@@ -1,0 +1,27 @@
+/* ============================================================
+   SportMatch — Spacing & Layout
+   4px base grid. Mobile canvas is 390px wide; gutters are 20px.
+   Generous air — fewer things, more breathing room.
+   ============================================================ */
+
+:root {
+  /* ---- Spacing scale (4px base) ---- */
+  --space-1:  0.25rem;  /*  4 */
+  --space-2:  0.5rem;   /*  8 */
+  --space-3:  0.75rem;  /* 12 */
+  --space-4:  1rem;     /* 16 */
+  --space-5:  1.25rem;  /* 20 — default screen gutter */
+  --space-6:  1.5rem;   /* 24 */
+  --space-7:  2rem;     /* 32 */
+  --space-8:  2.5rem;   /* 40 */
+  --space-9:  3rem;     /* 48 */
+  --space-10: 4rem;     /* 64 */
+
+  /* ---- Layout ---- */
+  --screen-width: 390px;       /* iPhone canvas                     */
+  --screen-gutter: var(--space-5);  /* 20px side padding            */
+  --safe-top: 59px;            /* status bar + notch area           */
+  --safe-bottom: 34px;         /* home-indicator inset              */
+  --nav-height: 64px;          /* floating bottom nav pill          */
+  --content-max: 1080px;       /* desktop/tablet adaptation cap     */
+}

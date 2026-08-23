@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch - AI</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --panel: #ffffff;
+    --ink: #172033;
+    --muted: #667085;
+    --line: #d8e0ec;
+    --brand: #0270c2;
+    --brand-soft: #e5f3ff;
+    --green: #1f8f6a;
+    --shadow: 0 14px 34px rgba(22, 37, 67, 0.10);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      linear-gradient(180deg, #eef6ff 0, rgba(238, 246, 255, 0) 280px),
+      var(--bg);
+    color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .page {
+    width: min(1180px, calc(100% - 36px));
+    margin: 0 auto;
+    padding: 30px 0 46px;
+  }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.08;
+    letter-spacing: 0;
+  }
+
+  .summary {
+    max-width: 700px;
+    margin: 10px 0 26px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .section {
+    margin-top: 26px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 14px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.2;
+  }
+
+  .section-note {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .count {
+    min-width: 92px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    text-align: right;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    min-width: 0;
+    min-height: 236px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 1px 0 rgba(16, 24, 40, .03);
+    overflow: hidden;
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(2,112,194,.35);
+    box-shadow: var(--shadow);
+  }
+
+  .card-head {
+    display: flex;
+    gap: 12px;
+    padding: 16px 16px 0;
+    min-width: 0;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand-soft), #eaf8ee);
+    color: var(--brand);
+    font-weight: 900;
+    font-size: 14px;
+    border: 1px solid rgba(2,112,194,.12);
+    overflow: hidden;
+  }
+
+  .logo img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .logo span { display: none; }
+  .logo.fallback img { display: none; }
+  .logo.fallback span { display: block; }
+
+  .title-wrap { min-width: 0; }
+
+  .tool-name {
+    margin: 0;
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .domain {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 13px 16px 16px;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 12px;
+  }
+
+  .badge {
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: #075985;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 8px;
+  }
+
+  .badge.sub { background: #eef7ef; color: var(--green); }
+
+  .description {
+    margin: 0;
+    color: #475467;
+    font-size: 13.5px;
+    line-height: 1.48;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+    margin-bottom: 16px;
+  }
+
+  .tag {
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 7px;
+  }
+
+  .open-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 38px;
+    margin-top: auto;
+    border-radius: 8px;
+    background: #102033;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 850;
+  }
+
+  .open-link:hover { background: var(--brand); }
+
+  @media (max-width: 1079px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (max-width: 720px) {
+    .page { width: min(100% - 24px, 1180px); padding-top: 22px; }
+    h1 { font-size: 27px; }
+    .section-head { align-items: flex-start; flex-direction: column; }
+    .count { text-align: left; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="eyebrow">SportMatch developer resources</div>
+  <h1>AI</h1>
+  <p class="summary">Recursos para configurar agentes con contexto útil del proyecto: skills para mejorar comportamiento y MCPs para conectar herramientas y documentación.</p>
+
+  <section class="section" aria-labelledby="skills-title">
+    <div class="section-head">
+      <div>
+        <h2 id="skills-title">Skills</h2>
+      </div>
+      <div id="skills-count" class="count"></div>
+    </div>
+    <div id="skills-grid" class="grid"></div>
+  </section>
+
+  <section class="section" aria-labelledby="mcps-title">
+    <div class="section-head">
+      <div>
+        <h2 id="mcps-title">MCPs</h2>
+      </div>
+      <div id="mcps-count" class="count"></div>
+    </div>
+    <div id="mcps-grid" class="grid"></div>
+  </section>
+</main>
+
+<script>
+const skills = [
+  { name: "AutoSkills", url: "https://www.autoskills.sh/", domain: "autoskills.sh", category: "Skills", subcategory: "Auto-installer", description: "Detecta el stack del proyecto y propone instalar skills relevantes según tecnologías y archivos de configuración.", tags: ["skills", "auto-detect", "project setup"] },
+  { name: "Everything Claude Code", url: "https://github.com/affaan-m/everything-claude-code", domain: "github.com", category: "Skills", subcategory: "Agent workflow", description: "Recursos para optimizar sesiones de agentes con skills, memoria, configuración y flujos de trabajo.", tags: ["skills", "agents", "workflow"] },
+  { name: "Web Quality Skills", url: "https://github.com/addyosmani/web-quality-skills", domain: "github.com", category: "Skills", subcategory: "Web quality", description: "Skills enfocadas en Lighthouse, Core Web Vitals, performance y calidad web.", tags: ["skills", "performance", "lighthouse"] },
+  { name: "Understand Anything", url: "https://github.com/Lum1104/Understand-Anything", domain: "github.com", category: "Skills", subcategory: "Code understanding", description: "Skill orientada a entender codebases grandes mediante exploración y grafo de conocimiento.", tags: ["skills", "code graph", "agents"] },
+  { name: "UI UX Pro Max Skill", url: "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill", domain: "github.com", category: "Skills", subcategory: "Design intelligence", description: "Skill para mejorar criterio visual, UX y diseño de interfaces en agentes de desarrollo.", tags: ["skills", "ui", "ux"] },
+  { name: "UI Skills", url: "https://www.ui-skills.com/", domain: "ui-skills.com", category: "Skills", subcategory: "Skill directory", description: "Directorio curado de skills para diseño, producto y desarrollo frontend asistido por IA.", tags: ["skills", "design", "directory"] },
+  { name: "Matt Pocock Skills", url: "https://github.com/mattpocock/skills", domain: "github.com", category: "Skills", subcategory: "Engineering skills", description: "Colección de skills de ingeniería con foco fuerte en TypeScript y prácticas de desarrollo.", tags: ["skills", "typescript", "engineering"] },
+  { name: "Agent Skills", url: "https://github.com/addyosmani/agent-skills", domain: "github.com", category: "Skills", subcategory: "Production agents", description: "Skills de ingeniería para agentes de código en proyectos de producción.", tags: ["skills", "agents", "engineering"] }
+];
+
+const mcps = [
+  { name: "Figma MCP", url: "https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Figma-MCP-server", domain: "help.figma.com", logoDomain: "figma.com", category: "MCP", subcategory: "Design context", description: "Conecta agentes con contexto de Figma para trabajar mejor sobre diseños, componentes y medidas.", tags: ["figma", "design", "mcp"] },
+  { name: "Linear MCP", url: "https://linear.app/docs/mcp", domain: "linear.app", category: "MCP", subcategory: "Issues & projects", description: "Acceso MCP a issues, proyectos y comentarios de Linear para planificar, actualizar y consultar trabajo.", tags: ["linear", "issues", "mcp"] },
+  { name: "shadcn MCP", url: "https://ui.shadcn.com/docs/mcp", domain: "ui.shadcn.com", logoDomain: "ui.shadcn.com", category: "MCP", subcategory: "UI components", description: "MCP oficial de shadcn/ui para consultar y aplicar componentes, registries y bloques.", tags: ["shadcn", "components", "mcp"] },
+  { name: "Next.js docs via Context7", url: "https://context7.com/vercel/next.js", domain: "context7.com", logoDomain: "nextjs.org", category: "MCP", subcategory: "Framework docs", description: "Referencia de documentación de Next.js para usar mediante Context7 MCP cuando el proyecto lo requiera.", tags: ["next.js", "docs", "mcp"] },
+  { name: "NestJS docs via Context7", url: "https://context7.com/nestjs/docs.nestjs.com", domain: "context7.com", logoDomain: "nestjs.com", category: "MCP", subcategory: "Backend docs", description: "Referencia de documentación de NestJS para usar mediante Context7 MCP en trabajo backend.", tags: ["nestjs", "backend", "mcp"] }
+];
+
+function initials(name) {
+  return name
+    .replace(/[^a-z0-9 ]/gi, " ")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => part[0])
+    .join("")
+    .toUpperCase() || "AI";
+}
+
+function faviconUrl(tool) {
+  const domain = tool.logoDomain || tool.domain;
+  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+}
+
+function renderCards(items, targetId) {
+  const target = document.getElementById(targetId);
+  target.innerHTML = "";
+
+  items.forEach(tool => {
+    const card = document.createElement("article");
+    card.className = "card";
+
+    const head = document.createElement("div");
+    head.className = "card-head";
+
+    const logo = document.createElement("div");
+    logo.className = "logo";
+
+    const logoImg = document.createElement("img");
+    logoImg.src = faviconUrl(tool);
+    logoImg.alt = "";
+    logoImg.loading = "lazy";
+    logoImg.addEventListener("error", () => logo.classList.add("fallback"));
+
+    const logoFallback = document.createElement("span");
+    logoFallback.textContent = initials(tool.name);
+
+    logo.append(logoImg, logoFallback);
+
+    const titleWrap = document.createElement("div");
+    titleWrap.className = "title-wrap";
+
+    const title = document.createElement("h2");
+    title.className = "tool-name";
+    title.textContent = tool.name;
+
+    const domain = document.createElement("span");
+    domain.className = "domain";
+    domain.textContent = tool.domain;
+
+    titleWrap.append(title, domain);
+    head.append(logo, titleWrap);
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+
+    const badges = document.createElement("div");
+    badges.className = "badges";
+
+    const category = document.createElement("span");
+    category.className = "badge";
+    category.textContent = tool.category;
+    badges.appendChild(category);
+
+    const subcategory = document.createElement("span");
+    subcategory.className = "badge sub";
+    subcategory.textContent = tool.subcategory;
+    badges.appendChild(subcategory);
+
+    const description = document.createElement("p");
+    description.className = "description";
+    description.textContent = tool.description;
+
+    const tags = document.createElement("div");
+    tags.className = "tags";
+    tool.tags.forEach(tagText => {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = tagText;
+      tags.appendChild(tag);
+    });
+
+    const link = document.createElement("a");
+    link.className = "open-link";
+    link.href = tool.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Abrir recurso";
+
+    body.append(badges, description, tags, link);
+    card.append(head, body);
+    target.appendChild(card);
+  });
+}
+
+document.getElementById("skills-count").textContent = `${skills.length} resources`;
+document.getElementById("mcps-count").textContent = `${mcps.length} resources`;
+renderCards(skills, "skills-grid");
+renderCards(mcps, "mcps-grid");
+</script>
+</body>
+</html>

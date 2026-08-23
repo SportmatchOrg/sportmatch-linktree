@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SportMatch — Web app (desktop)</title>
+<link rel="stylesheet" href="design-system/tokens/fonts.css">
+<link rel="stylesheet" href="design-system/tokens/colors.css">
+<link rel="stylesheet" href="design-system/tokens/typography.css">
+<link rel="stylesheet" href="design-system/tokens/spacing.css">
+<link rel="stylesheet" href="design-system/tokens/effects.css">
+<link rel="stylesheet" href="design-system/tokens/base.css">
+<link rel="stylesheet" href="design-system/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="design-system/bundle.js"></script>
+<script src="app/overrides.js"></script>
+<script src="app/desktop-screens.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; background: #000; }
+  body {
+    display: flex; flex-direction: column;
+    font-family: var(--font-text), system-ui, sans-serif;
+    background: radial-gradient(120% 90% at 50% 0%, #14181f 0%, #05060a 60%, #000 100%);
+  }
+
+  /* --- chrome: phase-grouped screen picker -------------------------------- */
+  .dv-chrome {
+    flex: none; display: flex; align-items: center; gap: 10px;
+    height: 56px; padding: 0 12px;
+    /* right slot is reserved for the host page's mobile/desktop toggle */
+    padding-right: var(--dv-host-slot, 196px);
+    background: rgba(8,9,12,0.92);
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.08);
+    z-index: 10;
+  }
+  .dv-arrow {
+    flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%;
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.62);
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.14s, color 0.14s;
+  }
+  .dv-arrow:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .dv-arrow:disabled { opacity: 0.3; cursor: default; }
+
+  .dv-tabs {
+    flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+    overflow-x: auto; scrollbar-width: none;
+    /* trailing room so the last chip can scroll clear of the fade below */
+    padding-right: 46px;
+    /* chips that run past the reserved slot fade out instead of being sliced */
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent 100%);
+  }
+  .dv-tabs::-webkit-scrollbar { display: none; }
+  .dv-sep {
+    flex: none; align-self: stretch; width: 1px; margin: 12px 5px;
+    background: rgba(255,255,255,0.10);
+  }
+  .dv-tab {
+    flex: none; display: inline-flex; align-items: center; gap: 7px;
+    height: 32px; padding: 0 12px; border: 0; border-radius: 99px;
+    background: transparent; color: rgba(255,255,255,0.46);
+    font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: -0.01em;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.14s, color 0.14s;
+  }
+  .dv-tab:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.78); }
+  .dv-tab.on { background: rgba(78,168,255,0.16); color: #fff; box-shadow: inset 0 0 0 1px rgba(78,168,255,0.34); }
+  .dv-tab .n {
+    font-variant-numeric: tabular-nums; font-size: 11px; font-weight: 800;
+    color: rgba(255,255,255,0.34);
+  }
+  .dv-tab.on .n { color: #4EA8FF; }
+
+  /* --- stage: the 1440 × 900 board, scaled to fit ------------------------- */
+  .dv-stage { flex: 1; min-height: 0; position: relative; display: grid; place-items: center; padding: 20px; }
+  .dv-shell { position: relative; flex: none; }
+  .dv-board {
+    position: absolute; top: 0; left: 0;
+    width: 1440px; height: 900px;
+    background: var(--bg-base, #05060a);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 40px 110px rgba(0,0,0,0.72);
+    transform-origin: top left;
+  }
+  .dv-board .leaflet-container {
+    background: #0a0d12; font-family: var(--font-text);
+    /* Leaflet's panes sit at z-index 400; the map screen's own legend and
+       controls are siblings at z-index 20. Give the container a stacking
+       context so the chrome stays on top. */
+    z-index: 0;
+  }
+  .dv-caption {
+    position: absolute; left: 0; right: 0; bottom: -26px; text-align: center;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.34);
+  }
+</style>
+</head>
+<body>
+
+<div class="dv-chrome">
+  <button class="dv-arrow" id="dv-prev" aria-label="Pantalla anterior">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button class="dv-arrow" id="dv-next" aria-label="Pantalla siguiente">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="dv-tabs" id="dv-tabs"></div>
+</div>
+
+<div class="dv-stage">
+  <div class="dv-shell" id="dv-shell">
+    <div class="dv-board" id="dv-board"></div>
+    <div class="dv-caption" id="dv-caption"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Same 14 screens (and the same order) as the desktop flow sheet.
+  var SCREENS = [
+    ['login',       '01', 'Login',     'Acceso',     'Iniciar sesión'],
+    ['register',    '02', 'Registro',  'Acceso',     'Crear cuenta'],
+    ['map',         '03', 'Mapa',      'Descubrir',  'Mapa de partidos'],
+    ['discover',    '04', 'Descubrir', 'Descubrir',  'Descubrir'],
+    ['detail',      '05', 'Detalle',   'Sumarse',    'Detalle del partido'],
+    ['create1',     '06', 'Deporte',   'Organizar',  'Crear · Deporte'],
+    ['create2',     '07', 'Lugar',     'Organizar',  'Crear · Lugar'],
+    ['create3',     '08', 'Horario',   'Organizar',  'Crear · Horario'],
+    ['create4',     '09', 'Jugadores', 'Organizar',  'Crear · Jugadores'],
+    ['create5',     '10', 'Revisión',  'Organizar',  'Crear · Revisión'],
+    ['matches',     '11', 'Partidos',  'Organizar',  'Tus partidos'],
+    ['profile',     '12', 'Perfil',    'Cuenta',     'Perfil'],
+    ['settings',    '13', 'Ajustes',   'Cuenta',     'Ajustes'],
+    ['editprofile', '14', 'Editar',    'Cuenta',     'Editar perfil']
+  ];
+  var W = 1440, H = 900;
+
+  // The reserved right slot only exists for the host page's mobile/desktop
+  // toggle; opened on its own, the chrome uses the full width.
+  if (window.self === window.top) {
+    document.documentElement.style.setProperty('--dv-host-slot', '16px');
+  }
+
+  var tabsEl    = document.getElementById('dv-tabs');
+  var boardEl   = document.getElementById('dv-board');
+  var shellEl   = document.getElementById('dv-shell');
+  var captionEl = document.getElementById('dv-caption');
+  var prevEl    = document.getElementById('dv-prev');
+  var nextEl    = document.getElementById('dv-next');
+
+  var buttons = [];
+  var lastPhase = null;
+  SCREENS.forEach(function (s, i) {
+    if (lastPhase && s[3] !== lastPhase) {
+      var sep = document.createElement('div');
+      sep.className = 'dv-sep';
+      tabsEl.appendChild(sep);
+    }
+    lastPhase = s[3];
+    var b = document.createElement('button');
+    b.className = 'dv-tab';
+    b.title = s[3] + ' · ' + s[4];
+    b.innerHTML = '<span class="n">' + s[1] + '</span>' + s[2];
+    b.addEventListener('click', function () { show(i); });
+    tabsEl.appendChild(b);
+    buttons.push(b);
+  });
+
+  var root = ReactDOM.createRoot(boardEl);
+  var index = -1;
+
+  function show(i) {
+    i = Math.max(0, Math.min(SCREENS.length - 1, i));
+    if (i === index) return;
+    index = i;
+    var s = SCREENS[i];
+    buttons.forEach(function (b, n) { b.classList.toggle('on', n === i); });
+    captionEl.textContent = s[3].toUpperCase() + ' · ' + s[4] + ' — 1440 × 900';
+    prevEl.disabled = i === 0;
+    nextEl.disabled = i === SCREENS.length - 1;
+    // key forces a fresh mount so each screen's map / effects start clean
+    root.render(React.createElement(window.SportMatchDesktop, { screen: s[0], key: s[0] }));
+    buttons[i].scrollIntoView({ block: 'nearest', inline: 'center' });
+    try {
+      var u = new URL(location.href);
+      u.searchParams.set('screen', s[0]);
+      history.replaceState(null, '', u);
+    } catch (e) {}
+  }
+
+  prevEl.addEventListener('click', function () { show(index - 1); });
+  nextEl.addEventListener('click', function () { show(index + 1); });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') show(index - 1);
+    if (e.key === 'ArrowRight') show(index + 1);
+  });
+
+  function fit() {
+    var stage = document.querySelector('.dv-stage');
+    var pad = 40, captionRoom = 34;
+    var aw = Math.max(0, stage.clientWidth - pad);
+    var ah = Math.max(0, stage.clientHeight - pad - captionRoom);
+    var scale = Math.min(1, aw / W, ah / H);
+    shellEl.style.width = (W * scale).toFixed(2) + 'px';
+    shellEl.style.height = (H * scale).toFixed(2) + 'px';
+    boardEl.style.transform = 'scale(' + scale.toFixed(4) + ')';
+  }
+  window.addEventListener('resize', fit);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fit);
+  fit();
+
+  var wanted = 0;
+  try {
+    var q = new URLSearchParams(location.search).get('screen');
+    if (q) {
+      SCREENS.forEach(function (s, i) { if (s[0] === q) wanted = i; });
+    }
+  } catch (e) {}
+  show(wanted);
+})();
+</script>
+
+</body>
+</html>

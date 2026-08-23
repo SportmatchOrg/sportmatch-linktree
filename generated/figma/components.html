@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SportMatch — Componentes</title>
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/fonts.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/colors.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/typography.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/spacing.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/effects.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/base.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/styles.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="/prototype/sportmatch/design-system/bundle.js"></script>
+<script src="photo-data.js"></script>
+<script src="/prototype/sportmatch/app/overrides.js"></script>
+<style>
+  html, body { margin: 0; background: #0b0d11; }
+  body { font-family: var(--font-text), system-ui, sans-serif; padding: 80px 64px 120px; width: 1560px; box-sizing: border-box; }
+  .sheet-title { font-family: var(--font-display), system-ui; font-weight: 800; font-size: 44px;
+    letter-spacing: -0.03em; color: #fff; margin: 0 0 8px; }
+  .sheet-sub { font-size: 16px; color: rgba(255,255,255,0.5); margin: 0 0 56px; }
+  .group { margin-bottom: 64px; }
+  .group > h2 { font-family: var(--font-display), system-ui; font-weight: 700; font-size: 24px;
+    letter-spacing: -0.02em; color: #fff; margin: 0 0 4px; }
+  .group > .hint { font-size: 14px; color: rgba(255,255,255,0.42); margin: 0 0 24px; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .spec { display: flex; flex-direction: column; gap: 10px; }
+  .spec > .cap { font-size: 11px; font-weight: 700; letter-spacing: 0.11em;
+    text-transform: uppercase; color: rgba(255,255,255,0.36); }
+  .stage { padding: 20px; border-radius: 16px; background: #12151b;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.07); display: flex; align-items: center;
+    justify-content: center; min-height: 40px; }
+  .stage.w280 { width: 280px; }
+  .stage.w340 { width: 340px; }
+  .stage.dark { background: #05060a; }
+  .swatch { width: 132px; display: flex; flex-direction: column; gap: 8px; }
+  .swatch .chip { height: 68px; border-radius: 12px; box-shadow: 0 0 0 1px rgba(255,255,255,0.08); }
+  .swatch .nm { font-size: 12px; font-weight: 600; color: #fff; }
+  .swatch .vl { font-size: 11px; color: rgba(255,255,255,0.4); font-variant-numeric: tabular-nums; }
+  .type-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+  .type-row .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.11em;
+    text-transform: uppercase; color: rgba(255,255,255,0.36); }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#05060a">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#05060a"/>
+    <rect x="300" y="200" width="600" height="120" rx="60" fill="#39e08f"/>
+    <rect x="300" y="370" width="420" height="90" rx="45" fill="none" stroke="#fff" stroke-width="14" opacity=".55"/>
+    <rect x="300" y="510" width="280" height="90" rx="45" fill="none" stroke="#fff" stroke-width="14" opacity=".3"/>
+    <text x="600" y="720" text-anchor="middle" font-family="system-ui,sans-serif"
+      font-weight="800" font-size="66" fill="#fff" letter-spacing="-2">Components</text>
+  </svg>
+</template>
+
+<h1 class="sheet-title">SportMatch — Componentes</h1>
+<p class="sheet-sub">Primitivas del design system, cada variante y estado</p>
+<div id="root"></div>
+
+<script>
+(function () {
+  var h = React.createElement;
+  var DS = window.SportMatchDesignSystem_7eff40;
+  var IMG = window.SM_IMG;
+  var D = window.SM_DATA;
+
+  function Spec(name, node, w) {
+    return h('div', { className: 'spec', key: name }, [
+      h('div', { className: 'cap', key: 'c' }, name),
+      h('div', { className: 'stage' + (w ? ' ' + w : ''), key: 's' }, node)
+    ]);
+  }
+  function Group(title, hint, specs) {
+    return h('div', { className: 'group', key: title }, [
+      h('h2', { key: 't' }, title),
+      h('p', { className: 'hint', key: 'h' }, hint),
+      h('div', { className: 'row', key: 'r' }, specs)
+    ]);
+  }
+
+  var groups = [];
+
+  // ---- Buttons
+  groups.push(Group('Button', 'variante × tamaño × estado', [
+    Spec('primary / md', h(DS.Button, { variant: 'primary' }, 'Unirme al partido')),
+    Spec('primary / lg', h(DS.Button, { variant: 'primary', size: 'lg' }, 'Iniciar sesión')),
+    Spec('primary + icon', h(DS.Button, { variant: 'primary', iconRight: 'arrow-right' }, 'Continuar')),
+    Spec('glass', h(DS.Button, { variant: 'glass' }, 'Me quedo')),
+    Spec('success', h(DS.Button, { variant: 'success', iconRight: 'check' }, 'Estás dentro')),
+    Spec('disabled', h(DS.Button, { variant: 'primary', disabled: true }, 'Guardar cambios')),
+    Spec('full width', h(DS.Button, { variant: 'primary', fullWidth: true, iconRight: 'check' }, 'Guardar cambios'), 'w280')
+  ]));
+
+  // ---- Icon buttons
+  groups.push(Group('IconButton', 'control circular de vidrio', [
+    Spec('glass', h(DS.IconButton, { icon: 'settings', variant: 'glass', 'aria-label': 'Settings' })),
+    Spec('glass / sm', h(DS.IconButton, { icon: 'chevron-left', variant: 'glass', size: 'sm', 'aria-label': 'Back' })),
+    Spec('accent', h(DS.IconButton, { icon: 'plus', variant: 'accent', 'aria-label': 'Create' })),
+    Spec('x', h(DS.IconButton, { icon: 'x', variant: 'glass', 'aria-label': 'Close' }))
+  ]));
+
+  // ---- Badges
+  groups.push(Group('Badge', 'tono × icono × punto', [
+    Spec('solid', h(DS.Badge, { tone: 'solid' }, 'Fútbol')),
+    Spec('glass', h(DS.Badge, { tone: 'glass' }, '3 lugares libres')),
+    Spec('accent + dot', h(DS.Badge, { tone: 'accent', dot: true }, '3 pendientes')),
+    Spec('success + icon', h(DS.Badge, { tone: 'success', icon: 'check' }, 'Confirmado')),
+    Spec('accent + icon', h(DS.Badge, { tone: 'accent', icon: 'user' }, 'Organizás'))
+  ]));
+
+  // ---- Filter chips
+  groups.push(Group('FilterChip', 'sin seleccionar / seleccionado, con glifos de deporte', [
+    Spec('default', h(DS.FilterChip, null, 'Esta noche')),
+    Spec('selected', h(DS.FilterChip, { selected: true }, 'Cerca')),
+    Spec('icon', h(DS.FilterChip, { icon: (D.SPORTS[1] || {}).icon }, 'Fútbol')),
+    Spec('icon + selected', h(DS.FilterChip, { selected: true, icon: (D.SPORTS[2] || {}).icon }, 'Básquet'))
+  ]));
+
+  // ---- Segmented
+  groups.push(Group('SegmentedControl', 'selector de nivel', [
+    Spec('3-up', h(DS.SegmentedControl, {
+      fullWidth: true, value: 'casual', options: [
+        { value: 'casual', label: 'Casual' },
+        { value: 'intermediate', label: 'Intermedio' },
+        { value: 'advanced', label: 'Avanzado' }]
+    }), 'w340')
+  ]));
+
+  // ---- Avatars
+  var people = [
+    { name: 'Inès Faye', src: IMG.url('tennis-net') },
+    { name: 'Noah Klein', src: IMG.url('basketball-bw') },
+    { name: 'Liam Walsh', src: IMG.url('streetball-bw') },
+    { name: 'Rosa Lima', src: IMG.url('tennis-clay') }
+  ];
+  groups.push(Group('Avatar / AvatarStack', 'tamaños y pila superpuesta', [
+    Spec('sm', h(DS.Avatar, { size: 'sm', name: 'Alex Moreno', src: IMG.url('football-match') })),
+    Spec('md', h(DS.Avatar, { size: 'md', name: 'Alex Moreno', src: IMG.url('football-match') })),
+    Spec('lg', h(DS.Avatar, { size: 'lg', name: 'Alex Moreno', src: IMG.url('football-match') })),
+    Spec('initials', h(DS.Avatar, { size: 'md', name: 'Rosa Lima' })),
+    Spec('stack + overflow', h(DS.AvatarStack, { avatars: people, size: 'md', max: 3 }))
+  ]));
+
+  // ---- Rating
+  groups.push(Group('Rating', 'puntaje con cantidad de reseñas', [
+    Spec('with count', h(DS.Rating, { value: 4.8, count: 126 })),
+    Spec('value only', h(DS.Rating, { value: 4.2 }))
+  ]));
+
+  // ---- Input
+  groups.push(Group('Input', 'por defecto / búsqueda / lg', [
+    Spec('default', h(DS.Input, { placeholder: '¿Dónde?' }), 'w280'),
+    Spec('with icon', h(DS.Input, { icon: 'map-pin', placeholder: 'Agregá un lugar' }), 'w280'),
+    Spec('search', h(DS.Input, { variant: 'search', icon: 'search', placeholder: 'Buscá partidos' }), 'w280')
+  ]));
+
+  // ---- Toasts
+  groups.push(Group('Toast', 'variantes de tono', [
+    Spec('success', h(DS.Toast, { tone: 'success' }, 'Estás dentro. Nos vemos en la cancha ⚡'), 'w340'),
+    Spec('danger', h(DS.Toast, { tone: 'danger' }, 'Lugar liberado · Fútbol 7 al atardecer'), 'w340')
+  ]));
+
+  // ---- Cards
+  var m = D.MATCHES[0];
+  groups.push(Group('MatchCard', 'por defecto y compacta', [
+    Spec('default', h(DS.MatchCard, {
+      photo: m.photoUrl, sport: m.sport, title: m.title,
+      distance: m.distance, date: m.date, time: m.time, spots: m.spots,
+      rating: m.rating, ratingCount: m.ratingCount, level: m.level
+    }), 'w340')
+  ]));
+
+  groups.push(Group('SwipeCard', 'la pieza central del mazo', [
+    Spec('front', h('div', { style: { width: 300, height: 430, position: 'relative' } },
+      h(DS.SwipeCard, {
+        photo: m.photoUrl, sport: m.sport, title: m.title,
+        subtitle: m.location.split(' · ')[0] + ' · ' + m.distance,
+        date: m.date, time: m.time, spots: m.spots, rating: m.rating,
+        ratingCount: m.ratingCount, level: m.level
+      })))
+  ]));
+
+  // ---- Empty state
+  groups.push(Group('EmptyState', 'estado sin contenido', [
+    Spec('with action', h(DS.EmptyState, {
+      icon: 'layers', title: 'Todavía no hay partidos',
+      text: 'Deslizá a la derecha en los partidos que te gusten. Cuando te acepten, aparecen acá.',
+      action: h(DS.Button, { iconLeft: 'layers' }, 'Empezar a deslizar')
+    }), 'w340')
+  ]));
+
+  // ---- Bottom nav
+  var NAV = [
+    { key: 'map', icon: 'map', label: 'Mapa' },
+    { key: 'swipe', icon: 'search', label: 'Descubrir' },
+    { key: 'create', icon: 'plus', label: 'Crear', center: true },
+    { key: 'matches', icon: 'calendar', label: 'Partidos' },
+    { key: 'profile', icon: 'user', label: 'Perfil' }
+  ];
+  groups.push(h('div', { className: 'group', key: 'nav' }, [
+    h('h2', { key: 't' }, 'BottomNav'),
+    h('p', { className: 'hint', key: 'h' }, 'cinco pestañas con la acción central elevada — activo en Mapa'),
+    h('div', { className: 'row', key: 'r' },
+      h('div', { className: 'spec' }, [
+        h('div', { className: 'cap', key: 'c' }, 'active: map'),
+        h('div', { className: 'stage dark', key: 's', style: { width: 390, height: 130, padding: 0, position: 'relative', overflow: 'hidden' } },
+          h(DS.BottomNav, { items: NAV, active: 'map' }))
+      ]))
+  ]));
+
+  // ---- Sport glyphs
+  var sportSpecs = D.SPORTS.filter(function (s) { return s.label !== 'Todos' && s.label !== 'All'; }).map(function (s) {
+    return Spec(s.label, h('span', { style: { color: '#fff', display: 'inline-flex' } },
+      typeof s.icon === 'string' ? h(DS.Icon, { name: s.icon, size: 26 }) : React.cloneElement(s.icon, { width: 26, height: 26 })));
+  });
+  groups.push(Group('Glifos de deporte', 'Iconoir-derived, 1.6 stroke, 24px grid', sportSpecs));
+
+  // ---- Colour tokens
+  var COLORS = [
+    ['Accent', '--accent'], ['Accent ink', '--accent-ink'], ['Base', '--bg-base'],
+    ['Success', '--success'], ['Warning', '--warning'], ['Danger', '--danger'],
+    ['Swipe yes', '--swipe-yes'], ['Swipe no', '--swipe-no']
+  ];
+  function Swatch(nm, varname) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(varname).trim();
+    return h('div', { className: 'swatch', key: varname }, [
+      h('div', { className: 'chip', key: 'c', style: { background: 'var(' + varname + ')' } }),
+      h('div', { className: 'nm', key: 'n' }, nm),
+      h('div', { className: 'vl', key: 'v' }, v || varname)
+    ]);
+  }
+  groups.push(Group('Color', 'tokens de la paleta base', COLORS.map(function (c) { return Swatch(c[0], c[1]); })));
+
+  // ---- Type scale
+  var TYPE = [
+    ['Display', 'var(--text-display)', 'Encontrá tu próximo partido'],
+    ['Title', 'var(--text-title)', 'Tus partidos'],
+    ['Body', 'var(--text-body)', 'Fútbol 7 al atardecer en River Courts'],
+    ['Callout', 'var(--text-callout)', 'Ver más'],
+    ['Caption', 'var(--text-caption)', '8/12 jugadores confirmados']
+  ];
+  groups.push(h('div', { className: 'group', key: 'type' }, [
+    h('h2', { key: 't' }, 'Escala tipográfica'),
+    h('p', { className: 'hint', key: 'h' }, 'tipografía display para títulos, texto para UI'),
+    h('div', { key: 'r' }, TYPE.map(function (t) {
+      return h('div', { className: 'type-row', key: t[0] }, [
+        h('div', { className: 'lbl', key: 'l' }, t[0]),
+        h('div', { key: 'v', style: { font: t[1], color: '#fff' } }, t[2])
+      ]);
+    }))
+  ]));
+
+  ReactDOM.createRoot(document.getElementById('root')).render(h('div', null, groups));
+})();
+</script>
+</body>
+</html>

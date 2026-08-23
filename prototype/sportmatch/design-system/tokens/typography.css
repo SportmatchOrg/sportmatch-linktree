@@ -1,0 +1,56 @@
+/* ============================================================
+   SportMatch — Typography
+   Inter Tight for display (big, tight, confident), Inter for
+   text & UI. Numbers are heroes: tabular, heavy, oversized.
+   ============================================================ */
+
+:root {
+  /* ---- Families ---- */
+  --font-display: 'Inter Tight', -apple-system, 'SF Pro Display', system-ui, sans-serif;
+  --font-text:    'Inter', -apple-system, 'SF Pro Text', system-ui, sans-serif;
+  --font-numeric: 'Inter Tight', -apple-system, 'SF Pro Display', system-ui, sans-serif;
+
+  /* ---- Weights ---- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-heavy:    800;
+
+  /* ---- Type scale (sizes) ---- */
+  --size-hero:     3.5rem;   /* 56 — "Find your next match."        */
+  --size-display:  2.75rem;  /* 44 — match names, big screen titles */
+  --size-title:    1.75rem;  /* 28 — screen titles                  */
+  --size-headline: 1.375rem; /* 22 — card headlines                 */
+  --size-body:     1.0625rem;/* 17 — body copy                      */
+  --size-callout:  0.9375rem;/* 15 — supporting text                */
+  --size-caption:  0.8125rem;/* 13 — metadata, labels               */
+  --size-micro:    0.6875rem;/* 11 — overline / tags                */
+
+  /* ---- Big numbers ---- */
+  --size-stat-xl:  4rem;     /* 64 — rating hero on profile         */
+  --size-stat:     2.75rem;  /* 44 — stat blocks                    */
+
+  /* ---- Line heights ---- */
+  --leading-tight:   1.04;   /* hero / display                      */
+  --leading-snug:    1.16;   /* titles & headlines                  */
+  --leading-normal:  1.45;   /* body                                */
+
+  /* ---- Letter spacing ---- */
+  --tracking-hero:    -0.03em;
+  --tracking-title:   -0.02em;
+  --tracking-normal:  -0.01em;
+  --tracking-overline: 0.14em;   /* uppercase micro labels          */
+
+  /* ============================================================
+     Composite text roles — `font: var(--text-hero)` shorthands
+     ============================================================ */
+  --text-hero:     var(--weight-heavy) var(--size-hero)/var(--leading-tight) var(--font-display);
+  --text-display:  var(--weight-bold) var(--size-display)/var(--leading-tight) var(--font-display);
+  --text-title:    var(--weight-bold) var(--size-title)/var(--leading-snug) var(--font-display);
+  --text-headline: var(--weight-semibold) var(--size-headline)/var(--leading-snug) var(--font-display);
+  --text-body:     var(--weight-regular) var(--size-body)/var(--leading-normal) var(--font-text);
+  --text-callout:  var(--weight-medium) var(--size-callout)/var(--leading-normal) var(--font-text);
+  --text-caption:  var(--weight-medium) var(--size-caption)/var(--leading-snug) var(--font-text);
+  --text-stat:     var(--weight-heavy) var(--size-stat)/1 var(--font-numeric);
+}

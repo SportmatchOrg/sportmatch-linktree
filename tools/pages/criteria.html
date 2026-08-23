@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch - Criteria</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --panel: #ffffff;
+    --ink: #172033;
+    --muted: #667085;
+    --line: #d8e0ec;
+    --brand: #0270c2;
+    --green: #1f8f6a;
+    --shadow: 0 16px 36px rgba(22, 37, 67, 0.10);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      linear-gradient(180deg, #eef6ff 0, rgba(238, 246, 255, 0) 270px),
+      var(--bg);
+    color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .page {
+    width: min(940px, calc(100% - 36px));
+    margin: 0 auto;
+    padding: 34px 0 46px;
+  }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.08;
+    letter-spacing: 0;
+  }
+
+  .summary {
+    max-width: 660px;
+    margin: 10px 0 24px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #e8f7ef;
+    color: var(--green);
+    flex: 0 0 auto;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .criteria-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+  }
+
+  .criteria-list li {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    padding: 18px 20px;
+    border-top: 1px solid var(--line);
+    color: #263247;
+    font-size: 15px;
+    line-height: 1.48;
+  }
+
+  .criteria-list li:first-child { border-top: 0; }
+
+  .number {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #eff6ff;
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  @media (max-width: 640px) {
+    .page { width: min(100% - 24px, 940px); padding-top: 24px; }
+    h1 { font-size: 27px; }
+    .panel-head, .criteria-list li { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">SportMatch</div>
+    <h1>Criteria</h1>
+    <p class="summary">Criterios generales para mantener el trabajo claro, revisable y listo para compartir con el equipo.</p>
+
+    <section class="panel" aria-label="Criteria">
+      <ol class="criteria-list">
+        <li><span class="number">1</span><span>No salirse del scope del issue. PRs independientes y lo más concretas posibles por cada cambio.</span></li>
+        <li><span class="number">2</span><span>Evitar comentarios innecesarios. Los comentarios deberían explicar principalmente por qué se hace algo, no describir literalmente qué hace el código.</span></li>
+        <li><span class="number">3</span><span>Evitar PRs gigantes. (Máximo 1000 líneas de código por PR)</span></li>
+        <li><span class="number">4</span><span>No dejar código comentado, <code>console.log</code>, logs temporales o debugging.</span></li>
+        <li><span class="number">5</span><span>Suma mucho agregar screenshots/videos en Linear cuando existen cambios visuales.</span></li>
+        <li><span class="number">6</span><span>Evitar lo más posible hardcodear algo.</span></li>
+        <li><span class="number">7</span><span>Evitar versionar en Git assets pesados, generados o dinámicos. Usar object storage/buckets para archivos grandes.</span></li>
+        <li><span class="number">8</span><span>Borrar branches una vez mergeadas, manteniendo <code>main</code>, <code>dev</code> y las branches activas.</span></li>
+        <li><span class="number">9</span><span>Usar componentes bien modularizables. No recrear la rueda cada vez; un botón con sus variantes ya basta. No utilizar márgenes, siempre paddings.</span></li>
+        <li><span class="number">10</span><span>UI, todo lo que ven los usuarios, en español. Código, front y back, todo en inglés.</span></li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

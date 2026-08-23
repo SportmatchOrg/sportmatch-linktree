@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>SportMatch — Flujo desktop</title>
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/fonts.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/colors.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/typography.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/spacing.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/effects.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/base.css">
+<link rel="stylesheet" href="/prototype/sportmatch/design-system/styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/prototype/sportmatch/design-system/bundle.js"></script>
+<script src="photo-data.js"></script>
+<script src="/prototype/sportmatch/app/overrides.js"></script>
+<script src="/prototype/sportmatch/app/desktop-screens.js"></script>
+<style>
+  html, body { margin: 0; background: #0b0d11; }
+  body { font-family: var(--font-text), system-ui, sans-serif; padding: 80px 64px 120px; }
+  h1.sheet-title { font-family: var(--font-display), system-ui; font-weight: 800; font-size: 44px;
+    letter-spacing: -0.03em; color: #fff; margin: 0 0 10px; }
+  p.sheet-sub { font-size: 16px; color: rgba(255,255,255,0.5); margin: 0 0 20px; max-width: 760px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 64px; }
+  .legend span { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.62);
+    padding: 7px 14px; border-radius: 99px; background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.10); }
+  .legend b { color: #4EA8FF; font-weight: 700; }
+  .legend i { font-style: normal; color: rgba(255,255,255,0.28); font-size: 15px; }
+  .phase { margin-bottom: 84px; }
+  .phase > .ph-head { display: flex; align-items: baseline; gap: 14px; margin: 0 0 26px; }
+  .phase > .ph-head .ph-n { font-family: var(--font-display), system-ui; font-weight: 800; font-size: 15px;
+    letter-spacing: 0.14em; color: #4EA8FF; }
+  .phase > .ph-head .ph-t { font-family: var(--font-display), system-ui; font-weight: 700; font-size: 26px;
+    letter-spacing: -0.02em; color: #fff; }
+  .phase > .ph-head .ph-s { font-size: 15px; color: rgba(255,255,255,0.44); }
+  .flow { display: flex; align-items: flex-start; gap: 40px; flex-wrap: wrap; }
+  .frame { display: flex; flex-direction: column; gap: 12px; }
+  .frame > .step { display: flex; align-items: center; gap: 10px; }
+  .frame > .step .num { font-family: var(--font-numeric), var(--font-display), system-ui; font-weight: 800;
+    font-size: 13px; color: #05101c; background: #4EA8FF; border-radius: 99px;
+    min-width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+    font-variant-numeric: tabular-nums; }
+  .frame > .step .nm { font-family: var(--font-display), system-ui; font-weight: 700; font-size: 17px;
+    letter-spacing: -0.02em; color: #fff; }
+  .frame > .note { font-size: 13px; color: rgba(255,255,255,0.42); max-width: 640px; line-height: 1.4; }
+  .device { position: relative; width: 1440px; height: 900px; background: #000;
+    border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,0.10); }
+  .device .leaflet-container { background: #0a0d12; font-family: var(--font-text); }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#05060a">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#05060a"/>
+    <rect x="240" y="200" width="720" height="420" rx="28" fill="none" stroke="#4EA8FF" stroke-width="20"/>
+    <path d="M240 300h720" stroke="#4EA8FF" stroke-width="20"/>
+    <circle cx="600" cy="440" r="60" fill="#4EA8FF"/>
+    <text x="600" y="720" text-anchor="middle" font-family="system-ui,sans-serif"
+      font-weight="800" font-size="70" fill="#fff" letter-spacing="-2">Desktop</text>
+  </svg>
+</template>
+
+<h1 class="sheet-title">SportMatch — Flujo desktop</h1>
+<p class="sheet-sub">Web app 1440 × 900 · 14 pantallas, el mismo recorrido que en mobile.
+  La barra inferior flotante pasa a una top bar, el mapa gana un rail de resultados, el mazo de Descubrir
+  se opera con botones y la creación de partido es un modal con riel de pasos.</p>
+<div class="legend">
+  <span><b>1</b> Acceso</span><i>→</i>
+  <span><b>2</b> Descubrir</span><i>→</i>
+  <span><b>3</b> Sumarse</span><i>→</i>
+  <span><b>4</b> Organizar</span><i>→</i>
+  <span><b>5</b> Cuenta</span>
+</div>
+<div id="flow"></div>
+
+<script>
+(function () {
+  var PHASES = [
+    ['1', 'Acceso', 'Primer contacto: entrar o crear la cuenta', [
+      ['login', '01', 'Iniciar sesión', 'Split 760/680: foto full-bleed con el claim a la izquierda, formulario de 420px centrado a la derecha.'],
+      ['register', '02', 'Crear cuenta', 'Mismo split con los cuatro campos; los botones mantienen su altura y posición.']
+    ]],
+    ['2', 'Descubrir', 'Ver qué se juega cerca, de dos maneras', [
+      ['map', '03', 'Mapa de partidos', 'Rail de resultados de 428px con búsqueda y filtros; mapa a pantalla completa con pines y leyenda por deporte.'],
+      ['discover', '04', 'Descubrir', 'Mazo centrado con las cards vecinas asomando; sí/no con botones en vez de swipe.']
+    ]],
+    ['3', 'Sumarse', 'Evaluar un partido y reservar el lugar', [
+      ['detail', '05', 'Detalle del partido', 'Dos columnas: foto + datos + descripción a la izquierda, panel fijo con organizador, plantel y CTA a la derecha.']
+    ]],
+    ['4', 'Organizar', 'Crear tu propio partido y administrarlo', [
+      ['create1', '06', 'Crear · Deporte', 'Modal de 1120 × 700 sobre el mapa: riel de pasos a la izquierda, grilla de deportes en tres columnas.'],
+      ['create2', '07', 'Crear · Lugar', 'Buscador, lugares frecuentes y previsualización del punto en el mapa.'],
+      ['create3', '08', 'Crear · Horario', 'Día, hora y minutos como filas de selección, todas visibles sin scroll.'],
+      ['create4', '09', 'Crear · Jugadores', 'Contador, nivel en control segmentado y descripción.'],
+      ['create5', '10', 'Crear · Revisión', 'Preview de la card publicada junto al resumen de campos.'],
+      ['matches', '11', 'Tus partidos', 'Dos columnas: los que organizás (con solicitudes pendientes) y los que jugás.']
+    ]],
+    ['5', 'Cuenta', 'Identidad, historial y configuración', [
+      ['profile', '12', 'Perfil', 'Portada, identidad, cuatro métricas en fila y grilla de partidos recientes.'],
+      ['settings', '13', 'Ajustes', 'Menú lateral de secciones y contenido de la cuenta a la derecha.'],
+      ['editprofile', '14', 'Editar perfil', 'Formulario en dos y tres columnas, con guardar/cancelar en el encabezado.']
+    ]]
+  ];
+
+  var root = document.getElementById('flow');
+  PHASES.forEach(function (ph) {
+    var sec = document.createElement('div');
+    sec.className = 'phase';
+    var head = document.createElement('div');
+    head.className = 'ph-head';
+    head.innerHTML = '<span class="ph-n">FASE ' + ph[0] + '</span>' +
+      '<span class="ph-t">' + ph[1] + '</span><span class="ph-s">' + ph[2] + '</span>';
+    sec.appendChild(head);
+    var row = document.createElement('div');
+    row.className = 'flow';
+    ph[3].forEach(function (s) {
+      var wrap = document.createElement('div');
+      wrap.className = 'frame';
+      var step = document.createElement('div');
+      step.className = 'step';
+      step.innerHTML = '<span class="num">' + s[1] + '</span><span class="nm">' + s[2] + '</span>';
+      var note = document.createElement('div');
+      note.className = 'note';
+      note.textContent = s[3];
+      var dev = document.createElement('div');
+      dev.className = 'device';
+      dev.setAttribute('data-screen-label', s[1] + ' · ' + s[2]);
+      wrap.appendChild(step);
+      wrap.appendChild(note);
+      wrap.appendChild(dev);
+      row.appendChild(wrap);
+      ReactDOM.createRoot(dev).render(
+        React.createElement(window.SportMatchDesktop, { screen: s[0] })
+      );
+    });
+    sec.appendChild(row);
+    root.appendChild(sec);
+  });
+})();
+</script>
+</body>
+</html>

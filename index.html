@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SportMatch — Leadership Tracker</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100vh; width: 100vw; overflow: hidden; display: flex; background: #0f172a; }
@@ -34,13 +35,9 @@
   }
   .sb-logo {
     width: 26px; height: 26px;
-    background: linear-gradient(135deg, #3DADFF 0%, #0270C2 100%);
     border-radius: 7px;
     flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: #fff;
-    letter-spacing: -0.5px;
-    font-family: -apple-system, 'Segoe UI', sans-serif;
+    display: block;
   }
   .sb-title {
     font-family: -apple-system, 'Segoe UI', sans-serif;
@@ -142,7 +139,7 @@
 
 <div id="sidebar">
   <div class="sb-header">
-    <div class="sb-logo">SM</div>
+    <img class="sb-logo" src="/assets/brand/logo-mark.svg" alt="SportMatch" width="26" height="26">
     <span class="sb-title">
       SportMatch
       <span class="sb-sub">Leaders View</span>
@@ -150,7 +147,7 @@
   </div>
 
   <nav class="sb-nav">
-    <button class="nav-btn active" data-src="pert_diagram.html" data-label="PERT">
+    <button class="nav-btn active" data-src="leadership/pert.html" data-label="PERT">
       <!-- network/dag icon -->
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="1" y="7.5" width="4.5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
@@ -165,7 +162,7 @@
       <span class="nav-label">PERT / CPM</span>
     </button>
 
-    <button class="nav-btn" data-src="Gantt Devs.html" data-label="Gantt">
+    <button class="nav-btn" data-src="leadership/gantt.html" data-label="Gantt">
       <!-- bar chart icon -->
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="3.5" width="8" height="3" rx="1.2" fill="currentColor"/>
@@ -199,7 +196,7 @@
 </div>
 
 <div id="frame-wrapper">
-  <iframe id="main-frame" src="pert_diagram.html" title="Vista actual"></iframe>
+  <iframe id="main-frame" src="leadership/pert.html" title="Vista actual"></iframe>
 </div>
 
 <script>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Photos are built as strings in JS (SM_IMG.url -> photos/<key>.jpg), so the
+     static bundler can't discover them. Lift each one explicitly. -->
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/football-match.jpg" data-resource-id="photo_football-match" />
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/streetball-bw.jpg" data-resource-id="photo_streetball-bw" />
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/basketball-bw.jpg" data-resource-id="photo_basketball-bw" />
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/basketball-aerial.jpg" data-resource-id="photo_basketball-aerial" />
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/tennis-clay.jpg" data-resource-id="photo_tennis-clay" />
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/tennis-net.jpg" data-resource-id="photo_tennis-net" />
+<meta name="ext-resource-dependency" content="/prototype/sportmatch/media/photos/football-sunset.jpg" data-resource-id="photo_football-sunset" />
+<script src="/prototype/sportmatch/app/support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#05060a">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#05060a"/>
+    <circle cx="600" cy="380" r="190" fill="none" stroke="#39e08f" stroke-width="22"/>
+    <path d="M600 190 L600 570 M410 380 L790 380" stroke="#39e08f" stroke-width="22" stroke-linecap="round"/>
+    <circle cx="600" cy="380" r="58" fill="#39e08f"/>
+    <text x="600" y="690" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="78" fill="#ffffff" letter-spacing="-2">SportMatch</text>
+  </svg>
+</template>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/fonts.css">
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/colors.css">
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/typography.css">
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/spacing.css">
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/effects.css">
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/tokens/base.css">
+  <link rel="stylesheet" href="/prototype/sportmatch/design-system/styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/prototype/sportmatch/design-system/bundle.js"></script>
+  <script src="/prototype/sportmatch/app/overrides.js"></script>
+  <script src="/prototype/sportmatch/app/SportMatchApp.jsx"></script>
+  <script>
+  /* Standalone resource remap. In the bundled output, window.__resources[id]
+     holds a blob URL for each lifted photo. Patch SM_IMG.url so every photo
+     resolves to its blob, and sweep the DOM for any already-rendered
+     photos/<file> references (img src + CSS background). No-ops in dev where
+     __resources is undefined. */
+  (function () {
+    function resForFile(file) {
+      var R = window.__resources; if (!R) return null;
+      return R['photo_' + file.replace(/\.jpg$/, '')] || null;
+    }
+    function patchImgUrl() {
+      if (!window.SM_IMG || window.SM_IMG.__patched || !window.__resources) return;
+      var orig = window.SM_IMG.url;
+      window.SM_IMG.url = function (key) {
+        var resolved = orig.call(window.SM_IMG, key);
+        var file = (resolved.split('/').pop() || '');
+        return resForFile(file) || resolved;
+      };
+      window.SM_IMG.__patched = true;
+    }
+    function sweepDom() {
+      if (!window.__resources) return;
+      var imgs = document.querySelectorAll('img');
+      for (var i = 0; i < imgs.length; i++) {
+        var src = imgs[i].getAttribute('src') || '';
+        var m = src.match(/photos\/([^\/?#]+\.jpg)/);
+        if (m) { var b = resForFile(m[1]); if (b && imgs[i].src !== b) imgs[i].src = b; }
+      }
+      var all = document.querySelectorAll('[style*="photos/"]');
+      for (var j = 0; j < all.length; j++) {
+        var bg = all[j].style.backgroundImage || '';
+        var mm = bg.match(/photos\/([^\/?#'")]+\.jpg)/);
+        if (mm) { var bb = resForFile(mm[1]); if (bb) all[j].style.backgroundImage = "url('" + bb + "')"; }
+      }
+    }
+    function tick() { patchImgUrl(); sweepDom(); }
+    var n = 0, iv = setInterval(function () { tick(); if (++n > 60) clearInterval(iv); }, 120);
+    if (document.readyState !== 'loading') tick();
+    document.addEventListener('DOMContentLoaded', tick);
+    if (window.MutationObserver) {
+      new MutationObserver(function () { tick(); }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'style'] });
+    }
+  })();
+  </script>
+  <style>
+    html, body { height: 100%; margin: 0; background: #000; }
+    .sm-stage {
+      position: fixed; inset: 0; overflow: auto;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(120% 90% at 50% 0%, #14181f 0%, #05060a 60%, #000 100%);
+    }
+    .sm-device {
+      position: relative; flex: none;
+      width: 100%; height: 100vh; height: 100dvh;
+      background: #000; overflow: hidden;
+    }
+    @media (min-width: 760px) {
+      .sm-stage { padding: 32px; }
+      .sm-device {
+        width: 390px; height: 844px; border-radius: 54px;
+        box-shadow: 0 0 0 11px #15171c, 0 0 0 13px #2a2d34, 0 50px 120px rgba(0,0,0,0.7);
+      }
+    }
+    .sm-device .leaflet-container { background: #0a0d12; font-family: var(--font-text); }
+  </style>
+</helmet>
+<div class="sm-stage">
+  <div class="sm-device">
+    <x-import component-from-global-scope="SportMatchApp" hint-size="100%,100%" style="position:absolute; inset:0; width:100%; height:100%"></x-import>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
