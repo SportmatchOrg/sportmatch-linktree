@@ -320,7 +320,10 @@
   }
 
   /* ---------- DESIGN.md doc view ---------- */
-  .doc { max-width: 78ch; padding: 4px 2px 28px; color: var(--ink); font-size: 14px; line-height: 1.65; }
+  /* Horizontal padding matches .files-head so the prose lines up with the
+     breadcrumb above it. */
+  .doc { max-width: calc(78ch + 32px); padding: 16px 16px 32px; color: var(--ink); font-size: 14px; line-height: 1.65; }
+  .doc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
   .doc h1, .doc h2, .doc h3, .doc h4 { line-height: 1.25; font-weight: 800; }
   .doc h1 { margin: 6px 0 14px; font-size: 23px; letter-spacing: -0.02em; }
   .doc h2 { margin: 30px 0 10px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 17.5px; letter-spacing: -0.01em; }
@@ -1262,13 +1265,41 @@ function mdToHtml(src) {
   return out.join('\n');
 }
 
+const DOC_COPY_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>';
+const DOC_DL_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"></path></svg>';
+
+// The doc is embedded, not served (.vercelignore drops *.md from the
+// deployment), so the download is built from the in-page copy.
+function downloadDoc() {
+  const blob = new Blob([DESIGN_DOC], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'DESIGN.md';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast('DESIGN.md descargado');
+}
+
 let docHtml = null;
 function renderDoc() {
   if (docHtml === null) docHtml = mdToHtml(DESIGN_DOC);
   $('crumbs').innerHTML = 'SportMatch<span class="sep">/</span>DESIGN.md';
-  $('files-note').textContent = 'Sistema de diseno - documento de referencia.';
+  $('files-note').textContent = 'Sistema de diseño — documento de referencia.';
   $('files-count').textContent = bytes(DESIGN_DOC_BYTES) + ' · Markdown';
-  $('files-body').innerHTML = '<article class="doc">' + docHtml + '</article>';
+  $('files-body').innerHTML =
+    '<article class="doc">' +
+      '<div class="doc-actions">' +
+        '<button class="btn primary" id="doc-download" type="button">' + DOC_DL_SVG + 'Descargar .md</button>' +
+        '<button class="btn" id="doc-copy" type="button">' + DOC_COPY_SVG + 'Copiar Markdown</button>' +
+      '</div>' +
+      docHtml +
+    '</article>';
+
+  $('doc-download').addEventListener('click', downloadDoc);
+  $('doc-copy').addEventListener('click', () => copy(DESIGN_DOC, 'Markdown copiado'));
 }
 
 function render() { renderTree(); renderFiles(); }
