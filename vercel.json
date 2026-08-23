@@ -2,7 +2,7 @@
   "version": 2,
   "routes": [
     { "src": "/pert_diagram\\.html", "dest": "/leadership/pert.html" },
-    { "src": "/Gantt Devs\\.html", "dest": "/leadership/gantt.html" },
+    { "src": "/Gantt(%20| )Devs\\.html", "dest": "/leadership/gantt.html" },
     { "src": "/wireframes\\.html", "dest": "/tools/pages/wireframes.html" },
     { "src": "/devtools\\.html", "dest": "/tools/pages/devtools.html" },
     { "src": "/ai\\.html", "dest": "/tools/pages/ai.html" },
