@@ -7,7 +7,8 @@ interactive prototype, and shared design assets.
 
 - `index.html`: public Leadership entry point.
 - `leadership/`: PERT/CPM and Gantt views.
-- `tools/`: `/tools` entry point and its pages.
+- `tools/`: `/tools` entry point and its pages, including the `Inicio`
+  introduction and team platform links.
 - `prototype/sportmatch/`: canonical mobile and desktop prototype.
 - `assets/`: public brand, icon, photo, token, and vendor assets.
 - `generated/figma/`: derived Figma and standalone exports.
@@ -27,7 +28,7 @@ python3 -m http.server 8000
 Then open:
 
 - Leadership: `http://localhost:8000/`
-- Development tools: `http://localhost:8000/tools/`
+- Development tools (opens on Inicio): `http://localhost:8000/tools/`
 - Mobile prototype: `http://localhost:8000/prototype/sportmatch/mobile.html`
 - Desktop prototype: `http://localhost:8000/prototype/sportmatch/desktop.html`
 

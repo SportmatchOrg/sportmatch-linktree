@@ -13,6 +13,7 @@
     { "src": "/Design/sportmatch-mobile-app-redesign/SportMatch\\.dc\\.html", "dest": "/prototype/sportmatch/mobile.html" },
     { "src": "/Design/sportmatch-mobile-app-redesign/SportMatch\\.desktop\\.html", "dest": "/prototype/sportmatch/desktop.html" },
     { "src": "/tools/?", "dest": "/tools/index.html" },
+    { "src": "/home/?", "dest": "/tools/pages/home.html" },
     { "src": "/", "dest": "/index.html" }
   ]
 }
