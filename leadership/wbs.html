@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch — WBS</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root{
+    --navy:#101c53;
+    --pkg:#1e3a8f;
+    --l1:#29a3f5;
+    --l2:#4cd0c2;
+    --l3:#5fc985;
+    --l4:#74d195;
+    --ink:#0f172a;
+    --bg:#f8fafc;
+    --leaf:#eef4fb;
+    --leaf-border:#d5e2f2;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:20px 24px 48px;
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .title{
+    background:var(--navy); color:#fff;
+    border-radius:10px; padding:14px;
+    text-align:center; font-size:22px; font-weight:800; letter-spacing:-0.01em;
+    display:flex; align-items:center; justify-content:center; gap:14px;
+  }
+  .title button{
+    font:inherit; font-size:12px; font-weight:600;
+    background:rgba(255,255,255,.12); color:#fff;
+    border:1px solid rgba(255,255,255,.25); border-radius:7px;
+    padding:5px 11px; cursor:pointer;
+  }
+  .title button:hover{ background:rgba(255,255,255,.22); }
+
+  .grid{
+    margin-top:18px;
+    display:grid; gap:14px;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    align-items:start;
+  }
+  .pkg > h2{
+    margin:0 0 8px; padding:12px 10px;
+    background:var(--pkg); color:#fff;
+    border-radius:8px; text-align:center;
+    font-size:15px; font-weight:700;
+  }
+  details{ margin-bottom:8px; }
+  summary{
+    list-style:none; cursor:pointer;
+    padding:9px 12px; border-radius:8px;
+    color:#fff; font-size:13.5px; font-weight:600;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  summary::-webkit-details-marker{ display:none; }
+  summary::before{
+    content:"›"; display:inline-block; width:10px; margin-right:8px;
+    font-size:16px; line-height:1; opacity:.7;
+    transition:transform .15s;
+  }
+  details[open] > summary::before{ transform:rotate(90deg); }
+  .c1 > summary{ background:var(--l1); }
+  .c2 > summary{ background:var(--l2); }
+  .c3 > summary{ background:var(--l3); }
+  .c4 > summary{ background:var(--l4); }
+  details ul{ margin:6px 0 0; padding:0; list-style:none; }
+  details li{
+    background:var(--leaf); border:1px solid var(--leaf-border);
+    border-radius:6px; padding:7px 10px; margin-bottom:4px;
+    font-size:12.5px; line-height:1.35; color:#1e293b;
+  }
+</style>
+</head>
+<body>
+
+<div class="title">
+  SportMatch — WBS
+  <button id="toggle">Expandir todo</button>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const WBS = [
+ ["1.0 Gestión del Proyecto",[
+   ["1.1 Planificación y documentación inicial",["1.1.1 Project Charter","1.1.2 WBS","1.1.3 Cronograma y PERT"]],
+   ["1.2 Gestión ágil y seguimiento",["1.2.1 Backlog priorizado","1.2.2 Plan de sprints","1.2.3 Reportes de avance y control de desvíos","1.2.4 Registro de riesgos"]],
+   ["1.3 Reuniones de seguimiento",["1.3.1 Acta de kick-off","1.3.2 Minutas quincenales de seguimiento","1.3.3 Sprint reviews"]],
+   ["1.4 Cierre del proyecto",["1.4.1 Informe final del proyecto","1.4.2 Presentación final"]]]],
+ ["2.0 Diseño del Producto",[
+   ["2.1 Investigación y definición UX",["2.1.1 Perfiles de usuario principales","2.1.2 Sistema visual base"]],
+   ["2.2 Diseño de pantallas",["2.2.1 Pantallas de autenticación","2.2.2 Pantallas de perfil de usuario","2.2.3 Pantallas de creación y edición de partido","2.2.4 Pantalla de solicitudes","2.2.5 Vista swipe","2.2.6 Vista mapa interactivo"]],
+   ["2.3 Modelo funcional y de datos",["2.3.1 Diagrama Entidad-Relación","2.3.2 Reglas de negocio"]]]],
+ ["3.0 Capacitación y Setup",[
+   ["3.1 Capacitación del equipo",["3.1.1 Stack tecnológico definido","3.1.2 Equipo capacitado en stack","3.1.3 Equipo capacitado en buenas prácticas"]],
+   ["3.2 Setup técnico",["3.2.1 Repositorios y entornos","3.2.2 Base de datos inicial con seed mínima","3.2.3 Pipeline de CI"]]]],
+ ["4.0 Autenticación",[
+   ["4.1 Backend de autenticación",["4.1.1 Modelo de usuario","4.1.2 Servicio de registro, login y logout","4.1.3 Middleware de rutas privadas"]],
+   ["4.2 Frontend de autenticación",["4.2.1 Pantalla de registro e inicio de sesión"]]]],
+ ["5.0 Perfil de Usuario",[
+   ["5.1 Modelo y backend de perfil",["5.1.1 Modelo de perfil","5.1.2 API de visualización y edición de perfil","5.1.3 API de historial de partidos","5.1.4 Servicio de cálculo de rating"]],
+   ["5.2 Frontend de perfil",["5.2.1 Vista de perfil","5.2.2 Edición de perfil","5.2.3 Vista de historial","5.2.4 Visualización de rating"]]]],
+ ["6.0 Gestión de Partidos",[
+   ["6.1 Modelo y backend de partidos",["6.1.1 Modelo de partido","6.1.2 CRUD de partidos","6.1.3 Endpoint de listado de partidos disponibles"]],
+   ["6.2 Frontend de gestión de partidos",["6.2.1 Formulario de creación de partido","6.2.2 Formulario de edición de partido","6.2.3 Detalle de partido"]],
+   ["6.3 Sistema de solicitudes",["6.3.1 Modelo de solicitud","6.3.2 Envío de solicitud para unirse a partido","6.3.3 Gestión de solicitudes por el organizador","6.3.4 Visualización de estado de solicitud"]],
+   ["6.4 Rating post-partido",["6.4.1 Modelo de calificación","6.4.2 Interfaz de calificación","6.4.3 Regla de penalización por no-show"]]]],
+ ["7.0 Sistema de Matchmaking",[
+   ["7.1 Descubrimiento de partidos",["7.1.1 Búsqueda de partidos","7.1.2 Filtros (deporte, nivel, fecha)","7.1.3 Ordenamiento por rating y compatibilidad"]],
+   ["7.2 Vista Swipe",["7.2.1 Tarjeta de partido","7.2.2 Navegación tipo swipe"]],
+   ["7.3 Vista Mapa Interactivo",["7.3.1 Integración con proveedor de mapa","7.3.2 Visualización de partidos en mapa","7.3.3 Detalle de partido desde mapa"]]]],
+ ["8.0 QA Manual y Validación",[
+   ["8.1 Planificación de pruebas manuales",["8.1.1 Dataset de demo","8.1.2 Prueba manual de autenticación","8.1.3 Prueba manual de perfil","8.1.4 Prueba manual de creación y edición de partidos","8.1.5 Prueba manual de solicitudes","8.1.6 Prueba manual de matchmaking","8.1.7 Prueba manual de rating post-partido"]],
+   ["8.2 Validación con usuarios",["8.2.1 Guion de prueba","8.2.2 Ejecución de pruebas con usuarios","8.2.3 Registro de feedback","8.2.4 Backlog de ajustes finales priorizado"]]]],
+ ["9.0 Deployment",[
+   ["9.1 Deploy",["9.1.1 Ambiente productivo","9.1.2 Deploy final del MVP","9.1.3 Smoke test manual post-deploy"]]]],
+ ["10.0 Documentación Final",[
+   ["10.1 Documentación funcional",["10.1.1 Manual de uso y descripción de funcionalidades","10.1.2 Entrega final de diseño UX/UI"]],
+   ["10.2 Documentación técnica",["10.2.1 README del proyecto","10.2.2 Documentación de APIs + modelo de datos + Deployment"]]]]
+];
+
+document.getElementById('grid').innerHTML = WBS.map(([pkg, subs]) => `
+  <section class="pkg">
+    <h2>${pkg}</h2>
+    ${subs.map(([sub, items], i) => `
+      <details class="c${i + 1}">
+        <summary title="${sub}">${sub}</summary>
+        <ul>${items.map(it => `<li>${it}</li>`).join('')}</ul>
+      </details>`).join('')}
+  </section>`).join('');
+
+const btn = document.getElementById('toggle');
+btn.onclick = () => {
+  const open = btn.textContent === 'Expandir todo';
+  document.querySelectorAll('details').forEach(d => d.open = open);
+  btn.textContent = open ? 'Contraer todo' : 'Expandir todo';
+};
+</script>
+</body>
+</html>
