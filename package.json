@@ -1,0 +1,22 @@
+{
+  "name": "sportmatch-linktree",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check-static-links.mjs && node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1126.0",
+    "@aws-sdk/s3-request-presigner": "3.1126.0",
+    "@neondatabase/serverless": "1.1.0"
+  },
+  "devDependencies": {
+    "@neondatabase/config": "1.2.0",
+    "neonctl": "^4.14.0"
+  }
+}

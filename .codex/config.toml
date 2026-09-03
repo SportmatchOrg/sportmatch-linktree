@@ -1,0 +1,4 @@
+[mcp_servers.neon]
+url = "https://mcp.neon.tech/mcp"
+auth = "oauth"
+default_tools_approval_mode = "writes"

@@ -3,6 +3,13 @@
 .gitignore
 .env*
 .vercel
+.codex
+.neon
+db
+docs
+scripts
+tests
+neon.ts
 
 *.csv
 *.docx
