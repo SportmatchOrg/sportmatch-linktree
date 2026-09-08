@@ -7,9 +7,9 @@ interactive prototype, and shared design assets.
 
 - `index.html`: public Leadership entry point.
 - `leadership/`: WBS, PERT/CPM and Gantt views (each with a v1/v2 switch), plus the
-  v1 → v2 changelog.
+v1 → v2 changelog.
 - `tools/`: `/tools` entry point and its pages, including the `Inicio`
-  introduction and team platform links.
+introduction and team platform links.
 - `prototype/sportmatch/`: canonical mobile and desktop prototype.
 - `assets/`: public brand, icon, photo, token, and vendor assets.
 - `generated/figma/`: derived Figma and standalone exports.
@@ -39,6 +39,8 @@ Check local HTML references after moving files:
 node scripts/check-static-links.mjs
 ```
 
+
+
 ## Source-of-truth rules
 
 - Edit prototype code only under `prototype/sportmatch/`.
@@ -46,5 +48,6 @@ node scripts/check-static-links.mjs
 - Add public reusable files under `assets/` and use `/assets/...` URLs.
 - Keep planning documents under `docs/planning/`.
 - Keep `index.html` and `tools/index.html` stable because Vercel routes point to
-  those entry files.
+those entry files.
 - Legacy public URLs are preserved as compatibility rewrites in `vercel.json`.
+
