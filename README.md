@@ -39,7 +39,11 @@ Check local HTML references after moving files:
 node scripts/check-static-links.mjs
 ```
 
+## Database migrations
 
+Apply the SQL files in `db/migrations/` in numeric order to the Neon database.
+`002_dev_resources.sql` creates the dynamic developer-resource directory and
+idempotently seeds the 75 resources that were previously embedded in the page.
 
 ## Source-of-truth rules
 
@@ -50,4 +54,3 @@ node scripts/check-static-links.mjs
 - Keep `index.html` and `tools/index.html` stable because Vercel routes point to
 those entry files.
 - Legacy public URLs are preserved as compatibility rewrites in `vercel.json`.
-

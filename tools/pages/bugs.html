@@ -57,6 +57,9 @@
     margin-bottom: 22px;
   }
 
+  .top-actions { display: flex; flex: 0 0 auto; gap: 10px; }
+  .top-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+
   .eyebrow {
     margin-bottom: 7px;
     color: var(--brand);
@@ -185,6 +188,21 @@
     line-height: 1.3;
     overflow-wrap: anywhere;
   }
+
+  .issue-key {
+    display: inline-flex;
+    width: fit-content;
+    margin-bottom: 7px;
+    border-radius: 999px;
+    background: var(--brand-soft);
+    color: var(--brand);
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: .04em;
+  }
+
+  .detail-header .issue-key { margin: 2px 0 0; }
 
   .bug-preview {
     display: -webkit-box;
@@ -445,7 +463,8 @@
   @media (max-width: 720px) {
     .page { width: min(100% - 24px, 1180px); padding-top: 20px; }
     .topbar { align-items: flex-start; flex-direction: column; }
-    .topbar .primary { width: 100%; }
+    .top-actions { width: 100%; }
+    .top-actions button { flex: 1; }
     h1 { font-size: 25px; }
     .bug-card { padding: 16px; }
     .attachments { grid-template-columns: 1fr; }
@@ -470,10 +489,16 @@
         <h1 id="page-title">Bugs</h1>
         <p class="summary">Report and inspect issues found in the app.</p>
       </div>
-      <button id="post-bug" class="primary" type="button">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Post bug
-      </button>
+      <div class="top-actions">
+        <button id="export-bugs" class="secondary" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export
+        </button>
+        <button id="post-bug" class="primary" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Post bug
+        </button>
+      </div>
     </header>
 
     <section id="loading" class="bug-list" aria-label="Loading bugs" aria-live="polite">
@@ -501,6 +526,7 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 18-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         All bugs
       </button>
+      <span id="detail-issue-key" class="issue-key"></span>
       <h1 id="detail-title" class="detail-title">Bug</h1>
       <time id="detail-date" class="detail-date"></time>
     </header>
@@ -598,6 +624,7 @@
   const closeButton = document.getElementById('close-dialog');
   const uploadPicker = document.getElementById('upload-picker');
   const toast = document.getElementById('toast');
+  const exportButton = document.getElementById('export-bugs');
 
   let selectedFiles = [];
   let activeSubmission = null;
@@ -614,6 +641,7 @@
     const paths = {
       paperclip: '<path d="m21.4 11.6-8.9 8.9a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
       arrow: '<path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+      download: '<path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
       file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Zm0 0v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
     };
     svg.innerHTML = paths[name] || paths.file;
@@ -639,6 +667,10 @@
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
+  function issueKey(bug) {
+    return `BUG-${bug.issue_number}`;
+  }
+
   async function api(url, options) {
     const response = await fetch(url, options);
     let payload = {};
@@ -652,6 +684,159 @@
     return payload;
   }
 
+  const crcTable = (() => {
+    const table = new Uint32Array(256);
+    for (let index = 0; index < 256; index += 1) {
+      let value = index;
+      for (let bit = 0; bit < 8; bit += 1) value = (value & 1) ? (0xedb88320 ^ (value >>> 1)) : (value >>> 1);
+      table[index] = value >>> 0;
+    }
+    return table;
+  })();
+
+  function crc32(bytes) {
+    let crc = 0xffffffff;
+    for (const byte of bytes) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+    return (crc ^ 0xffffffff) >>> 0;
+  }
+
+  function zipTimestamp(value = new Date()) {
+    const year = Math.max(1980, value.getFullYear());
+    return {
+      time: (value.getHours() << 11) | (value.getMinutes() << 5) | Math.floor(value.getSeconds() / 2),
+      date: ((year - 1980) << 9) | ((value.getMonth() + 1) << 5) | value.getDate()
+    };
+  }
+
+  function makeZip(entries) {
+    const encoder = new TextEncoder();
+    const localParts = [];
+    const centralParts = [];
+    let localOffset = 0;
+    let centralSize = 0;
+    const stamp = zipTimestamp();
+
+    for (const entry of entries) {
+      const name = encoder.encode(entry.name);
+      const data = entry.data instanceof Uint8Array ? entry.data : new Uint8Array(entry.data);
+      const checksum = crc32(data);
+      const local = new Uint8Array(30 + name.length);
+      const localView = new DataView(local.buffer);
+      localView.setUint32(0, 0x04034b50, true);
+      localView.setUint16(4, 20, true);
+      localView.setUint16(6, 0x0800, true);
+      localView.setUint16(8, 0, true);
+      localView.setUint16(10, stamp.time, true);
+      localView.setUint16(12, stamp.date, true);
+      localView.setUint32(14, checksum, true);
+      localView.setUint32(18, data.length, true);
+      localView.setUint32(22, data.length, true);
+      localView.setUint16(26, name.length, true);
+      local.set(name, 30);
+
+      const central = new Uint8Array(46 + name.length);
+      const centralView = new DataView(central.buffer);
+      centralView.setUint32(0, 0x02014b50, true);
+      centralView.setUint16(4, 20, true);
+      centralView.setUint16(6, 20, true);
+      centralView.setUint16(8, 0x0800, true);
+      centralView.setUint16(10, 0, true);
+      centralView.setUint16(12, stamp.time, true);
+      centralView.setUint16(14, stamp.date, true);
+      centralView.setUint32(16, checksum, true);
+      centralView.setUint32(20, data.length, true);
+      centralView.setUint32(24, data.length, true);
+      centralView.setUint16(28, name.length, true);
+      centralView.setUint32(38, entry.name.endsWith('/') ? 0x10 : 0, true);
+      centralView.setUint32(42, localOffset, true);
+      central.set(name, 46);
+
+      localParts.push(local, data);
+      centralParts.push(central);
+      localOffset += local.length + data.length;
+      centralSize += central.length;
+    }
+
+    const end = new Uint8Array(22);
+    const endView = new DataView(end.buffer);
+    endView.setUint32(0, 0x06054b50, true);
+    endView.setUint16(8, entries.length, true);
+    endView.setUint16(10, entries.length, true);
+    endView.setUint32(12, centralSize, true);
+    endView.setUint32(16, localOffset, true);
+    return new Blob([...localParts, ...centralParts, end], { type: 'application/zip' });
+  }
+
+  function safeFilename(value) {
+    return String(value || 'attachment').replace(/[\\/\u0000-\u001f\u007f]/g, '_').replace(/^\.+/, '') || 'attachment';
+  }
+
+  function attachmentPath(bug, attachment, index) {
+    const key = issueKey(bug);
+    return `assets/${key}/${key}-${index + 1}-${safeFilename(attachment.original_name)}`;
+  }
+
+  function csvCell(value) {
+    let text = value === undefined || value === null ? '' : String(value);
+    if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`;
+    return `"${text.replaceAll('"', '""')}"`;
+  }
+
+  function exportCsv(bugs) {
+    const columns = ['issue_key', 'title', 'description', 'created_at', 'attachment_count', 'attachment_paths', 'database_id'];
+    const rows = bugs.map(bug => [
+      issueKey(bug),
+      bug.title,
+      bug.description,
+      bug.created_at,
+      bug.attachments.length,
+      bug.attachments.map((attachment, index) => attachmentPath(bug, attachment, index)).join('; '),
+      bug.id
+    ]);
+    return [columns, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+  }
+
+  async function exportBugs() {
+    if (exportButton.disabled) return;
+    exportButton.disabled = true;
+    exportButton.textContent = 'Preparing…';
+    try {
+      const payload = await api(`${API_URL}?action=export`);
+      const encoder = new TextEncoder();
+      const entries = [
+        { name: 'bugs.csv', data: encoder.encode(`\ufeff${exportCsv(payload.bugs)}`) },
+        { name: 'assets/', data: new Uint8Array() }
+      ];
+      const attachments = payload.bugs.flatMap(bug => bug.attachments.map((attachment, index) => ({
+        attachment,
+        path: attachmentPath(bug, attachment, index)
+      })));
+
+      for (let index = 0; index < attachments.length; index += 1) {
+        exportButton.textContent = `Files ${index + 1}/${attachments.length}`;
+        const item = attachments[index];
+        const response = await fetch(item.attachment.public_url);
+        if (!response.ok) throw new Error(`Could not download ${item.attachment.original_name}.`);
+        entries.push({ name: item.path, data: new Uint8Array(await response.arrayBuffer()) });
+      }
+
+      const url = URL.createObjectURL(makeZip(entries));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `sportmatch-bugs-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast(`Exported ${payload.bugs.length} ${payload.bugs.length === 1 ? 'bug' : 'bugs'}`);
+    } catch (error) {
+      showToast(error.message || 'The export could not be created.');
+    } finally {
+      exportButton.disabled = false;
+      exportButton.replaceChildren(icon('download'), document.createTextNode('Export'));
+    }
+  }
+
   function renderBugCard(bug) {
     const card = document.createElement('button');
     card.type = 'button';
@@ -659,6 +844,9 @@
     card.addEventListener('click', () => { location.hash = `bug/${bug.id}`; });
 
     const copy = document.createElement('span');
+    const key = document.createElement('span');
+    key.className = 'issue-key';
+    key.textContent = issueKey(bug);
     const title = document.createElement('h2');
     title.textContent = bug.title;
     const preview = document.createElement('span');
@@ -674,7 +862,7 @@
       count.append(icon('paperclip'), document.createTextNode(`${bug.attachment_count} ${Number(bug.attachment_count) === 1 ? 'file' : 'files'}`));
       meta.appendChild(count);
     }
-    copy.append(title, preview, meta);
+    copy.append(key, title, preview, meta);
     const arrow = icon('arrow');
     arrow.classList.add('card-arrow');
     card.append(copy, arrow);
@@ -740,6 +928,7 @@
     try {
       const payload = await api(`${API_URL}?id=${encodeURIComponent(id)}`);
       const bug = payload.bug;
+      document.getElementById('detail-issue-key').textContent = issueKey(bug);
       document.getElementById('detail-title').textContent = bug.title;
       document.getElementById('detail-date').textContent = readableDate(bug.created_at);
       document.getElementById('detail-description').textContent = bug.description;
@@ -1003,6 +1192,7 @@
     if (!busy) closeDialog();
   });
   document.getElementById('post-bug').addEventListener('click', openDialog);
+  exportButton.addEventListener('click', exportBugs);
   document.getElementById('empty-post-bug').addEventListener('click', openDialog);
   closeButton.addEventListener('click', closeDialog);
   cancelButton.addEventListener('click', closeDialog);

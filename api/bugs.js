@@ -189,7 +189,7 @@ async function readReports(request, response) {
   if (id) {
     if (!UUID_PATTERN.test(id)) throw new HttpError(400, 'INVALID_ID', 'The bug ID is invalid.');
     const reports = await sql`
-      select id, title, description, created_at
+      select id, issue_number, title, description, created_at
       from public.bug_reports
       where id = ${id}
       limit 1
@@ -207,6 +207,7 @@ async function readReports(request, response) {
   const reports = await sql`
     select
       r.id,
+      r.issue_number,
       r.title,
       r.description,
       r.created_at,
@@ -218,6 +219,27 @@ async function readReports(request, response) {
     order by r.created_at desc
   `;
   return json(response, 200, { bugs: reports });
+}
+
+async function readExport(response) {
+  const sql = database();
+  const reports = await sql`
+    select id, issue_number, title, description, created_at
+    from public.bug_reports
+    order by issue_number asc
+  `;
+  const attachments = await sql`
+    select id, bug_id, original_name, mime_type, size_bytes, public_url, created_at
+    from public.bug_attachments
+    where upload_state = 'ready'
+    order by bug_id asc, created_at asc, id asc
+  `;
+  const byBug = new Map(reports.map(report => [report.id, []]));
+  for (const attachment of attachments) byBug.get(attachment.bug_id)?.push(attachment);
+  return json(response, 200, {
+    exported_at: new Date().toISOString(),
+    bugs: reports.map(report => ({ ...report, attachments: byBug.get(report.id) || [] })),
+  });
 }
 
 async function createReport(request, response, body) {
@@ -239,7 +261,7 @@ async function createReport(request, response, body) {
   const inserted = await sql`
     insert into public.bug_reports (title, description, source_hash)
     values (${title}, ${description}, ${hash})
-    returning id, title, description, created_at
+    returning id, issue_number, title, description, created_at
   `;
   const bug = inserted[0];
   const uploadToken = encodeToken({
@@ -356,9 +378,10 @@ async function cancelUpload(response, body) {
 }
 
 async function handleRequest(request, response) {
+  const action = queryValue(request, 'action');
+  if (request.method === 'GET' && action === 'export') return readExport(response);
   if (request.method === 'GET') return readReports(request, response);
 
-  const action = queryValue(request, 'action');
   const body = parseBody(request);
   if (request.method === 'POST' && action === 'create') return createReport(request, response, body);
   if (request.method === 'POST' && action === 'sign-upload') return signUpload(response, body);
