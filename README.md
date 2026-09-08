@@ -6,7 +6,8 @@ interactive prototype, and shared design assets.
 ## Repository map
 
 - `index.html`: public Leadership entry point.
-- `leadership/`: PERT/CPM and Gantt views.
+- `leadership/`: WBS, PERT/CPM and Gantt views (each with a v1/v2 switch), plus the
+  v1 → v2 changelog.
 - `tools/`: `/tools` entry point and its pages, including the `Inicio`
   introduction and team platform links.
 - `prototype/sportmatch/`: canonical mobile and desktop prototype.

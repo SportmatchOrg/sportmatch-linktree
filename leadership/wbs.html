@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SportMatch — WBS</title>
+<title>WBS</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
 <style>
   :root{
@@ -13,10 +13,14 @@
     --l2:#4cd0c2;
     --l3:#5fc985;
     --l4:#74d195;
+    --l5:#8ad9a8;
     --ink:#0f172a;
     --bg:#f8fafc;
     --leaf:#eef4fb;
     --leaf-border:#d5e2f2;
+    --new:#16a34a;
+    --new-bg:#f0fdf4;
+    --new-border:#bbf7d0;
   }
   *{ box-sizing:border-box; }
   body{
@@ -29,18 +33,46 @@
     background:var(--navy); color:#fff;
     border-radius:10px; padding:14px;
     text-align:center; font-size:22px; font-weight:800; letter-spacing:-0.01em;
-    display:flex; align-items:center; justify-content:center; gap:14px;
+    display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
   }
-  .title button{
-    font:inherit; font-size:12px; font-weight:600;
-    background:rgba(255,255,255,.12); color:#fff;
+  /* Un solo control para toda la barra: botón y desplegable comparten alto,
+     color, borde y radio. Cualquier control nuevo lleva class="ctl". */
+  .ctl{
+    box-sizing:border-box; height:32px;
+    display:inline-flex; align-items:center;
+    font:inherit; font-size:12px; font-weight:600; line-height:1;
+    background-color:rgba(255,255,255,.12); color:#fff;
     border:1px solid rgba(255,255,255,.25); border-radius:7px;
-    padding:5px 11px; cursor:pointer;
+    padding:0 12px; cursor:pointer;
   }
-  .title button:hover{ background:rgba(255,255,255,.22); }
+  .ctl:hover{ background-color:rgba(255,255,255,.22); }
+  .ctl:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+
+  /* El desplegable usa el mismo .ctl; sólo cambia el chevron propio, que va
+     separado del texto para que no quede pegado al borde. */
+  select.ctl{
+    appearance:none; -webkit-appearance:none;
+    padding-right:32px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 11px center;
+    background-size:10px 10px;
+  }
+  select.ctl option{ color:#0f172a; background:#fff; font-weight:600; }
+
+  .meta{
+    margin-top:10px; display:flex; gap:10px 18px; align-items:center; flex-wrap:wrap;
+    font-size:12.5px; color:#475569;
+  }
+  .meta b{ color:var(--ink); }
+  .meta .newkey{ display:inline-flex; align-items:center; gap:6px; }
+  .meta .newkey i{
+    font-style:normal; background:var(--new-bg); color:var(--new); border:1px solid var(--new-border);
+    font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px; letter-spacing:.03em;
+  }
 
   .grid{
-    margin-top:18px;
+    margin-top:14px;
     display:grid; gap:14px;
     grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
     align-items:start;
@@ -51,6 +83,7 @@
     border-radius:8px; text-align:center;
     font-size:15px; font-weight:700;
   }
+  .pkg.is-new > h2{ background:var(--new); }
   details{ margin-bottom:8px; }
   summary{
     list-style:none; cursor:pointer;
@@ -60,7 +93,7 @@
   }
   summary::-webkit-details-marker{ display:none; }
   summary::before{
-    content:"›"; display:inline-block; width:10px; margin-right:8px;
+    content:"\203A"; display:inline-block; width:10px; margin-right:8px;
     font-size:16px; line-height:1; opacity:.7;
     transition:transform .15s;
   }
@@ -69,24 +102,44 @@
   .c2 > summary{ background:var(--l2); }
   .c3 > summary{ background:var(--l3); }
   .c4 > summary{ background:var(--l4); }
+  .c5 > summary{ background:var(--l5); }
+  details.is-new > summary{ background:var(--new); }
   details ul{ margin:6px 0 0; padding:0; list-style:none; }
   details li{
     background:var(--leaf); border:1px solid var(--leaf-border);
     border-radius:6px; padding:7px 10px; margin-bottom:4px;
     font-size:12.5px; line-height:1.35; color:#1e293b;
+    display:flex; align-items:center; gap:8px;
+  }
+  details li.is-new{ background:var(--new-bg); border-color:var(--new-border); }
+  details li .tag{
+    margin-left:auto; flex:none;
+    background:var(--new); color:#fff;
+    font-size:9px; font-weight:800; padding:1px 5px; border-radius:4px; letter-spacing:.03em;
   }
 </style>
 </head>
 <body>
 
 <div class="title">
-  SportMatch — WBS
-  <button id="toggle">Expandir todo</button>
+  WBS
+  <select class="ctl" id="ver-select" aria-label="Versión del WBS"></select>
+  <button class="ctl" id="toggle">Expandir todo</button>
 </div>
+
+<div class="meta">
+  <span id="ver-desc"></span>
+  <span><b id="st-pkgs">0</b> paquetes</span>
+  <span><b id="st-subs">0</b> sub-paquetes</span>
+  <span><b id="st-leaves">0</b> entregables</span>
+  <span class="newkey" id="newkey" hidden><i>NUEVO</i> agregado en v2</span>
+</div>
+
 <div class="grid" id="grid"></div>
 
 <script>
-const WBS = [
+/* ---- WBS v1 (documento original) -------------------------------------- */
+const WBS_V1 = [
  ["1.0 Gestión del Proyecto",[
    ["1.1 Planificación y documentación inicial",["1.1.1 Project Charter","1.1.2 WBS","1.1.3 Cronograma y PERT"]],
    ["1.2 Gestión ágil y seguimiento",["1.2.1 Backlog priorizado","1.2.2 Plan de sprints","1.2.3 Reportes de avance y control de desvíos","1.2.4 Registro de riesgos"]],
@@ -124,22 +177,103 @@ const WBS = [
    ["10.2 Documentación técnica",["10.2.1 README del proyecto","10.2.2 Documentación de APIs + modelo de datos + Deployment"]]]]
 ];
 
-document.getElementById('grid').innerHTML = WBS.map(([pkg, subs]) => `
-  <section class="pkg">
-    <h2>${pkg}</h2>
-    ${subs.map(([sub, items], i) => `
-      <details class="c${i + 1}">
-        <summary title="${sub}">${sub}</summary>
-        <ul>${items.map(it => `<li>${it}</li>`).join('')}</ul>
-      </details>`).join('')}
-  </section>`).join('');
+/* ---- v2 = v1 + estas altas ---------------------------------------------
+   [paquete, sub-paquete, entregables]. Si el paquete o el sub-paquete no
+   existen en v1 se crean; si existen, los entregables se agregan al final. */
+const V2_ADD = [
+ ["2.0 Diseño del Producto", "2.2 Diseño de pantallas",
+   ["2.2.7 Pantallas de notificaciones", "2.2.8 Pantallas de reporte de usuario"]],
 
+ ["6.0 Gestión de Partidos", "6.1 Modelo y backend de partidos",
+   ["6.1.4 Cancelación de partido con motivo"]],
+ ["6.0 Gestión de Partidos", "6.2 Frontend de gestión de partidos",
+   ["6.2.5 Interfaz de cancelación", "6.2.6 Notificación de cancelación a participantes"]],
+ ["6.0 Gestión de Partidos", "6.5 Invitación a partido",
+   ["6.5.1 Link compartible de partido", "6.5.2 Invitación directa a un usuario",
+    "6.5.3 Aceptación de invitación"]],
+
+ ["8.0 QA Manual y Validación", "8.1 Planificación de pruebas manuales",
+   ["8.1.8 Prueba manual de notificaciones", "8.1.9 Prueba manual de invitaciones",
+    "8.1.10 Prueba manual de reportes"]],
+
+ ["11.0 Notificaciones", "11.1 Backend de notificaciones",
+   ["11.1.1 Modelo de notificación", "11.1.2 Selección de proveedor de push y email",
+    "11.1.3 Servicio de envío de notificaciones", "11.1.4 Job de recordatorio pre-partido"]],
+ ["11.0 Notificaciones", "11.2 Frontend de notificaciones",
+   ["11.2.1 Centro de notificaciones", "11.2.2 Recepción de push en cliente",
+    "11.2.3 Preferencias de notificación"]],
+
+ ["12.0 Moderación y Reportes", "12.1 Reportar usuario",
+   ["12.1.1 Modelo de reporte", "12.1.2 Endpoint de creación de reporte",
+    "12.1.3 Interfaz de reporte"]],
+];
+
+const VER_DESC = {
+  v1: "Alcance original del WBS.",
+  v2: "Extensión propuesta: notificaciones, invitaciones, cancelación con motivo y moderación.",
+};
+
+/* Aplica V2_ADD sobre una copia profunda de v1 y marca lo nuevo. */
+function buildV2(){
+  const out = WBS_V1.map(([pkg, subs]) => [pkg, subs.map(([s, items]) => [s, items.slice()])]);
+  const newLeaves = new Set(), newSubs = new Set(), newPkgs = new Set();
+  V2_ADD.forEach(([pkgName, subName, items]) => {
+    let pkg = out.find(p => p[0] === pkgName);
+    if(!pkg){ pkg = [pkgName, []]; out.push(pkg); newPkgs.add(pkgName); }
+    let sub = pkg[1].find(s => s[0] === subName);
+    if(!sub){ sub = [subName, []]; pkg[1].push(sub); newSubs.add(subName); }
+    items.forEach(it => { sub[1].push(it); newLeaves.add(it); });
+  });
+  return { tree: out, newLeaves, newSubs, newPkgs };
+}
+
+const VIEWS = {
+  v1: { tree: WBS_V1, newLeaves:new Set(), newSubs:new Set(), newPkgs:new Set() },
+  v2: buildV2(),
+};
+
+const gridEl = document.getElementById('grid');
 const btn = document.getElementById('toggle');
+let VER = 'v2';
+
+function render(ver){
+  VER = ver;
+  const { tree, newLeaves, newSubs, newPkgs } = VIEWS[ver];
+
+  gridEl.innerHTML = tree.map(([pkg, subs]) => `
+    <section class="pkg${newPkgs.has(pkg) ? ' is-new' : ''}">
+      <h2>${pkg}</h2>
+      ${subs.map(([sub, items], i) => `
+        <details class="c${(i % 5) + 1}${newSubs.has(sub) ? ' is-new' : ''}">
+          <summary title="${sub}">${sub}</summary>
+          <ul>${items.map(it =>
+            `<li class="${newLeaves.has(it) ? 'is-new' : ''}">${it}${newLeaves.has(it) ? '<span class="tag">NUEVO</span>' : ''}</li>`
+          ).join('')}</ul>
+        </details>`).join('')}
+    </section>`).join('');
+
+  document.getElementById('st-pkgs').textContent   = tree.length;
+  document.getElementById('st-subs').textContent   = tree.reduce((n, [, s]) => n + s.length, 0);
+  document.getElementById('st-leaves').textContent = tree.reduce((n, [, s]) => n + s.reduce((m, [, i]) => m + i.length, 0), 0);
+  document.getElementById('ver-desc').textContent  = VER_DESC[ver];
+  document.getElementById('newkey').hidden = ver !== 'v2';
+
+  btn.textContent = 'Expandir todo';
+}
+
 btn.onclick = () => {
   const open = btn.textContent === 'Expandir todo';
   document.querySelectorAll('details').forEach(d => d.open = open);
   btn.textContent = open ? 'Contraer todo' : 'Expandir todo';
 };
+
+// Options are generated from VIEWS: adding a version there is the only change needed.
+const verSelect = document.getElementById('ver-select');
+verSelect.innerHTML = Object.keys(VIEWS).map(v => `<option value="${v}">${v}</option>`).join('');
+verSelect.value = VER;
+verSelect.addEventListener('change', () => render(verSelect.value));
+
+render('v2');
 </script>
 </body>
 </html>

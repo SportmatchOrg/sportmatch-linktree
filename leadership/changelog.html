@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch — Changelog</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root{
+    --navy:#101c53;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --bg:#f8fafc;
+    --panel:#ffffff;
+    --border:#e2e8f0;
+    --new:#16a34a;
+    --new-bg:#f0fdf4;
+    --new-border:#bbf7d0;
+    --amber:#b45309;
+    --amber-bg:#fffbeb;
+    --amber-border:#fde68a;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:24px 24px 64px;
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  .wrap{ max-width:900px; margin:0 auto; }
+
+  .title{
+    background:var(--navy); color:#fff;
+    border-radius:10px; padding:16px;
+    text-align:center; font-size:22px; font-weight:800; letter-spacing:-0.01em;
+  }
+  .title small{ display:block; margin-top:5px; font-size:12.5px; font-weight:500; opacity:.8; letter-spacing:0; }
+
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:20px 22px; margin-top:16px;
+  }
+  .card > h2{
+    margin:0 0 4px; font-size:16px; font-weight:800; letter-spacing:-0.01em;
+  }
+  .card > .lead{ margin:0 0 14px; color:var(--muted); font-size:13px; }
+
+  .ver-tag{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:.03em;
+    padding:2px 8px; border-radius:5px; margin-right:8px; vertical-align:2px;
+  }
+  .ver-tag.v1{ background:#e2e8f0; color:#334155; }
+  .ver-tag.v2{ background:var(--new-bg); color:var(--new); border:1px solid var(--new-border); }
+
+  h3{ margin:20px 0 8px; font-size:13.5px; font-weight:800; color:var(--navy); }
+  h3:first-of-type{ margin-top:0; }
+
+  p{ margin:0 0 10px; font-size:13.5px; }
+  ul{ margin:0 0 12px; padding-left:20px; font-size:13.5px; }
+  li{ margin-bottom:5px; }
+  li b{ font-weight:700; }
+  code{
+    background:#f1f5f9; border:1px solid var(--border); border-radius:4px;
+    padding:0 4px; font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin:0 0 12px; }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; }
+  td.num{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+  tr.added td:first-child{ font-weight:700; color:var(--new); }
+
+  .note{
+    background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:8px;
+    padding:11px 14px; font-size:12.5px; color:var(--amber); margin:0 0 12px;
+  }
+  .note b{ color:#92400e; }
+  .foot{ margin-top:18px; font-size:12px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="title">
+  Changelog
+  <small>Qué cambió en el alcance del proyecto y qué impacto tuvo en el cronograma</small>
+</div>
+
+<div class="card">
+  <h2><span class="ver-tag v1">v1</span>Punto de partida</h2>
+  <p class="lead">El WBS original, tal como se aprobó al inicio del proyecto.</p>
+  <p>
+    Cubría el MVP básico de SportMatch: gestión del proyecto, diseño del producto,
+    capacitación y setup técnico, autenticación, perfil de usuario, gestión de partidos
+    (crear, editar, solicitudes y rating post-partido), matchmaking (búsqueda, swipe y mapa),
+    QA manual, deployment y documentación final.
+  </p>
+  <p>
+    <b>10 paquetes de trabajo</b> (1.0 a 10.0), planificados sobre un equipo de <b>2 devs</b>.
+    El cronograma cerraba el 1-Nov con unos 10 días de colchón hasta la entrega final del 12-Nov.
+  </p>
+</div>
+
+<div class="card">
+  <h2><span class="ver-tag v2">v2</span>Qué cambió</h2>
+  <p class="lead">Extensión del alcance más recalibración de las estimaciones al ritmo real del equipo.</p>
+
+  <h3>1 · Se agregaron dos paquetes de trabajo nuevos</h3>
+  <ul>
+    <li>
+      <b>11.0 Notificaciones</b> — el MVP no tenía forma de avisarle nada al usuario.
+      Se agrega un módulo completo: modelo de notificación, elección de proveedor de push y email,
+      servicio de envío disparado por eventos del sistema, job de recordatorio antes del partido,
+      centro de notificaciones en la app, recepción de push en el cliente y preferencias del usuario.
+    </li>
+    <li>
+      <b>12.0 Moderación y Reportes</b> — no existía ningún mecanismo de seguridad entre usuarios.
+      Se agrega el reporte de usuario de punta a punta: modelo de reporte, endpoint de creación
+      e interfaz de reporte desde el perfil de otro usuario y desde el detalle de un partido.
+    </li>
+  </ul>
+
+  <h3>2 · Se extendieron paquetes existentes</h3>
+  <ul>
+    <li>
+      <b>6.5 Invitación a partido</b> (nuevo sub-paquete de 6.0) — link compartible del partido,
+      invitación directa a un usuario registrado y flujo de aceptación de la invitación.
+    </li>
+    <li>
+      <b>Cancelación de partido con motivo</b> — se agrega el estado <code>cancelado</code> y el motivo
+      obligatorio al modelo de partido (6.1.4), la interfaz de cancelación (6.2.5) y el aviso
+      a los participantes anotados (6.2.6).
+    </li>
+    <li>
+      <b>2.2 Diseño de pantallas</b> — dos pantallas nuevas para cubrir lo anterior:
+      notificaciones (2.2.7) y reporte de usuario (2.2.8).
+    </li>
+    <li>
+      <b>8.1 QA manual</b> — tres pruebas manuales nuevas, una por módulo agregado:
+      notificaciones (8.1.8), invitaciones (8.1.9) y reportes (8.1.10).
+    </li>
+  </ul>
+
+  <h3>3 · Cambió la base de planificación</h3>
+  <ul>
+    <li>El equipo pasó de <b>2 a 3 devs</b>, a 6 h por semana cada uno.</li>
+    <li>
+      Las estimaciones se <b>recalibraron al ritmo real del equipo</b> (factor 0,75) usando el
+      primer mes de trabajo con fechas reales de Linear. Los módulos nuevos (11.0, 12.0, 6.5)
+      van sin recalibrar porque todavía no tienen precedente.
+    </li>
+    <li>El cierre de desarrollo se movió al 6-Nov, dejando 6 días de colchón hasta la entrega final del 12-Nov.</li>
+  </ul>
+
+  <div class="note">
+    <b>Dependencia cruzada a tener en cuenta:</b> tanto la invitación directa (6.5.2) como el aviso de
+    cancelación (6.2.6) dependen del módulo de Notificaciones. Conviene terminar 11.1.1 a 11.1.3
+    antes de arrancar esos dos paquetes.
+  </div>
+</div>
+
+<div class="foot">
+  Usá el selector <b>v1 / v2</b> en las vistas de WBS, PERT y Gantt para comparar cada versión.
+</div>
+
+</div>
+</body>
+</html>

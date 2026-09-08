@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>PERT — SportMatch v3</title>
+<title>PERT</title>
 <link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
 <style>
@@ -15,23 +15,57 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
   display: flex; align-items: center; padding: 0 20px; height: 48px;
   gap: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
+#toolbar > * { flex: none; white-space: nowrap; }
 #toolbar h1 { font-size: 15px; font-weight: 700; }
 .sep { width: 1px; height: 22px; background: rgba(255,255,255,.3); }
 .stat { font-size: 12px; }
 .stat b { font-weight: 700; }
-.crit-badge {
-  background: #cc0000; color: white; font-size: 11px; font-weight: 700;
-  padding: 2px 10px; border-radius: 10px;
+/* .btn y #ver-select comparten alto, color, borde y radio. */
+.btn, #ver-select {
+  box-sizing: border-box; height: 30px;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  background-color: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
+  color: white; padding: 0 14px; border-radius: 6px; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1;
 }
-.btn {
-  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
-  color: white; padding: 5px 14px; border-radius: 6px; cursor: pointer;
-  font-size: 12px; font-weight: 600;
-}
-.btn:hover { background: rgba(255,255,255,.32); }
-.btn.active { background: #cc0000; border-color: #aa0000; }
-.spacer { flex: 1; }
+.btn:hover, #ver-select:hover { background-color: rgba(255,255,255,.32); }
+.btn:focus-visible, #ver-select:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.btn.active { background-color: #cc0000; border-color: #aa0000; }
+.btn[disabled] { opacity: .55; cursor: progress; }
+.btn.icon { padding: 0 9px; }
+.btn svg { display: block; flex: none; }
+.btn .caret { opacity: .75; }
+.spacer { flex: 1 1 auto; }
 #zoom-info { font-size: 12px; opacity: .8; min-width: 50px; text-align: right; }
+
+/* version selector — options come from DATA, so a new version needs no markup */
+/* El desplegable suma su propio chevron, separado del texto para que no
+   quede pegado al borde. */
+#ver-select {
+  appearance: none; -webkit-appearance: none;
+  font-weight: 700; padding-right: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='none'%3E%3Cpath d='M2 4l3 3 3-3' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 10px;
+}
+#ver-select option { color: #0f172a; background: #fff; font-weight: 700; }
+
+/* dropdown menu (export formats) */
+.menu-wrap { position: relative; display: inline-flex; }
+.menu {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 210;
+  background: #fff; border: 1px solid #d0dae4; border-radius: 8px;
+  box-shadow: 0 6px 22px rgba(15,23,42,.22);
+  padding: 4px; min-width: 132px;
+}
+.menu button {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: none; border: none; border-radius: 5px; cursor: pointer;
+  padding: 7px 10px; font: 600 12px Arial, sans-serif; color: #0f172a; text-align: left;
+}
+.menu button:hover { background: #eef4fb; }
+.menu .hint { margin-left: auto; color: #94a3b8; font-weight: 400; font-size: 10.5px; }
 
 #viewport {
   position: fixed; top: 48px; left: 0; right: 0; bottom: 0;
@@ -57,6 +91,12 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
 .node:hover { box-shadow: 0 4px 18px rgba(0,0,0,.22); z-index: 20; }
 .node.critical { border: 3px solid #cc0000; box-shadow: 0 2px 10px rgba(204,0,0,.25); }
 .node.critical:hover { box-shadow: 0 4px 20px rgba(204,0,0,.4); }
+.node.added { border-color: #16a34a; box-shadow: 0 2px 10px rgba(22,163,74,.25); }
+.node .new-tag {
+  position: absolute; top: 0; right: 0; background: #16a34a; color: #fff;
+  font-size: 8px; font-weight: 800; padding: 1px 5px; border-bottom-left-radius: 5px;
+  letter-spacing: .04em;
+}
 
 .node-top { display: flex; border-bottom: 1px solid rgba(0,0,0,.1); }
 .node-mid { padding: 4px 8px 5px; background: white; text-align: center; border-bottom: 1px solid rgba(0,0,0,.1); }
@@ -82,7 +122,10 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
   padding: 12px 16px; font-size: 11px;
   box-shadow: 0 2px 10px rgba(0,0,0,.12);
 }
-#legend h4 { font-size: 12px; font-weight: 700; color: #0270C2; margin-bottom: 10px; }
+.lg-cols { display: flex; align-items: center; gap: 18px; }
+.lg-col { flex: none; }
+.lg-col.frames { width: 148px; }
+.lg-col.keys .lrow:first-child { margin-top: 0; }
 .lg-row { display: flex; }
 .lg-cell { flex: 1; text-align: center; padding: 3px 2px; font-weight: 700; font-size: 9px; color: white; }
 .lg-mid { background: white; color: #333; font-size: 9px; padding: 2px 6px; text-align: center; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
@@ -96,17 +139,41 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
 <body>
 
 <div id="toolbar">
-  <h1>PERT — SportMatch v3</h1>
+  <h1>PERT</h1>
+  <select id="ver-select" aria-label="Versión del WBS"></select>
   <div class="sep"></div>
-  <div class="stat">Grupos WBS: <b>25</b></div>
-  <div class="stat">Esfuerzo total: <b>433 h</b></div>
-  <div class="stat">Camino crítico: <b>92.5 h</b></div>
-  <div class="crit-badge">★ 9 grupos críticos</div>
+  <div class="stat">Esfuerzo total: <b id="st-effort">–</b></div>
+  <div class="stat">Camino crítico: <b id="st-crit">–</b></div>
   <div class="sep"></div>
-  <button class="btn" id="btn-fit">Ajustar pantalla</button>
-  <button class="btn" id="btn-crit">Solo camino crítico</button>
-  <button class="btn" id="btn-export-png">PNG</button>
-  <button class="btn" id="btn-export-svg">SVG</button>
+  <button class="btn icon" id="btn-fit" title="Ajustar a pantalla" aria-label="Ajustar a pantalla">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M6 1.75H1.75V6M10 1.75h4.25V6M6 14.25H1.75V10M10 14.25h4.25V10"
+            stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <button class="btn icon" id="btn-crit" title="Mostrar solo el camino crítico" aria-label="Mostrar solo el camino crítico" aria-pressed="false">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2.5 12.5 6 7l3 3 4.5-6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="2.5" cy="12.5" r="1.6" fill="currentColor"/>
+      <circle cx="13.5" cy="3.5" r="1.6" fill="currentColor"/>
+    </svg>
+  </button>
+  <div class="menu-wrap">
+    <button class="btn icon" id="btn-export" title="Exportar" aria-label="Exportar"
+            aria-haspopup="menu" aria-expanded="false" aria-controls="export-menu">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 1.75v8m0 0L5 6.9M8 9.75l3-2.85" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2.25 11.5v1.75a1 1 0 0 0 1 1h9.5a1 1 0 0 0 1-1V11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <svg class="caret" width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+        <path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="menu" id="export-menu" role="menu" hidden>
+      <button role="menuitem" data-fmt="png">PNG <span class="hint">imagen</span></button>
+      <button role="menuitem" data-fmt="svg">SVG <span class="hint">vectorial</span></button>
+    </div>
+  </div>
   <div class="spacer"></div>
   <div id="zoom-info">100%</div>
 </div>
@@ -118,8 +185,9 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
 </div>
 
 <div id="legend">
-  <h4>Nodo AoN</h4>
-  <div class="lg-frame">
+  <div class="lg-cols">
+   <div class="lg-col frames">
+    <div class="lg-frame">
     <div class="lg-row">
       <div class="lg-cell" style="background:#3DADFF">ES</div>
       <div class="lg-cell" style="background:#0270C2">DR</div>
@@ -132,7 +200,7 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
       <div class="lg-cell" style="background:#3DADFF">LF</div>
     </div>
   </div>
-  <div class="lg-frame crit" style="margin-top:4px">
+    <div class="lg-frame crit" style="margin-top:4px">
     <div class="lg-row">
       <div class="lg-cell" style="background:#3DADFF">ES</div>
       <div class="lg-cell" style="background:#0270C2">DR</div>
@@ -145,331 +213,610 @@ body { font-family: Arial, sans-serif; background: #eef2f6; overflow: hidden; }
       <div class="lg-cell" style="background:#3DADFF">LF</div>
     </div>
   </div>
-  <div class="lrow"><div class="lsw" style="border:2px solid #cc0000;background:#fff4f4"></div>Crítico (TF = 0)</div>
-  <div class="lrow"><div class="lsw" style="border:2px solid #3DADFF;background:white"></div>No crítico</div>
+   </div>
+   <div class="lg-col keys">
+    <div class="lrow"><div class="lsw" style="border:2px solid #cc0000;background:#fff4f4"></div>Crítico (TF = 0)</div>
+    <div class="lrow"><div class="lsw" style="border:2px solid #3DADFF;background:white"></div>No crítico</div>
+    <div class="lrow"><div class="lsw" style="border:2px solid #16a34a;background:white"></div>Nuevo en v2</div>
   <div class="lrow">
     <svg width="30" height="10"><line x1="0" y1="5" x2="25" y2="5" stroke="#cc0000" stroke-width="2.5"/><polygon points="23,2 30,5 23,8" fill="#cc0000"/></svg>
     Arco crítico
   </div>
   <div class="lrow">
     <svg width="30" height="10"><line x1="0" y1="5" x2="25" y2="5" stroke="#3DADFF" stroke-width="1.5" stroke-dasharray="4,2"/><polygon points="23,2 30,5 23,8" fill="#3DADFF"/></svg>
-    Arco no crítico
+      Arco no crítico
+    </div>
+   </div>
   </div>
 </div>
 
 <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
 <script>
-// ── Level-3 data ─────────────────────────────────────────────────────────────
-const TASKS3 = {
-  '1.1.1':{ dur:7.00,  es:0.00,  ef:7.00,  ls:0.00,  lf:7.00,  tf:0.00 },
-  '1.1.2':{ dur:6.33,  es:7.00,  ef:13.33, ls:78.17, lf:84.50, tf:71.17 },
-  '1.1.3':{ dur:8.00,  es:13.33, ef:21.33, ls:84.50, lf:92.50, tf:71.17 },
-  '1.2.1':{ dur:6.33,  es:7.00,  ef:13.33, ls:67.00, lf:73.33, tf:60.00 },
-  '1.2.2':{ dur:4.50,  es:13.33, ef:17.83, ls:73.33, lf:77.83, tf:60.00 },
-  '1.2.3':{ dur:14.67, es:17.83, ef:32.50, ls:77.83, lf:92.50, tf:60.00 },
-  '1.2.4':{ dur:6.33,  es:7.00,  ef:13.33, ls:86.17, lf:92.50, tf:79.17 },
-  '1.3.1':{ dur:3.00,  es:7.00,  ef:10.00, ls:81.33, lf:84.33, tf:74.33 },
-  '1.3.2':{ dur:8.17,  es:10.00, ef:18.17, ls:84.33, lf:92.50, tf:74.33 },
-  '1.3.3':{ dur:5.17,  es:17.83, ef:23.00, ls:87.33, lf:92.50, tf:69.50 },
-  '1.4.1':{ dur:7.50,  es:85.00, ef:92.50, ls:85.00, lf:92.50, tf:0.00 },
-  '1.4.2':{ dur:6.33,  es:51.00, ef:57.33, ls:86.17, lf:92.50, tf:35.17 },
-  '2.1.1':{ dur:4.00,  es:7.00,  ef:11.00, ls:18.34, lf:22.34, tf:11.34 },
-  '2.1.2':{ dur:4.33,  es:11.00, ef:15.33, ls:22.34, lf:26.67, tf:11.34 },
-  '2.2.1':{ dur:4.17,  es:15.33, ef:19.50, ls:45.49, lf:49.66, tf:30.16 },
-  '2.2.2':{ dur:5.33,  es:15.33, ef:20.66, ls:35.33, lf:40.66, tf:20.00 },
-  '2.2.3':{ dur:6.33,  es:15.33, ef:21.66, ls:26.67, lf:33.00, tf:11.34 },
-  '2.2.4':{ dur:5.17,  es:15.33, ef:20.50, ls:32.33, lf:37.50, tf:17.00 },
-  '2.2.5':{ dur:6.33,  es:15.33, ef:21.66, ls:32.00, lf:38.33, tf:16.67 },
-  '2.2.6':{ dur:6.33,  es:15.33, ef:21.66, ls:33.16, lf:39.49, tf:17.83 },
-  '2.3.1':{ dur:5.33,  es:7.00,  ef:12.33, ls:10.01, lf:15.34, tf:3.01 },
-  '2.3.2':{ dur:6.33,  es:12.33, ef:18.66, ls:15.34, lf:21.67, tf:3.01 },
-  '3.1.1':{ dur:4.00,  es:7.00,  ef:11.00, ls:7.00,  lf:11.00, tf:0.00 },
-  '3.1.2':{ dur:7.83,  es:11.00, ef:18.83, ls:21.67, lf:29.50, tf:10.67 },
-  '3.1.3':{ dur:6.33,  es:11.00, ef:17.33, ls:11.00, lf:17.33, tf:0.00 },
-  '3.2.1':{ dur:6.00,  es:17.33, ef:23.33, ls:17.33, lf:23.33, tf:0.00 },
-  '3.2.2':{ dur:6.17,  es:23.33, ef:29.50, ls:23.33, lf:29.50, tf:0.00 },
-  '3.2.3':{ dur:4.50,  es:23.33, ef:27.83, ls:28.32, lf:32.82, tf:4.99 },
-  '4.1.1':{ dur:4.00,  es:29.50, ef:33.50, ls:29.50, lf:33.50, tf:0.00 },
-  '4.1.2':{ dur:6.33,  es:33.50, ef:39.83, ls:35.33, lf:41.66, tf:1.83 },
-  '4.1.3':{ dur:3.17,  es:39.83, ef:43.00, ls:41.66, lf:44.83, tf:1.83 },
-  '4.2.1':{ dur:6.17,  es:39.83, ef:46.00, ls:49.66, lf:55.83, tf:9.83 },
-  '5.1.1':{ dur:4.00,  es:33.50, ef:37.50, ls:40.83, lf:44.83, tf:7.33 },
-  '5.1.2':{ dur:5.33,  es:43.00, ef:48.33, ls:44.83, lf:50.16, tf:1.83 },
-  '5.1.3':{ dur:5.33,  es:37.50, ef:42.83, ls:44.83, lf:50.16, tf:7.33 },
-  '5.1.4':{ dur:6.17,  es:42.00, ef:48.17, ls:45.16, lf:51.33, tf:3.16 },
-  '5.2.1':{ dur:4.50,  es:48.33, ef:52.83, ls:50.16, lf:54.66, tf:1.83 },
-  '5.2.2':{ dur:4.50,  es:48.33, ef:52.83, ls:50.16, lf:54.66, tf:1.83 },
-  '5.2.3':{ dur:4.50,  es:42.83, ef:47.33, ls:50.16, lf:54.66, tf:7.33 },
-  '5.2.4':{ dur:3.33,  es:48.17, ef:51.50, ls:51.33, lf:54.66, tf:3.16 },
-  '6.1.1':{ dur:4.00,  es:18.66, ef:22.66, ls:21.67, lf:25.67, tf:3.01 },
-  '6.1.2':{ dur:7.33,  es:22.66, ef:29.99, ls:25.67, lf:33.00, tf:3.01 },
-  '6.1.3':{ dur:4.17,  es:22.66, ef:26.83, ls:27.99, lf:32.16, tf:5.33 },
-  '6.2.1':{ dur:8.17,  es:29.99, ef:38.16, ls:45.49, lf:53.66, tf:15.50 },
-  '6.2.2':{ dur:4.50,  es:29.99, ef:34.49, ls:49.16, lf:53.66, tf:19.17 },
-  '6.2.3':{ dur:4.50,  es:29.99, ef:34.49, ls:33.00, lf:37.50, tf:3.01 },
-  '6.3.1':{ dur:4.00,  es:33.50, ef:37.50, ls:33.50, lf:37.50, tf:0.00 },
-  '6.3.2':{ dur:5.33,  es:37.50, ef:42.83, ls:37.50, lf:42.83, tf:0.00 },
-  '6.3.3':{ dur:5.33,  es:42.83, ef:48.16, ls:45.00, lf:50.33, tf:2.17 },
-  '6.3.4':{ dur:3.33,  es:48.16, ef:51.49, ls:50.33, lf:53.66, tf:2.17 },
-  '6.4.1':{ dur:4.00,  es:33.50, ef:37.50, ls:36.66, lf:40.66, tf:3.16 },
-  '6.4.2':{ dur:4.50,  es:37.50, ef:42.00, ls:40.66, lf:45.16, tf:3.16 },
-  '6.4.3':{ dur:3.17,  es:37.50, ef:40.67, ls:41.99, lf:45.16, tf:4.49 },
-  '7.1.1':{ dur:6.17,  es:26.83, ef:33.00, ls:32.16, lf:38.33, tf:5.33 },
-  '7.1.2':{ dur:4.17,  es:33.00, ef:37.17, ls:84.33, lf:88.50, tf:51.33 },
-  '7.1.3':{ dur:3.17,  es:48.17, ef:51.34, ls:85.33, lf:88.50, tf:37.16 },
-  '7.2.1':{ dur:4.50,  es:33.00, ef:37.50, ls:38.33, lf:42.83, tf:5.33 },
-  '7.2.2':{ dur:10.50, es:42.83, ef:53.33, ls:42.83, lf:53.33, tf:0.00 },
-  '7.3.1':{ dur:6.67,  es:27.83, ef:34.50, ls:32.82, lf:39.49, tf:4.99 },
-  '7.3.2':{ dur:8.67,  es:34.50, ef:43.17, ls:39.49, lf:48.16, tf:4.99 },
-  '7.3.3':{ dur:5.17,  es:43.17, ef:48.34, ls:48.16, lf:53.33, tf:4.99 },
-  '8.1.1':{ dur:3.33,  es:37.50, ef:40.83, ls:89.17, lf:92.50, tf:51.67 },
-  '8.1.2':{ dur:4.00,  es:46.00, ef:50.00, ls:55.83, lf:59.83, tf:9.83 },
-  '8.1.3':{ dur:5.17,  es:52.83, ef:58.00, ls:54.66, lf:59.83, tf:1.83 },
-  '8.1.4':{ dur:6.17,  es:38.16, ef:44.33, ls:53.66, lf:59.83, tf:15.50 },
-  '8.1.5':{ dur:6.17,  es:51.49, ef:57.66, ls:53.66, lf:59.83, tf:2.17 },
-  '8.1.6':{ dur:6.50,  es:53.33, ef:59.83, ls:53.33, lf:59.83, tf:0.00 },
-  '8.1.7':{ dur:5.17,  es:51.50, ef:56.67, ls:54.66, lf:59.83, tf:3.16 },
-  '8.2.1':{ dur:4.17,  es:59.83, ef:64.00, ls:59.83, lf:64.00, tf:0.00 },
-  '8.2.2':{ dur:11.50, es:64.00, ef:75.50, ls:64.00, lf:75.50, tf:0.00 },
-  '8.2.3':{ dur:5.17,  es:75.50, ef:80.67, ls:75.50, lf:80.67, tf:0.00 },
-  '8.2.4':{ dur:4.33,  es:80.67, ef:85.00, ls:80.67, lf:85.00, tf:0.00 },
-  '9.1.1':{ dur:6.67,  es:29.50, ef:36.17, ls:64.67, lf:71.34, tf:35.17 },
-  '9.1.2':{ dur:4.50,  es:36.17, ef:40.67, ls:71.34, lf:75.84, tf:35.17 },
-  '9.1.3':{ dur:4.33,  es:40.67, ef:45.00, ls:75.84, lf:80.17, tf:35.17 },
-  '10.1.1':{ dur:6.00, es:45.00, ef:51.00, ls:80.17, lf:86.17, tf:35.17 },
-  '10.1.2':{ dur:3.17, es:21.66, ef:24.83, ls:89.33, lf:92.50, tf:67.67 },
-  '10.2.1':{ dur:2.33, es:27.83, ef:30.16, ls:90.17, lf:92.50, tf:62.34 },
-  '10.2.2':{ dur:4.00, es:51.49, ef:55.49, ls:88.50, lf:92.50, tf:37.01 },
+const DATA = {
+  v1: {
+    label: 'WBS v1 · 2 devs',
+    tasks: {
+      '1.1.1':{ dur:7.00,  es:0.00,  ef:7.00,  ls:0.00,  lf:7.00,  tf:0.00 },
+      '1.1.2':{ dur:6.33,  es:7.00,  ef:13.33, ls:78.17, lf:84.50, tf:71.17 },
+      '1.1.3':{ dur:8.00,  es:13.33, ef:21.33, ls:84.50, lf:92.50, tf:71.17 },
+      '1.2.1':{ dur:6.33,  es:7.00,  ef:13.33, ls:67.00, lf:73.33, tf:60.00 },
+      '1.2.2':{ dur:4.50,  es:13.33, ef:17.83, ls:73.33, lf:77.83, tf:60.00 },
+      '1.2.3':{ dur:14.67, es:17.83, ef:32.50, ls:77.83, lf:92.50, tf:60.00 },
+      '1.2.4':{ dur:6.33,  es:7.00,  ef:13.33, ls:86.17, lf:92.50, tf:79.17 },
+      '1.3.1':{ dur:3.00,  es:7.00,  ef:10.00, ls:81.33, lf:84.33, tf:74.33 },
+      '1.3.2':{ dur:8.17,  es:10.00, ef:18.17, ls:84.33, lf:92.50, tf:74.33 },
+      '1.3.3':{ dur:5.17,  es:17.83, ef:23.00, ls:87.33, lf:92.50, tf:69.50 },
+      '1.4.1':{ dur:7.50,  es:85.00, ef:92.50, ls:85.00, lf:92.50, tf:0.00 },
+      '1.4.2':{ dur:6.33,  es:51.00, ef:57.33, ls:86.17, lf:92.50, tf:35.17 },
+      '2.1.1':{ dur:4.00,  es:7.00,  ef:11.00, ls:18.34, lf:22.34, tf:11.34 },
+      '2.1.2':{ dur:4.33,  es:11.00, ef:15.33, ls:22.34, lf:26.67, tf:11.34 },
+      '2.2.1':{ dur:4.17,  es:15.33, ef:19.50, ls:45.49, lf:49.66, tf:30.16 },
+      '2.2.2':{ dur:5.33,  es:15.33, ef:20.66, ls:35.33, lf:40.66, tf:20.00 },
+      '2.2.3':{ dur:6.33,  es:15.33, ef:21.66, ls:26.67, lf:33.00, tf:11.34 },
+      '2.2.4':{ dur:5.17,  es:15.33, ef:20.50, ls:32.33, lf:37.50, tf:17.00 },
+      '2.2.5':{ dur:6.33,  es:15.33, ef:21.66, ls:32.00, lf:38.33, tf:16.67 },
+      '2.2.6':{ dur:6.33,  es:15.33, ef:21.66, ls:33.16, lf:39.49, tf:17.83 },
+      '2.3.1':{ dur:5.33,  es:7.00,  ef:12.33, ls:10.01, lf:15.34, tf:3.01 },
+      '2.3.2':{ dur:6.33,  es:12.33, ef:18.66, ls:15.34, lf:21.67, tf:3.01 },
+      '3.1.1':{ dur:4.00,  es:7.00,  ef:11.00, ls:7.00,  lf:11.00, tf:0.00 },
+      '3.1.2':{ dur:7.83,  es:11.00, ef:18.83, ls:21.67, lf:29.50, tf:10.67 },
+      '3.1.3':{ dur:6.33,  es:11.00, ef:17.33, ls:11.00, lf:17.33, tf:0.00 },
+      '3.2.1':{ dur:6.00,  es:17.33, ef:23.33, ls:17.33, lf:23.33, tf:0.00 },
+      '3.2.2':{ dur:6.17,  es:23.33, ef:29.50, ls:23.33, lf:29.50, tf:0.00 },
+      '3.2.3':{ dur:4.50,  es:23.33, ef:27.83, ls:28.32, lf:32.82, tf:4.99 },
+      '4.1.1':{ dur:4.00,  es:29.50, ef:33.50, ls:29.50, lf:33.50, tf:0.00 },
+      '4.1.2':{ dur:6.33,  es:33.50, ef:39.83, ls:35.33, lf:41.66, tf:1.83 },
+      '4.1.3':{ dur:3.17,  es:39.83, ef:43.00, ls:41.66, lf:44.83, tf:1.83 },
+      '4.2.1':{ dur:6.17,  es:39.83, ef:46.00, ls:49.66, lf:55.83, tf:9.83 },
+      '5.1.1':{ dur:4.00,  es:33.50, ef:37.50, ls:40.83, lf:44.83, tf:7.33 },
+      '5.1.2':{ dur:5.33,  es:43.00, ef:48.33, ls:44.83, lf:50.16, tf:1.83 },
+      '5.1.3':{ dur:5.33,  es:37.50, ef:42.83, ls:44.83, lf:50.16, tf:7.33 },
+      '5.1.4':{ dur:6.17,  es:42.00, ef:48.17, ls:45.16, lf:51.33, tf:3.16 },
+      '5.2.1':{ dur:4.50,  es:48.33, ef:52.83, ls:50.16, lf:54.66, tf:1.83 },
+      '5.2.2':{ dur:4.50,  es:48.33, ef:52.83, ls:50.16, lf:54.66, tf:1.83 },
+      '5.2.3':{ dur:4.50,  es:42.83, ef:47.33, ls:50.16, lf:54.66, tf:7.33 },
+      '5.2.4':{ dur:3.33,  es:48.17, ef:51.50, ls:51.33, lf:54.66, tf:3.16 },
+      '6.1.1':{ dur:4.00,  es:18.66, ef:22.66, ls:21.67, lf:25.67, tf:3.01 },
+      '6.1.2':{ dur:7.33,  es:22.66, ef:29.99, ls:25.67, lf:33.00, tf:3.01 },
+      '6.1.3':{ dur:4.17,  es:22.66, ef:26.83, ls:27.99, lf:32.16, tf:5.33 },
+      '6.2.1':{ dur:8.17,  es:29.99, ef:38.16, ls:45.49, lf:53.66, tf:15.50 },
+      '6.2.2':{ dur:4.50,  es:29.99, ef:34.49, ls:49.16, lf:53.66, tf:19.17 },
+      '6.2.3':{ dur:4.50,  es:29.99, ef:34.49, ls:33.00, lf:37.50, tf:3.01 },
+      '6.3.1':{ dur:4.00,  es:33.50, ef:37.50, ls:33.50, lf:37.50, tf:0.00 },
+      '6.3.2':{ dur:5.33,  es:37.50, ef:42.83, ls:37.50, lf:42.83, tf:0.00 },
+      '6.3.3':{ dur:5.33,  es:42.83, ef:48.16, ls:45.00, lf:50.33, tf:2.17 },
+      '6.3.4':{ dur:3.33,  es:48.16, ef:51.49, ls:50.33, lf:53.66, tf:2.17 },
+      '6.4.1':{ dur:4.00,  es:33.50, ef:37.50, ls:36.66, lf:40.66, tf:3.16 },
+      '6.4.2':{ dur:4.50,  es:37.50, ef:42.00, ls:40.66, lf:45.16, tf:3.16 },
+      '6.4.3':{ dur:3.17,  es:37.50, ef:40.67, ls:41.99, lf:45.16, tf:4.49 },
+      '7.1.1':{ dur:6.17,  es:26.83, ef:33.00, ls:32.16, lf:38.33, tf:5.33 },
+      '7.1.2':{ dur:4.17,  es:33.00, ef:37.17, ls:84.33, lf:88.50, tf:51.33 },
+      '7.1.3':{ dur:3.17,  es:48.17, ef:51.34, ls:85.33, lf:88.50, tf:37.16 },
+      '7.2.1':{ dur:4.50,  es:33.00, ef:37.50, ls:38.33, lf:42.83, tf:5.33 },
+      '7.2.2':{ dur:10.50, es:42.83, ef:53.33, ls:42.83, lf:53.33, tf:0.00 },
+      '7.3.1':{ dur:6.67,  es:27.83, ef:34.50, ls:32.82, lf:39.49, tf:4.99 },
+      '7.3.2':{ dur:8.67,  es:34.50, ef:43.17, ls:39.49, lf:48.16, tf:4.99 },
+      '7.3.3':{ dur:5.17,  es:43.17, ef:48.34, ls:48.16, lf:53.33, tf:4.99 },
+      '8.1.1':{ dur:3.33,  es:37.50, ef:40.83, ls:89.17, lf:92.50, tf:51.67 },
+      '8.1.2':{ dur:4.00,  es:46.00, ef:50.00, ls:55.83, lf:59.83, tf:9.83 },
+      '8.1.3':{ dur:5.17,  es:52.83, ef:58.00, ls:54.66, lf:59.83, tf:1.83 },
+      '8.1.4':{ dur:6.17,  es:38.16, ef:44.33, ls:53.66, lf:59.83, tf:15.50 },
+      '8.1.5':{ dur:6.17,  es:51.49, ef:57.66, ls:53.66, lf:59.83, tf:2.17 },
+      '8.1.6':{ dur:6.50,  es:53.33, ef:59.83, ls:53.33, lf:59.83, tf:0.00 },
+      '8.1.7':{ dur:5.17,  es:51.50, ef:56.67, ls:54.66, lf:59.83, tf:3.16 },
+      '8.2.1':{ dur:4.17,  es:59.83, ef:64.00, ls:59.83, lf:64.00, tf:0.00 },
+      '8.2.2':{ dur:11.50, es:64.00, ef:75.50, ls:64.00, lf:75.50, tf:0.00 },
+      '8.2.3':{ dur:5.17,  es:75.50, ef:80.67, ls:75.50, lf:80.67, tf:0.00 },
+      '8.2.4':{ dur:4.33,  es:80.67, ef:85.00, ls:80.67, lf:85.00, tf:0.00 },
+      '9.1.1':{ dur:6.67,  es:29.50, ef:36.17, ls:64.67, lf:71.34, tf:35.17 },
+      '9.1.2':{ dur:4.50,  es:36.17, ef:40.67, ls:71.34, lf:75.84, tf:35.17 },
+      '9.1.3':{ dur:4.33,  es:40.67, ef:45.00, ls:75.84, lf:80.17, tf:35.17 },
+      '10.1.1':{ dur:6.00, es:45.00, ef:51.00, ls:80.17, lf:86.17, tf:35.17 },
+      '10.1.2':{ dur:3.17, es:21.66, ef:24.83, ls:89.33, lf:92.50, tf:67.67 },
+      '10.2.1':{ dur:2.33, es:27.83, ef:30.16, ls:90.17, lf:92.50, tf:62.34 },
+      '10.2.2':{ dur:4.00, es:51.49, ef:55.49, ls:88.50, lf:92.50, tf:37.01 },
+    },
+    deps: {
+      '1.1.1':[], '1.1.2':['1.1.1'], '1.1.3':['1.1.2'],
+      '1.2.1':['1.1.1'], '1.2.2':['1.2.1'], '1.2.3':['1.2.2'], '1.2.4':['1.1.1'],
+      '1.3.1':['1.1.1'], '1.3.2':['1.3.1'], '1.3.3':['1.2.2'],
+      '1.4.1':['8.2.4','9.1.3'], '1.4.2':['9.1.2','9.1.3','10.1.1'],
+      '2.1.1':['1.1.1'], '2.1.2':['1.1.1','2.1.1'],
+      '2.2.1':['2.1.2'], '2.2.2':['2.1.2'], '2.2.3':['2.1.2'],
+      '2.2.4':['2.1.2'], '2.2.5':['2.1.2'], '2.2.6':['2.1.2'],
+      '2.3.1':['1.1.1'], '2.3.2':['2.3.1'],
+      '3.1.1':['1.1.1'], '3.1.2':['3.1.1'], '3.1.3':['3.1.1'],
+      '3.2.1':['3.1.1','3.1.3'], '3.2.2':['2.3.1','3.2.1'], '3.2.3':['3.2.1'],
+      '4.1.1':['3.2.2','3.1.2'], '4.1.2':['4.1.1'], '4.1.3':['4.1.2'],
+      '4.2.1':['2.2.1','4.1.2'],
+      '5.1.1':['4.1.1','2.3.1'], '5.1.2':['5.1.1','4.1.3'],
+      '5.1.3':['6.1.1','6.3.1'], '5.1.4':['6.4.1','6.4.2','6.4.3'],
+      '5.2.1':['2.2.2','5.1.2'], '5.2.2':['2.2.2','5.1.2'],
+      '5.2.3':['5.1.3','2.2.2'], '5.2.4':['5.1.4','2.2.2'],
+      '6.1.1':['2.3.1','2.3.2'], '6.1.2':['6.1.1'], '6.1.3':['6.1.1'],
+      '6.2.1':['2.2.3','6.1.2'], '6.2.2':['2.2.3','6.1.2'],
+      '6.2.3':['6.1.2','6.1.3','2.2.3'],
+      '6.3.1':['4.1.1','6.1.1'], '6.3.2':['6.3.1','6.2.3','2.2.4'],
+      '6.3.3':['6.3.2','2.2.4'], '6.3.4':['6.3.2','6.3.3','2.2.4'],
+      '6.4.1':['4.1.1','6.1.1'], '6.4.2':['2.2.2','6.4.1'], '6.4.3':['6.4.1'],
+      '7.1.1':['6.1.3'], '7.1.2':['7.1.1'], '7.1.3':['7.1.1','5.1.4'],
+      '7.2.1':['2.2.5','7.1.1'], '7.2.2':['7.2.1','6.3.2'],
+      '7.3.1':['3.2.1','3.2.3'], '7.3.2':['7.3.1','7.1.1','2.2.6'],
+      '7.3.3':['7.3.2','6.2.3'],
+      '8.1.1':['3.2.2','4.1.1','5.1.1','6.1.2'],
+      '8.1.2':['4.2.1','4.1.3'], '8.1.3':['5.2.1','5.2.2','5.2.3','5.2.4'],
+      '8.1.4':['6.2.1','6.2.2','6.2.3'], '8.1.5':['6.3.2','6.3.3','6.3.4'],
+      '8.1.6':['7.2.2','7.3.3'], '8.1.7':['6.4.2','6.4.3','5.1.4','5.2.4'],
+      '8.2.1':['8.1.2','8.1.3','8.1.4','8.1.5','8.1.6','8.1.7'],
+      '8.2.2':['8.2.1'], '8.2.3':['8.2.2'], '8.2.4':['8.2.3'],
+      '9.1.1':['3.2.1','3.2.2','3.2.3'], '9.1.2':['9.1.1'], '9.1.3':['9.1.2'],
+      '10.1.1':['9.1.2','9.1.3'],
+      '10.1.2':['2.2.1','2.2.2','2.2.3','2.2.4','2.2.5','2.2.6'],
+      '10.2.1':['3.2.3'],
+      '10.2.2':['4.1.1','4.1.2','4.1.3','5.1.1','5.1.2','5.1.3','5.1.4',
+                 '6.1.1','6.1.2','6.1.3','6.3.1','6.3.2','6.3.3','6.3.4',
+                 '7.1.1','7.1.2','7.1.3'],
+    },
+    groups: {
+      '1.1':'Planificación técnica',  '1.2':'Gestión del proyecto',
+      '1.3':'Comunicación',           '1.4':'Cierre del proyecto',
+      '2.1':'Identidad y perfiles',   '2.2':'Diseño de pantallas',
+      '2.3':'Modelo de datos',
+      '3.1':'Configuración técnica',  '3.2':'Setup del entorno',
+      '4.1':'Autenticación backend',  '4.2':'Auth frontend',
+      '5.1':'Backend de perfil',      '5.2':'Frontend de perfil',
+      '6.1':'Backend de partidos',    '6.2':'Frontend de partidos',
+      '6.3':'Solicitudes',            '6.4':'Calificación',
+      '7.1':'Motor de búsqueda',      '7.2':'Experiencia swipe',
+      '7.3':'Visualización en mapa',
+      '8.1':'QA manual',              '8.2':'Pruebas con usuarios',
+      '9.1':'Despliegue',
+      '10.1':'Docs de usuario',       '10.2':'Docs técnicas',
+    },
+  },
+  v2: {
+    label: 'WBS v2 · 3 devs',
+    tasks: {
+      '1.1.1':{ dur:7.00, es:0.00, ef:7.00, ls:-0.00, lf:7.00, tf:-0.00 },
+      '1.1.2':{ dur:6.33, es:7.00, ef:13.33, ls:84.17, lf:90.50, tf:77.17 },
+      '1.1.3':{ dur:8.00, es:13.33, ef:21.33, ls:90.50, lf:98.50, tf:77.17 },
+      '1.2.1':{ dur:6.33, es:7.00, ef:13.33, ls:73.00, lf:79.33, tf:66.00 },
+      '1.2.2':{ dur:4.50, es:13.33, ef:17.83, ls:79.33, lf:83.83, tf:66.00 },
+      '1.2.3':{ dur:14.67, es:17.83, ef:32.50, ls:83.83, lf:98.50, tf:66.00 },
+      '1.2.4':{ dur:6.33, es:7.00, ef:13.33, ls:92.17, lf:98.50, tf:85.17 },
+      '1.3.1':{ dur:3.00, es:7.00, ef:10.00, ls:87.33, lf:90.33, tf:80.33 },
+      '1.3.2':{ dur:8.17, es:10.00, ef:18.17, ls:90.33, lf:98.50, tf:80.33 },
+      '1.3.3':{ dur:5.17, es:17.83, ef:23.00, ls:93.33, lf:98.50, tf:75.50 },
+      '1.4.1':{ dur:7.50, es:91.00, ef:98.50, ls:91.00, lf:98.50, tf:0.00 },
+      '1.4.2':{ dur:6.33, es:51.00, ef:57.33, ls:92.17, lf:98.50, tf:41.17 },
+      '2.1.1':{ dur:4.00, es:7.00, ef:11.00, ls:18.34, lf:22.34, tf:11.34 },
+      '2.1.2':{ dur:4.33, es:11.00, ef:15.33, ls:22.34, lf:26.67, tf:11.34 },
+      '2.2.1':{ dur:4.17, es:15.33, ef:19.50, ls:51.49, lf:55.66, tf:36.16 },
+      '2.2.2':{ dur:5.33, es:15.33, ef:20.66, ls:41.33, lf:46.66, tf:26.00 },
+      '2.2.3':{ dur:6.33, es:15.33, ef:21.66, ls:26.67, lf:33.00, tf:11.34 },
+      '2.2.4':{ dur:5.17, es:15.33, ef:20.50, ls:32.33, lf:37.50, tf:17.00 },
+      '2.2.5':{ dur:6.33, es:15.33, ef:21.66, ls:38.00, lf:44.33, tf:22.67 },
+      '2.2.6':{ dur:6.33, es:15.33, ef:21.66, ls:83.50, lf:89.83, tf:68.17 },
+      '2.2.7':{ dur:3.17, es:15.33, ef:18.50, ls:54.16, lf:57.33, tf:38.83 },
+      '2.2.8':{ dur:5.17, es:15.33, ef:20.50, ls:53.49, lf:58.66, tf:38.16 },
+      '2.3.1':{ dur:5.33, es:7.00, ef:12.33, ls:10.01, lf:15.34, tf:3.01 },
+      '2.3.2':{ dur:6.33, es:12.33, ef:18.66, ls:15.34, lf:21.67, tf:3.01 },
+      '3.1.1':{ dur:4.00, es:7.00, ef:11.00, ls:7.00, lf:11.00, tf:-0.00 },
+      '3.1.2':{ dur:7.83, es:11.00, ef:18.83, ls:21.67, lf:29.50, tf:10.67 },
+      '3.1.3':{ dur:6.33, es:11.00, ef:17.33, ls:11.00, lf:17.33, tf:-0.00 },
+      '3.2.1':{ dur:6.00, es:17.33, ef:23.33, ls:17.33, lf:23.33, tf:0.00 },
+      '3.2.2':{ dur:6.17, es:23.33, ef:29.50, ls:23.33, lf:29.50, tf:0.00 },
+      '3.2.3':{ dur:4.50, es:23.33, ef:27.83, ls:66.17, lf:70.67, tf:42.84 },
+      '4.1.1':{ dur:4.00, es:29.50, ef:33.50, ls:29.50, lf:33.50, tf:0.00 },
+      '4.1.2':{ dur:6.33, es:33.50, ef:39.83, ls:39.33, lf:45.66, tf:5.83 },
+      '4.1.3':{ dur:3.17, es:39.83, ef:43.00, ls:45.66, lf:48.83, tf:5.83 },
+      '4.2.1':{ dur:6.17, es:39.83, ef:46.00, ls:55.66, lf:61.83, tf:15.83 },
+      '5.1.1':{ dur:4.00, es:33.50, ef:37.50, ls:44.83, lf:48.83, tf:11.33 },
+      '5.1.2':{ dur:5.33, es:43.00, ef:48.33, ls:48.83, lf:54.16, tf:5.83 },
+      '5.1.3':{ dur:5.33, es:37.50, ef:42.83, ls:50.83, lf:56.16, tf:13.33 },
+      '5.1.4':{ dur:6.17, es:42.00, ef:48.17, ls:51.16, lf:57.33, tf:9.16 },
+      '5.2.1':{ dur:4.50, es:48.33, ef:52.83, ls:54.16, lf:58.66, tf:5.83 },
+      '5.2.2':{ dur:4.50, es:48.33, ef:52.83, ls:56.16, lf:60.66, tf:7.83 },
+      '5.2.3':{ dur:4.50, es:42.83, ef:47.33, ls:56.16, lf:60.66, tf:13.33 },
+      '5.2.4':{ dur:3.33, es:48.17, ef:51.50, ls:57.33, lf:60.66, tf:9.16 },
+      '6.1.1':{ dur:4.00, es:18.66, ef:22.66, ls:21.67, lf:25.67, tf:3.01 },
+      '6.1.2':{ dur:7.33, es:22.66, ef:29.99, ls:25.67, lf:33.00, tf:3.01 },
+      '6.1.3':{ dur:4.17, es:22.66, ef:26.83, ls:28.83, lf:33.00, tf:6.17 },
+      '6.1.4':{ dur:3.17, es:29.99, ef:33.16, ls:93.16, lf:96.33, tf:63.17 },
+      '6.2.1':{ dur:8.17, es:29.99, ef:38.16, ls:51.49, lf:59.66, tf:21.50 },
+      '6.2.3':{ dur:4.50, es:29.99, ef:34.49, ls:33.00, lf:37.50, tf:3.01 },
+      '6.2.5':{ dur:2.17, es:34.49, ef:36.66, ls:96.33, lf:98.50, tf:61.84 },
+      '6.2.6':{ dur:2.00, es:54.49, ef:56.49, ls:96.50, lf:98.50, tf:42.01 },
+      '6.3.1':{ dur:4.00, es:33.50, ef:37.50, ls:33.50, lf:37.50, tf:0.00 },
+      '6.3.2':{ dur:5.33, es:37.50, ef:42.83, ls:37.50, lf:42.83, tf:0.00 },
+      '6.3.3':{ dur:5.33, es:42.83, ef:48.16, ls:42.83, lf:48.16, tf:0.00 },
+      '6.3.4':{ dur:3.33, es:48.16, ef:51.49, ls:56.33, lf:59.66, tf:8.17 },
+      '6.4.1':{ dur:4.00, es:33.50, ef:37.50, ls:42.66, lf:46.66, tf:9.16 },
+      '6.4.2':{ dur:4.50, es:37.50, ef:42.00, ls:46.66, lf:51.16, tf:9.16 },
+      '6.4.3':{ dur:3.17, es:37.50, ef:40.67, ls:47.99, lf:51.16, tf:10.49 },
+      '6.5.1':{ dur:3.33, es:34.49, ef:37.82, ls:60.33, lf:63.66, tf:25.84 },
+      '6.5.2':{ dur:5.17, es:54.49, ef:59.66, ls:54.49, lf:59.66, tf:0.00 },
+      '6.5.3':{ dur:4.00, es:59.66, ef:63.66, ls:59.66, lf:63.66, tf:0.00 },
+      '7.1.1':{ dur:6.17, es:26.83, ef:33.00, ls:38.16, lf:44.33, tf:11.33 },
+      '7.1.2':{ dur:4.17, es:33.00, ef:37.17, ls:94.33, lf:98.50, tf:61.33 },
+      '7.2.1':{ dur:4.50, es:33.00, ef:37.50, ls:44.33, lf:48.83, tf:11.33 },
+      '7.2.2':{ dur:10.50, es:42.83, ef:53.33, ls:48.83, lf:59.33, tf:6.00 },
+      '7.3.1':{ dur:6.67, es:27.83, ef:34.50, ls:83.16, lf:89.83, tf:55.33 },
+      '7.3.2':{ dur:8.67, es:34.50, ef:43.17, ls:89.83, lf:98.50, tf:55.33 },
+      '8.1.1':{ dur:3.33, es:37.50, ef:40.83, ls:95.17, lf:98.50, tf:57.67 },
+      '8.1.2':{ dur:4.00, es:46.00, ef:50.00, ls:61.83, lf:65.83, tf:15.83 },
+      '8.1.3':{ dur:5.17, es:52.83, ef:58.00, ls:60.66, lf:65.83, tf:7.83 },
+      '8.1.4':{ dur:6.17, es:38.16, ef:44.33, ls:59.66, lf:65.83, tf:21.50 },
+      '8.1.5':{ dur:6.17, es:51.49, ef:57.66, ls:59.66, lf:65.83, tf:8.17 },
+      '8.1.6':{ dur:6.50, es:53.33, ef:59.83, ls:59.33, lf:65.83, tf:6.00 },
+      '8.1.7':{ dur:5.17, es:51.50, ef:56.67, ls:60.66, lf:65.83, tf:9.16 },
+      '8.1.8':{ dur:3.17, es:58.66, ef:61.83, ls:62.66, lf:65.83, tf:4.00 },
+      '8.1.9':{ dur:2.17, es:63.66, ef:65.83, ls:63.66, lf:65.83, tf:0.00 },
+      '8.1.10':{ dur:3.17, es:56.83, ef:60.00, ls:62.66, lf:65.83, tf:5.83 },
+      '8.2.1':{ dur:4.17, es:65.83, ef:70.00, ls:65.83, lf:70.00, tf:0.00 },
+      '8.2.2':{ dur:11.50, es:70.00, ef:81.50, ls:70.00, lf:81.50, tf:0.00 },
+      '8.2.3':{ dur:5.17, es:81.50, ef:86.67, ls:81.50, lf:86.67, tf:0.00 },
+      '8.2.4':{ dur:4.33, es:86.67, ef:91.00, ls:86.67, lf:91.00, tf:0.00 },
+      '9.1.1':{ dur:6.67, es:29.50, ef:36.17, ls:70.67, lf:77.34, tf:41.17 },
+      '9.1.2':{ dur:4.50, es:36.17, ef:40.67, ls:77.34, lf:81.84, tf:41.17 },
+      '9.1.3':{ dur:4.33, es:40.67, ef:45.00, ls:81.84, lf:86.17, tf:41.17 },
+      '10.1.1':{ dur:6.00, es:45.00, ef:51.00, ls:86.17, lf:92.17, tf:41.17 },
+      '10.1.2':{ dur:3.17, es:21.66, ef:24.83, ls:95.33, lf:98.50, tf:73.67 },
+      '10.2.1':{ dur:2.33, es:27.83, ef:30.16, ls:96.17, lf:98.50, tf:68.34 },
+      '10.2.2':{ dur:4.00, es:54.49, ef:58.49, ls:94.50, lf:98.50, tf:40.01 },
+      '11.1.1':{ dur:3.17, es:33.50, ef:36.67, ls:44.99, lf:48.16, tf:11.49 },
+      '11.1.2':{ dur:2.17, es:33.50, ef:35.67, ls:45.99, lf:48.16, tf:12.49 },
+      '11.1.3':{ dur:6.33, es:48.16, ef:54.49, ls:48.16, lf:54.49, tf:0.00 },
+      '11.1.4':{ dur:4.17, es:54.49, ef:58.66, ls:58.49, lf:62.66, tf:4.00 },
+      '11.2.1':{ dur:5.17, es:36.67, ef:41.84, ls:57.49, lf:62.66, tf:20.82 },
+      '11.2.2':{ dur:5.33, es:35.67, ef:41.00, ls:57.33, lf:62.66, tf:21.66 },
+      '12.1.1':{ dur:3.17, es:33.50, ef:36.67, ls:53.32, lf:56.49, tf:19.82 },
+      '12.1.2':{ dur:2.17, es:36.67, ef:38.84, ls:56.49, lf:58.66, tf:19.82 },
+      '12.1.3':{ dur:4.00, es:52.83, ef:56.83, ls:58.66, lf:62.66, tf:5.83 },
+    },
+    deps: {
+      '1.1.1': [],
+      '1.1.2': ["1.1.1"],
+      '1.1.3': ["1.1.2"],
+      '1.2.1': ["1.1.1"],
+      '1.2.2': ["1.2.1"],
+      '1.2.3': ["1.2.2"],
+      '1.2.4': ["1.1.1"],
+      '1.3.1': ["1.1.1"],
+      '1.3.2': ["1.3.1"],
+      '1.3.3': ["1.2.2"],
+      '1.4.1': ["8.2.4", "9.1.3"],
+      '1.4.2': ["9.1.2", "9.1.3", "10.1.1"],
+      '2.1.1': ["1.1.1"],
+      '2.1.2': ["1.1.1", "2.1.1"],
+      '2.2.1': ["2.1.2"],
+      '2.2.2': ["2.1.2"],
+      '2.2.3': ["2.1.2"],
+      '2.2.4': ["2.1.2"],
+      '2.2.5': ["2.1.2"],
+      '2.2.6': ["2.1.2"],
+      '2.2.7': ["2.1.2"],
+      '2.2.8': ["2.1.2"],
+      '2.3.1': ["1.1.1"],
+      '2.3.2': ["2.3.1"],
+      '3.1.1': ["1.1.1"],
+      '3.1.2': ["3.1.1"],
+      '3.1.3': ["3.1.1"],
+      '3.2.1': ["3.1.1", "3.1.3"],
+      '3.2.2': ["2.3.1", "3.2.1"],
+      '3.2.3': ["3.2.1"],
+      '4.1.1': ["3.2.2", "3.1.2"],
+      '4.1.2': ["4.1.1"],
+      '4.1.3': ["4.1.2"],
+      '4.2.1': ["2.2.1", "4.1.2"],
+      '5.1.1': ["4.1.1", "2.3.1"],
+      '5.1.2': ["5.1.1", "4.1.3"],
+      '5.1.3': ["6.1.1", "6.3.1"],
+      '5.1.4': ["6.4.1", "6.4.2", "6.4.3"],
+      '5.2.1': ["2.2.2", "5.1.2"],
+      '5.2.2': ["2.2.2", "5.1.2"],
+      '5.2.3': ["5.1.3", "2.2.2"],
+      '5.2.4': ["5.1.4", "2.2.2"],
+      '6.1.1': ["2.3.1", "2.3.2"],
+      '6.1.2': ["6.1.1"],
+      '6.1.3': ["6.1.1"],
+      '6.1.4': ["6.1.1", "6.1.2"],
+      '6.2.1': ["2.2.3", "6.1.2"],
+      '6.2.3': ["6.1.2", "6.1.3", "2.2.3"],
+      '6.2.5': ["6.1.4", "6.2.3"],
+      '6.2.6': ["6.1.4", "11.1.3"],
+      '6.3.1': ["4.1.1", "6.1.1"],
+      '6.3.2': ["6.3.1", "6.2.3", "2.2.4"],
+      '6.3.3': ["6.3.2", "2.2.4"],
+      '6.3.4': ["6.3.2", "6.3.3", "2.2.4"],
+      '6.4.1': ["4.1.1", "6.1.1"],
+      '6.4.2': ["2.2.2", "6.4.1"],
+      '6.4.3': ["6.4.1"],
+      '6.5.1': ["6.1.1", "6.2.3"],
+      '6.5.2': ["6.1.1", "4.1.1", "11.1.3"],
+      '6.5.3': ["6.5.2", "6.3.1"],
+      '7.1.1': ["6.1.3"],
+      '7.1.2': ["7.1.1"],
+      '7.2.1': ["2.2.5", "7.1.1"],
+      '7.2.2': ["7.2.1", "6.3.2"],
+      '7.3.1': ["3.2.1", "3.2.3"],
+      '7.3.2': ["7.3.1", "7.1.1", "2.2.6"],
+      '8.1.1': ["3.2.2", "4.1.1", "5.1.1", "6.1.2"],
+      '8.1.2': ["4.2.1", "4.1.3"],
+      '8.1.3': ["5.2.1", "5.2.2", "5.2.3", "5.2.4"],
+      '8.1.4': ["6.2.1", "6.2.3"],
+      '8.1.5': ["6.3.2", "6.3.3", "6.3.4"],
+      '8.1.6': ["7.2.2"],
+      '8.1.7': ["6.4.2", "6.4.3", "5.1.4", "5.2.4"],
+      '8.1.8': ["11.1.3", "11.1.4", "11.2.1", "11.2.2"],
+      '8.1.9': ["6.5.1", "6.5.2", "6.5.3"],
+      '8.1.10': ["12.1.3"],
+      '8.2.1': ["8.1.2", "8.1.3", "8.1.4", "8.1.5", "8.1.6", "8.1.7", "8.1.8", "8.1.9", "8.1.10"],
+      '8.2.2': ["8.2.1"],
+      '8.2.3': ["8.2.2"],
+      '8.2.4': ["8.2.3"],
+      '9.1.1': ["3.2.1", "3.2.2", "3.2.3"],
+      '9.1.2': ["9.1.1"],
+      '9.1.3': ["9.1.2"],
+      '10.1.1': ["9.1.2", "9.1.3"],
+      '10.1.2': ["2.2.1", "2.2.2", "2.2.3", "2.2.4", "2.2.5", "2.2.6", "2.2.7", "2.2.8"],
+      '10.2.1': ["3.2.3"],
+      '10.2.2': ["4.1.3", "5.1.4", "6.1.3", "6.3.4", "11.1.3", "12.1.2"],
+      '11.1.1': ["4.1.1"],
+      '11.1.2': ["4.1.1"],
+      '11.1.3': ["11.1.1", "11.1.2", "6.3.2", "6.3.3"],
+      '11.1.4': ["11.1.3", "6.1.1"],
+      '11.2.1': ["11.1.1", "2.2.7"],
+      '11.2.2': ["11.1.2", "2.2.7"],
+      '12.1.1': ["4.1.1"],
+      '12.1.2': ["12.1.1"],
+      '12.1.3': ["12.1.2", "2.2.8", "5.2.1", "6.2.3"],
+    },
+    groups: {
+      '1.1':'Planificación técnica',  '1.2':'Gestión del proyecto',
+      '1.3':'Comunicación',           '1.4':'Cierre del proyecto',
+      '2.1':'Identidad y perfiles',   '2.2':'Diseño de pantallas',
+      '2.3':'Modelo de datos',
+      '3.1':'Configuración técnica',  '3.2':'Setup del entorno',
+      '4.1':'Autenticación backend',  '4.2':'Auth frontend',
+      '5.1':'Backend de perfil',      '5.2':'Frontend de perfil',
+      '6.1':'Backend de partidos',    '6.2':'Frontend de partidos',
+      '6.3':'Solicitudes',            '6.4':'Calificación',
+      '7.1':'Motor de búsqueda',      '7.2':'Experiencia swipe',
+      '7.3':'Visualización en mapa',
+      '8.1':'QA manual',              '8.2':'Pruebas con usuarios',
+      '9.1':'Despliegue',
+      '10.1':'Docs de usuario',       '10.2':'Docs técnicas',
+      '6.5':'Invitación a partido',
+      '11.1':'Notificaciones backend','11.2':'Notificaciones frontend',
+      '12.1':'Reportar usuario',
+    },
+  },
 };
 
-const DEPS3 = {
-  '1.1.1':[], '1.1.2':['1.1.1'], '1.1.3':['1.1.2'],
-  '1.2.1':['1.1.1'], '1.2.2':['1.2.1'], '1.2.3':['1.2.2'], '1.2.4':['1.1.1'],
-  '1.3.1':['1.1.1'], '1.3.2':['1.3.1'], '1.3.3':['1.2.2'],
-  '1.4.1':['8.2.4','9.1.3'], '1.4.2':['9.1.2','9.1.3','10.1.1'],
-  '2.1.1':['1.1.1'], '2.1.2':['1.1.1','2.1.1'],
-  '2.2.1':['2.1.2'], '2.2.2':['2.1.2'], '2.2.3':['2.1.2'],
-  '2.2.4':['2.1.2'], '2.2.5':['2.1.2'], '2.2.6':['2.1.2'],
-  '2.3.1':['1.1.1'], '2.3.2':['2.3.1'],
-  '3.1.1':['1.1.1'], '3.1.2':['3.1.1'], '3.1.3':['3.1.1'],
-  '3.2.1':['3.1.1','3.1.3'], '3.2.2':['2.3.1','3.2.1'], '3.2.3':['3.2.1'],
-  '4.1.1':['3.2.2','3.1.2'], '4.1.2':['4.1.1'], '4.1.3':['4.1.2'],
-  '4.2.1':['2.2.1','4.1.2'],
-  '5.1.1':['4.1.1','2.3.1'], '5.1.2':['5.1.1','4.1.3'],
-  '5.1.3':['6.1.1','6.3.1'], '5.1.4':['6.4.1','6.4.2','6.4.3'],
-  '5.2.1':['2.2.2','5.1.2'], '5.2.2':['2.2.2','5.1.2'],
-  '5.2.3':['5.1.3','2.2.2'], '5.2.4':['5.1.4','2.2.2'],
-  '6.1.1':['2.3.1','2.3.2'], '6.1.2':['6.1.1'], '6.1.3':['6.1.1'],
-  '6.2.1':['2.2.3','6.1.2'], '6.2.2':['2.2.3','6.1.2'],
-  '6.2.3':['6.1.2','6.1.3','2.2.3'],
-  '6.3.1':['4.1.1','6.1.1'], '6.3.2':['6.3.1','6.2.3','2.2.4'],
-  '6.3.3':['6.3.2','2.2.4'], '6.3.4':['6.3.2','6.3.3','2.2.4'],
-  '6.4.1':['4.1.1','6.1.1'], '6.4.2':['2.2.2','6.4.1'], '6.4.3':['6.4.1'],
-  '7.1.1':['6.1.3'], '7.1.2':['7.1.1'], '7.1.3':['7.1.1','5.1.4'],
-  '7.2.1':['2.2.5','7.1.1'], '7.2.2':['7.2.1','6.3.2'],
-  '7.3.1':['3.2.1','3.2.3'], '7.3.2':['7.3.1','7.1.1','2.2.6'],
-  '7.3.3':['7.3.2','6.2.3'],
-  '8.1.1':['3.2.2','4.1.1','5.1.1','6.1.2'],
-  '8.1.2':['4.2.1','4.1.3'], '8.1.3':['5.2.1','5.2.2','5.2.3','5.2.4'],
-  '8.1.4':['6.2.1','6.2.2','6.2.3'], '8.1.5':['6.3.2','6.3.3','6.3.4'],
-  '8.1.6':['7.2.2','7.3.3'], '8.1.7':['6.4.2','6.4.3','5.1.4','5.2.4'],
-  '8.2.1':['8.1.2','8.1.3','8.1.4','8.1.5','8.1.6','8.1.7'],
-  '8.2.2':['8.2.1'], '8.2.3':['8.2.2'], '8.2.4':['8.2.3'],
-  '9.1.1':['3.2.1','3.2.2','3.2.3'], '9.1.2':['9.1.1'], '9.1.3':['9.1.2'],
-  '10.1.1':['9.1.2','9.1.3'],
-  '10.1.2':['2.2.1','2.2.2','2.2.3','2.2.4','2.2.5','2.2.6'],
-  '10.2.1':['3.2.3'],
-  '10.2.2':['4.1.1','4.1.2','4.1.3','5.1.1','5.1.2','5.1.3','5.1.4',
-             '6.1.1','6.1.2','6.1.3','6.3.1','6.3.2','6.3.3','6.3.4',
-             '7.1.1','7.1.2','7.1.3'],
-};
-
-const GROUP_NAMES = {
-  '1.1':'Planificación técnica',  '1.2':'Gestión del proyecto',
-  '1.3':'Comunicación',           '1.4':'Cierre del proyecto',
-  '2.1':'Identidad y perfiles',   '2.2':'Diseño de pantallas',
-  '2.3':'Modelo de datos',
-  '3.1':'Configuración técnica',  '3.2':'Setup del entorno',
-  '4.1':'Autenticación backend',  '4.2':'Auth frontend',
-  '5.1':'Backend de perfil',      '5.2':'Frontend de perfil',
-  '6.1':'Backend de partidos',    '6.2':'Frontend de partidos',
-  '6.3':'Solicitudes',            '6.4':'Calificación',
-  '7.1':'Motor de búsqueda',      '7.2':'Experiencia swipe',
-  '7.3':'Visualización en mapa',
-  '8.1':'QA manual',              '8.2':'Pruebas con usuarios',
-  '9.1':'Despliegue',
-  '10.1':'Docs de usuario',       '10.2':'Docs técnicas',
-};
-
-// ── Aggregate to level 2 ─────────────────────────────────────────────────────
-function l2(id) { const p = id.split('.'); return p[0]+'.'+p[1]; }
-
-const TASKS2 = {};
-for (const [id, t] of Object.entries(TASKS3)) {
-  const g = l2(id);
-  if (!TASKS2[g]) TASKS2[g] = { es:Infinity, ef:-Infinity, ls:Infinity, lf:-Infinity, tf:Infinity };
-  const r = TASKS2[g];
-  r.es = Math.min(r.es, t.es); r.ef = Math.max(r.ef, t.ef);
-  r.ls = Math.min(r.ls, t.ls); r.lf = Math.max(r.lf, t.lf);
-  r.tf = Math.min(r.tf, t.tf);
-}
-for (const [id, r] of Object.entries(TASKS2)) {
-  r.dur  = +(r.ef - r.es).toFixed(2);
-  r.name = GROUP_NAMES[id] || id;
-}
-
-// ── Cross-group deps ──────────────────────────────────────────────────────────
-const DEPS2 = {};
-for (const g of Object.keys(TASKS2)) DEPS2[g] = new Set();
-for (const [succ3, preds3] of Object.entries(DEPS3)) {
-  const sg = l2(succ3);
-  for (const pred3 of preds3) {
-    const pg = l2(pred3);
-    if (pg !== sg) DEPS2[sg].add(pg);
-  }
-}
-for (const g of Object.keys(DEPS2)) DEPS2[g] = [...DEPS2[g]];
-
-// Compute critical groups first so we can protect critical→critical edges below
-const CRIT2 = new Set(Object.keys(TASKS2).filter(g => TASKS2[g].tf < 0.01));
-
-// ── Transitive reduction: remove edges implied by longer paths ────────────────
-// Critical→critical edges are always preserved to keep the path visually connected.
-const succ2 = {};
-for (const g of Object.keys(DEPS2)) succ2[g] = new Set();
-for (const [s, preds] of Object.entries(DEPS2))
-  for (const p of preds) { if (succ2[p]) succ2[p].add(s); }
-
-const redundant = new Set();
-for (const [u, succs] of Object.entries(succ2)) {
-  for (const v of [...succs]) {
-    if (CRIT2.has(u) && CRIT2.has(v)) continue; // never remove critical→critical edges
-    // BFS from u's other neighbors; if v is reachable, u→v is redundant
-    const visited = new Set();
-    const queue = [];
-    for (const n of succ2[u]) {
-      if (n !== v && !visited.has(n)) { visited.add(n); queue.push(n); }
-    }
-    while (queue.length) {
-      const cur = queue.shift();
-      if (cur === v) { redundant.add(`${u}→${v}`); break; }
-      for (const n of (succ2[cur] || new Set()))
-        if (!visited.has(n)) { visited.add(n); queue.push(n); }
-    }
-  }
-}
-// DEPS2R = reduced dependency map (successor → [direct predecessors])
-const DEPS2R = {};
-for (const g of Object.keys(DEPS2)) DEPS2R[g] = [];
-for (const [s, preds] of Object.entries(DEPS2))
-  for (const p of preds)
-    if (!redundant.has(`${p}→${s}`)) DEPS2R[s].push(p);
-
-// ── Dagre layout ──────────────────────────────────────────────────────────────
-const NODE_W = 180, NODE_H = 88;
-const X_GAP  = 60,  Y_GAP  = 28;
-
-const gr = new dagre.graphlib.Graph({ multigraph: false });
-gr.setGraph({ rankdir:'LR', nodesep: Y_GAP, ranksep: X_GAP, marginx:40, marginy:40 });
-gr.setDefaultEdgeLabel(() => ({}));
-for (const id of Object.keys(TASKS2)) gr.setNode(id, { width:NODE_W, height:NODE_H });
-for (const [succ, preds] of Object.entries(DEPS2))
-  for (const pred of preds) gr.setEdge(pred, succ);
-dagre.layout(gr);
-
-// ── Post-process: equal vertical spacing within each column ───────────────────
-// Group nodes by their dagre x (same x = same rank column)
-const colMap = new Map();
-for (const id of gr.nodes()) {
-  const nd = gr.node(id);
-  const col = Math.round(nd.x); // dagre assigns identical x to same-rank nodes
-  if (!colMap.has(col)) colMap.set(col, []);
-  colMap.get(col).push(nd);
-}
-
-// Find tallest column to use as reference height
-let maxNodes = 0;
-for (const nodes of colMap.values()) maxNodes = Math.max(maxNodes, nodes.length);
-
-const totalMaxH = maxNodes * NODE_H + (maxNodes - 1) * Y_GAP;
-const MARGIN_Y  = 40;
-const centerY   = MARGIN_Y + totalMaxH / 2;
-
-for (const nodes of colMap.values()) {
-  nodes.sort((a, b) => a.y - b.y); // keep dagre's relative vertical order
-  const n = nodes.length;
-  const colH  = n * NODE_H + (n - 1) * Y_GAP;
-  const startY = centerY - colH / 2 + NODE_H / 2;
-  nodes.forEach((nd, i) => { nd.y = startY + i * (NODE_H + Y_GAP); });
-}
-
-// Recompute SVG size from updated positions
-let svgMaxX = 0, svgMaxY = 0;
-for (const id of gr.nodes()) {
-  const nd = gr.node(id);
-  svgMaxX = Math.max(svgMaxX, nd.x + NODE_W / 2);
-  svgMaxY = Math.max(svgMaxY, nd.y + NODE_H / 2);
-}
-const svgW = svgMaxX + 50;
-const svgH = svgMaxY + 50;
-
-// ── Render nodes ──────────────────────────────────────────────────────────────
+// ── Shared DOM + view state ───────────────────────────────────────────────────
 const canvas   = document.getElementById('canvas');
 const svgEl    = document.getElementById('svg-layer');
-const nodesDiv = document.createElement('div');
-nodesDiv.style.cssText = 'position:absolute;top:0;left:0;';
-canvas.appendChild(nodesDiv);
+const viewport = document.getElementById('viewport');
 
+const SVGNS = 'http://www.w3.org/2000/svg';
 const fmt = v => (+v).toFixed(2);
+function l2(id) { const p = id.split('.'); return p[0]+'.'+p[1]; }
 
-for (const id of gr.nodes()) {
-  const nd   = gr.node(id);
-  const t    = TASKS2[id];
-  const crit = CRIT2.has(id);
+// Rebuilt on every version switch
+let VER = 'v2';
+let CRIT2 = new Set(), gr = null, nodesDiv = null;
+let svgW = 1, svgH = 1;
+let critOnly = false;
 
-  const div = document.createElement('div');
-  div.className = 'node' + (crit ? ' critical' : '');
-  div.style.left = (nd.x - NODE_W / 2) + 'px';
-  div.style.top  = (nd.y - NODE_H / 2) + 'px';
-  div.dataset.id = id;
-  div.title = `${id} · ${t.name}\nES=${fmt(t.es)}  EF=${fmt(t.ef)}  DR=${fmt(t.dur)}h\nLS=${fmt(t.ls)}  LF=${fmt(t.lf)}  TF=${fmt(t.tf)}h`;
+// Level-2 groups present in v1 — anything outside this set is new in v2.
+const V1_GROUPS = new Set(Object.keys(DATA.v1.tasks).map(l2));
 
-  div.innerHTML = `
-    <div class="node-top">
-      <div class="cell c-es"><span class="lbl">ES</span>${fmt(t.es)}</div>
-      <div class="cell c-dr"><span class="lbl">DR</span>${fmt(t.dur)}</div>
-      <div class="cell c-ef"><span class="lbl">EF</span>${fmt(t.ef)}</div>
-    </div>
-    <div class="node-mid">
-      <div class="nid">${id}</div>
-      <div class="nname" title="${t.name}">${t.name}</div>
-    </div>
-    <div class="node-bot">
-      <div class="cell c-ls"><span class="lbl">LS</span>${fmt(t.ls)}</div>
-      <div class="cell c-tf${crit ? ' crit' : ''}"><span class="lbl">TF</span>${fmt(t.tf)}</div>
-      <div class="cell c-lf"><span class="lbl">LF</span>${fmt(t.lf)}</div>
-    </div>`;
-  nodesDiv.appendChild(div);
+// ── Build one version ─────────────────────────────────────────────────────────
+function build(ver) {
+  VER = ver;
+  const TASKS3 = DATA[ver].tasks, DEPS3 = DATA[ver].deps, GROUP_NAMES = DATA[ver].groups;
+
+  // ── Aggregate to level 2 ───────────────────────────────────────────────────
+  const TASKS2 = {};
+  for (const [id, t] of Object.entries(TASKS3)) {
+    const g = l2(id);
+    if (!TASKS2[g]) TASKS2[g] = { es:Infinity, ef:-Infinity, ls:Infinity, lf:-Infinity, tf:Infinity };
+    const r = TASKS2[g];
+    r.es = Math.min(r.es, t.es); r.ef = Math.max(r.ef, t.ef);
+    r.ls = Math.min(r.ls, t.ls); r.lf = Math.max(r.lf, t.lf);
+    r.tf = Math.min(r.tf, t.tf);
+  }
+  for (const [id, r] of Object.entries(TASKS2)) {
+    r.dur  = +(r.ef - r.es).toFixed(2);
+    r.name = GROUP_NAMES[id] || id;
+  }
+
+  // ── Cross-group deps ───────────────────────────────────────────────────────
+  const DEPS2 = {};
+  for (const g of Object.keys(TASKS2)) DEPS2[g] = new Set();
+  for (const [succ3, preds3] of Object.entries(DEPS3)) {
+    const sg = l2(succ3);
+    if (!DEPS2[sg]) continue;
+    for (const pred3 of preds3) {
+      const pg = l2(pred3);
+      if (pg !== sg && TASKS2[pg]) DEPS2[sg].add(pg);
+    }
+  }
+  for (const g of Object.keys(DEPS2)) DEPS2[g] = [...DEPS2[g]];
+
+  // Compute critical groups first so we can protect critical→critical edges below
+  CRIT2 = new Set(Object.keys(TASKS2).filter(g => TASKS2[g].tf < 0.01));
+
+  // ── Transitive reduction: remove edges implied by longer paths ──────────────
+  // Critical→critical edges are always preserved to keep the path visually connected.
+  const succ2 = {};
+  for (const g of Object.keys(DEPS2)) succ2[g] = new Set();
+  for (const [s, preds] of Object.entries(DEPS2))
+    for (const p of preds) { if (succ2[p]) succ2[p].add(s); }
+
+  const redundant = new Set();
+  for (const [u, succs] of Object.entries(succ2)) {
+    for (const v of [...succs]) {
+      if (CRIT2.has(u) && CRIT2.has(v)) continue; // never remove critical→critical edges
+      // BFS from u's other neighbors; if v is reachable, u→v is redundant
+      const visited = new Set();
+      const queue = [];
+      for (const n of succ2[u]) {
+        if (n !== v && !visited.has(n)) { visited.add(n); queue.push(n); }
+      }
+      while (queue.length) {
+        const cur = queue.shift();
+        if (cur === v) { redundant.add(`${u}→${v}`); break; }
+        for (const n of (succ2[cur] || new Set()))
+          if (!visited.has(n)) { visited.add(n); queue.push(n); }
+      }
+    }
+  }
+  // DEPS2R = reduced dependency map (successor → [direct predecessors])
+  const DEPS2R = {};
+  for (const g of Object.keys(DEPS2)) DEPS2R[g] = [];
+  for (const [s, preds] of Object.entries(DEPS2))
+    for (const p of preds)
+      if (!redundant.has(`${p}→${s}`)) DEPS2R[s].push(p);
+
+  // ── Dagre layout ───────────────────────────────────────────────────────────
+  const NODE_W = 180, NODE_H = 88;
+  const X_GAP  = 60,  Y_GAP  = 28;
+
+  gr = new dagre.graphlib.Graph({ multigraph: false });
+  gr.setGraph({ rankdir:'LR', nodesep: Y_GAP, ranksep: X_GAP, marginx:40, marginy:40 });
+  gr.setDefaultEdgeLabel(() => ({}));
+  for (const id of Object.keys(TASKS2)) gr.setNode(id, { width:NODE_W, height:NODE_H });
+  for (const [succ, preds] of Object.entries(DEPS2))
+    for (const pred of preds) gr.setEdge(pred, succ);
+  dagre.layout(gr);
+
+  // ── Post-process: equal vertical spacing within each column ────────────────
+  // Group nodes by their dagre x (same x = same rank column)
+  const colMap = new Map();
+  for (const id of gr.nodes()) {
+    const nd = gr.node(id);
+    const col = Math.round(nd.x); // dagre assigns identical x to same-rank nodes
+    if (!colMap.has(col)) colMap.set(col, []);
+    colMap.get(col).push(nd);
+  }
+
+  // Find tallest column to use as reference height
+  let maxNodes = 0;
+  for (const nodes of colMap.values()) maxNodes = Math.max(maxNodes, nodes.length);
+
+  const totalMaxH = maxNodes * NODE_H + (maxNodes - 1) * Y_GAP;
+  const MARGIN_Y  = 40;
+  const centerY   = MARGIN_Y + totalMaxH / 2;
+
+  for (const nodes of colMap.values()) {
+    nodes.sort((a, b) => a.y - b.y); // keep dagre's relative vertical order
+    const n = nodes.length;
+    const colH  = n * NODE_H + (n - 1) * Y_GAP;
+    const startY = centerY - colH / 2 + NODE_H / 2;
+    nodes.forEach((nd, i) => { nd.y = startY + i * (NODE_H + Y_GAP); });
+  }
+
+  // Recompute SVG size from updated positions
+  let svgMaxX = 0, svgMaxY = 0;
+  for (const id of gr.nodes()) {
+    const nd = gr.node(id);
+    svgMaxX = Math.max(svgMaxX, nd.x + NODE_W / 2);
+    svgMaxY = Math.max(svgMaxY, nd.y + NODE_H / 2);
+  }
+  svgW = svgMaxX + 50;
+  svgH = svgMaxY + 50;
+
+  // ── Render nodes ───────────────────────────────────────────────────────────
+  if (nodesDiv) nodesDiv.remove();
+  nodesDiv = document.createElement('div');
+  nodesDiv.style.cssText = 'position:absolute;top:0;left:0;';
+  canvas.appendChild(nodesDiv);
+
+  for (const id of gr.nodes()) {
+    const nd   = gr.node(id);
+    const t    = TASKS2[id];
+    const crit = CRIT2.has(id);
+    const isNew = ver === 'v2' && !V1_GROUPS.has(id);
+
+    const div = document.createElement('div');
+    div.className = 'node' + (crit ? ' critical' : '') + (isNew && !crit ? ' added' : '');
+    div.style.left = (nd.x - NODE_W / 2) + 'px';
+    div.style.top  = (nd.y - NODE_H / 2) + 'px';
+    div.dataset.id = id;
+    div.title = `${id} · ${t.name}${isNew ? '  (nuevo en v2)' : ''}\nES=${fmt(t.es)}  EF=${fmt(t.ef)}  DR=${fmt(t.dur)}h\nLS=${fmt(t.ls)}  LF=${fmt(t.lf)}  TF=${fmt(t.tf)}h`;
+
+    div.innerHTML = `
+      ${isNew ? '<div class="new-tag">NUEVO</div>' : ''}
+      <div class="node-top">
+        <div class="cell c-es"><span class="lbl">ES</span>${fmt(t.es)}</div>
+        <div class="cell c-dr"><span class="lbl">DR</span>${fmt(t.dur)}</div>
+        <div class="cell c-ef"><span class="lbl">EF</span>${fmt(t.ef)}</div>
+      </div>
+      <div class="node-mid">
+        <div class="nid">${id}</div>
+        <div class="nname" title="${t.name}">${t.name}</div>
+      </div>
+      <div class="node-bot">
+        <div class="cell c-ls"><span class="lbl">LS</span>${fmt(t.ls)}</div>
+        <div class="cell c-tf${crit ? ' crit' : ''}"><span class="lbl">TF</span>${fmt(t.tf)}</div>
+        <div class="cell c-lf"><span class="lbl">LF</span>${fmt(t.lf)}</div>
+      </div>`;
+    nodesDiv.appendChild(div);
+  }
+
+  // ── Render edges ───────────────────────────────────────────────────────────
+  svgEl.innerHTML = '';
+  svgEl.setAttribute('width',  svgW);
+  svgEl.setAttribute('height', svgH);
+
+  const defs = document.createElementNS(SVGNS,'defs');
+  function mkArrow(aid, col) {
+    const m = document.createElementNS(SVGNS,'marker');
+    m.setAttribute('id',aid); m.setAttribute('viewBox','0 0 10 10');
+    m.setAttribute('refX','9'); m.setAttribute('refY','5');
+    m.setAttribute('markerWidth','6'); m.setAttribute('markerHeight','6');
+    m.setAttribute('orient','auto');
+    const p = document.createElementNS(SVGNS,'path');
+    p.setAttribute('d','M 0 0 L 10 5 L 0 10 z'); p.setAttribute('fill',col);
+    m.appendChild(p); defs.appendChild(m);
+  }
+  mkArrow('arr-crit','#cc0000');
+  mkArrow('arr-norm','#3DADFF');
+  svgEl.appendChild(defs);
+
+  for (const [s, preds] of Object.entries(DEPS2R)) {
+    for (const p of preds) {
+      const src = gr.node(p);
+      const dst = gr.node(s);
+      if (!src || !dst) continue;
+      const isCrit = CRIT2.has(p) && CRIT2.has(s);
+      const d = orthoPath(src.x + NODE_W / 2, src.y, dst.x - NODE_W / 2, dst.y);
+
+      const path = document.createElementNS(SVGNS,'path');
+      path.classList.add('edge-path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill','none');
+      path.setAttribute('stroke', isCrit ? '#cc0000' : '#3DADFF');
+      path.setAttribute('stroke-width', isCrit ? 2.5 : 1.2);
+      path.setAttribute('marker-end', isCrit ? 'url(#arr-crit)' : 'url(#arr-norm)');
+      if (!isCrit) path.setAttribute('stroke-dasharray','5,3');
+      path.setAttribute('opacity', isCrit ? '1' : '0.85');
+      path.dataset.crit = isCrit ? '1' : '0';
+      svgEl.appendChild(path);
+    }
+  }
+
+  // ── Stats (derived, so they can never drift from the data) ─────────────────
+  const effort = Object.values(TASKS3).reduce((s, t) => s + t.dur, 0);
+  const finish = Math.max(...Object.values(TASKS3).map(t => t.ef));
+  document.getElementById('st-effort').textContent = effort.toFixed(1) + ' h';
+  document.getElementById('st-crit').textContent   = finish.toFixed(1) + ' h';
+
+  applyCritOnly();
+  fitScreen();
 }
-
-// ── Render edges ──────────────────────────────────────────────────────────────
-svgEl.setAttribute('width',  svgW);
-svgEl.setAttribute('height', svgH);
-
-const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-function mkArrow(aid, col) {
-  const m = document.createElementNS('http://www.w3.org/2000/svg','marker');
-  m.setAttribute('id',aid); m.setAttribute('viewBox','0 0 10 10');
-  m.setAttribute('refX','9'); m.setAttribute('refY','5');
-  m.setAttribute('markerWidth','6'); m.setAttribute('markerHeight','6');
-  m.setAttribute('orient','auto');
-  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-  p.setAttribute('d','M 0 0 L 10 5 L 0 10 z'); p.setAttribute('fill',col);
-  m.appendChild(p); defs.appendChild(m);
-}
-mkArrow('arr-crit','#cc0000');
-mkArrow('arr-norm','#3DADFF');
-svgEl.appendChild(defs);
 
 // Orthogonal elbow path (right-angle bends, no curves)
 function orthoPath(x1, y1, x2, y2) {
@@ -487,35 +834,7 @@ function orthoPath(x1, y1, x2, y2) {
   ].join(' ');
 }
 
-// Draw only reduced edges (transitive-reduced, orthogonal routing)
-for (const [s, preds] of Object.entries(DEPS2R)) {
-  for (const p of preds) {
-    const src = gr.node(p);
-    const dst = gr.node(s);
-    if (!src || !dst) continue;
-    const isCrit = CRIT2.has(p) && CRIT2.has(s);
-    const x1 = src.x + NODE_W / 2;
-    const y1 = src.y;
-    const x2 = dst.x - NODE_W / 2;
-    const y2 = dst.y;
-    const d = orthoPath(x1, y1, x2, y2);
-
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.classList.add('edge-path');
-    path.setAttribute('d', d);
-    path.setAttribute('fill','none');
-    path.setAttribute('stroke', isCrit ? '#cc0000' : '#3DADFF');
-    path.setAttribute('stroke-width', isCrit ? 2.5 : 1.2);
-    path.setAttribute('marker-end', isCrit ? 'url(#arr-crit)' : 'url(#arr-norm)');
-    if (!isCrit) path.setAttribute('stroke-dasharray','5,3');
-    path.setAttribute('opacity', isCrit ? '1' : '0.85');
-    path.dataset.crit = isCrit ? '1' : '0';
-    svgEl.appendChild(path);
-  }
-}
-
 // ── Zoom / pan ────────────────────────────────────────────────────────────────
-const viewport = document.getElementById('viewport');
 let scale = 1, tx = 0, ty = 0, dragging = false, lx = 0, ly = 0;
 
 function applyT() {
@@ -554,22 +873,32 @@ function fitScreen() {
 document.getElementById('btn-fit').addEventListener('click', fitScreen);
 
 // ── Critical-only toggle ──────────────────────────────────────────────────────
-let critOnly = false;
-document.getElementById('btn-crit').addEventListener('click', function () {
-  critOnly = !critOnly;
-  this.classList.toggle('active', critOnly);
-
+function applyCritOnly() {
+  const b = document.getElementById('btn-crit');
+  b.classList.toggle('active', critOnly);
+  b.setAttribute('aria-pressed', String(critOnly));
   for (const div of nodesDiv.querySelectorAll('.node')) {
-    const isCrit = CRIT2.has(div.dataset.id);
-    div.style.opacity = critOnly && !isCrit ? '0.12' : '1';
+    div.style.opacity = critOnly && !CRIT2.has(div.dataset.id) ? '0.12' : '1';
   }
   for (const path of svgEl.querySelectorAll('.edge-path')) {
     const isCritEdge = path.dataset.crit === '1';
     path.style.opacity = critOnly && !isCritEdge ? '0.05' : (isCritEdge ? '1' : '0.85');
   }
+}
+document.getElementById('btn-crit').addEventListener('click', () => {
+  critOnly = !critOnly;
+  applyCritOnly();
 });
 
-// ── Export helpers ────────────────────────────────────────────────────────────
+// ── Version selector ──────────────────────────────────────────────────────────
+// Options are generated from DATA: adding a version there is the only change needed.
+const verSelect = document.getElementById('ver-select');
+verSelect.innerHTML = Object.keys(DATA)
+  .map(v => `<option value="${v}">${v}</option>`).join('');
+verSelect.value = VER;
+verSelect.addEventListener('change', () => build(verSelect.value));
+
+// ── Export ────────────────────────────────────────────────────────────────────
 async function withResetTransform(fn) {
   const saved = canvas.style.transform;
   canvas.style.transform = 'none';
@@ -577,39 +906,55 @@ async function withResetTransform(fn) {
   try { return await fn(); } finally { canvas.style.transform = saved; }
 }
 
-function exportBtn(id, label) {
-  const btn = document.getElementById(id);
-  btn.disabled = true; btn.textContent = 'Exportando…';
-  return { btn, restore() { btn.disabled = false; btn.textContent = label; } };
-}
-
-document.getElementById('btn-export-png').addEventListener('click', async () => {
-  const { btn, restore } = exportBtn('btn-export-png', '↓ PNG');
-  try {
-    const dataUrl = await withResetTransform(() =>
-      htmlToImage.toPng(canvas, { backgroundColor: null, pixelRatio: 2, width: svgW, height: svgH })
-    );
-    Object.assign(document.createElement('a'), { download: 'sportmatch-pert.png', href: dataUrl }).click();
-  } catch (e) { alert('Error PNG: ' + e.message); }
-  finally { restore(); }
-});
-
-document.getElementById('btn-export-svg').addEventListener('click', async () => {
-  const { btn, restore } = exportBtn('btn-export-svg', '↓ SVG');
-  try {
-    const dataUrl = await withResetTransform(() =>
-      htmlToImage.toSvg(canvas, { backgroundColor: null, width: svgW, height: svgH })
-    );
-    // dataUrl is a data:image/svg+xml,... — decode and force download
+const EXPORTERS = {
+  png: async () => ({
+    href: await htmlToImage.toPng(canvas, { backgroundColor: null, pixelRatio: 2, width: svgW, height: svgH }),
+    ext: 'png',
+  }),
+  svg: async () => {
+    // toSvg returns a data:image/svg+xml,… — decode it so the download is a real file
+    const dataUrl = await htmlToImage.toSvg(canvas, { backgroundColor: null, width: svgW, height: svgH });
     const svg = decodeURIComponent(dataUrl.split(',').slice(1).join(','));
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    Object.assign(document.createElement('a'), { download: 'sportmatch-pert.svg', href: URL.createObjectURL(blob) }).click();
-  } catch (e) { alert('Error SVG: ' + e.message); }
-  finally { restore(); }
+    return { href: URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })), ext: 'svg' };
+  },
+};
+
+const exportBtn  = document.getElementById('btn-export');
+const exportMenu = document.getElementById('export-menu');
+
+function closeMenu() {
+  exportMenu.hidden = true;
+  exportBtn.setAttribute('aria-expanded', 'false');
+}
+exportBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const open = exportMenu.hidden;
+  exportMenu.hidden = !open;
+  exportBtn.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', closeMenu);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+
+exportMenu.addEventListener('click', async e => {
+  const item = e.target.closest('button[data-fmt]');
+  if (!item) return;
+  closeMenu();
+  const fmt = item.dataset.fmt;
+  exportBtn.disabled = true;
+  exportBtn.setAttribute('aria-busy', 'true');
+  try {
+    const { href, ext } = await withResetTransform(() => EXPORTERS[fmt]());
+    Object.assign(document.createElement('a'), { download: `sportmatch-pert-${VER}.${ext}`, href }).click();
+  } catch (err) {
+    alert(`Error al exportar ${fmt.toUpperCase()}: ` + err.message);
+  } finally {
+    exportBtn.disabled = false;
+    exportBtn.removeAttribute('aria-busy');
+  }
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-fitScreen();
+build('v2');
 </script>
 </body>
 </html>
