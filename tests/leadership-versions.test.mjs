@@ -7,7 +7,20 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
-const fromHead = (p) => execFileSync("git", ["show", `HEAD:${p}`], { encoding: "utf8" });
+
+// The baseline is the commit *before* the v1/v2 merge (879f0fe), because that
+// merge is what deleted the -v2 pages and rewrote the survivors. Reading the
+// baseline from HEAD instead would compare the merged pages against themselves,
+// which is why these two checks never passed once the merge landed.
+const BASELINE = "f46d415f52d99f9e781a46f9e35369b8ff697600";
+
+const fromBaseline = (p) => {
+  try {
+    return execFileSync("git", ["show", `${BASELINE}:${p}`], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  } catch {
+    assert.fail(`cannot read ${p} at baseline ${BASELINE.slice(0, 7)} - was the history rewritten?`);
+  }
+};
 
 /** Pull a top-level `const <name> = <literal>;` out of a page and evaluate it. */
 function constant(html, name, open = "{", close = "};") {
@@ -25,7 +38,7 @@ test("PERT: merged page keeps both versions' data verbatim", () => {
   const DATA = constant(read("leadership/pert.html"), "DATA");
 
   for (const [ver, legacy] of [["v1", "leadership/pert.html"], ["v2", "leadership/pert-v2.html"]]) {
-    const old = fromHead(legacy);
+    const old = fromBaseline(legacy);
     const oldTasks = constant(old, "TASKS3");
     const oldDeps = constant(old, "DEPS3");
     const oldGroups = constant(old, "GROUP_NAMES");
@@ -94,7 +107,7 @@ test("Gantt: merged page keeps both versions' tasks verbatim, minus declared rem
 
   for (const [ver, legacy] of [["v1", "leadership/gantt.html"], ["v2", "leadership/gantt-v2.html"]]) {
     const dropped = new Set(DROPPED[ver]);
-    const oldTasks = constant(fromHead(legacy), "TASKS_L3", "[", "];").filter((t) => !dropped.has(t.id));
+    const oldTasks = constant(fromBaseline(legacy), "TASKS_L3", "[", "];").filter((t) => !dropped.has(t.id));
 
     assert.equal(DATA[ver].tasks.length, oldTasks.length, `${ver} task count`);
     assert.deepEqual(
