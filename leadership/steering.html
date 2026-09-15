@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch — Steering: Presupuesto y Valor ganado</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root{
+    --navy:#101c53;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --bg:#f8fafc;
+    --panel:#ffffff;
+    --border:#e2e8f0;
+    --soft:#f1f5f9;
+    --blue:#2a78d6;
+    --orange:#eb6834;
+    --good:#15803d;
+    --good-bg:#f0fdf4;
+    --good-border:#bbf7d0;
+    --amber:#b45309;
+    --amber-bg:#fffbeb;
+    --amber-border:#fde68a;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:24px 24px 64px;
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  .wrap{ max-width:980px; margin:0 auto; }
+
+  .title{
+    background:var(--navy); color:#fff;
+    border-radius:10px; padding:16px;
+    text-align:center; font-size:22px; font-weight:800; letter-spacing:-0.01em;
+  }
+  .title small{ display:block; margin-top:5px; font-size:12.5px; font-weight:500; opacity:.8; letter-spacing:0; }
+
+  .tabs{ display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .tabs a{
+    text-decoration:none; font-size:13px; font-weight:700; color:var(--navy);
+    background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:7px 12px;
+  }
+  .tabs a:hover{ border-color:#94a3b8; }
+
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:20px 22px; margin-top:16px;
+  }
+  .card > h2{ margin:0 0 4px; font-size:17px; font-weight:800; letter-spacing:-0.01em; }
+  .card > .lead{ margin:0 0 14px; color:var(--muted); font-size:13px; }
+
+  .slide-tag{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:.03em;
+    padding:2px 8px; border-radius:5px; margin-right:8px; vertical-align:2px;
+    background:#e0ecfb; color:#1d4f91;
+  }
+  .who{ float:right; font-size:12px; font-weight:700; color:var(--muted); }
+
+  h3{ margin:22px 0 8px; font-size:13.5px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.04em; }
+  h3:first-of-type{ margin-top:4px; }
+
+  p{ margin:0 0 10px; font-size:13.5px; }
+  ul, ol{ margin:0 0 12px; padding-left:20px; font-size:13.5px; }
+  li{ margin-bottom:6px; }
+  code{
+    background:var(--soft); border:1px solid var(--border); border-radius:4px;
+    padding:0 4px; font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin:0 0 12px; }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; }
+  td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  tr.new td{ background:var(--good-bg); }
+  tr.new td:first-child{ font-weight:700; color:var(--good); }
+  tr.total td{ font-weight:800; border-top:2px solid var(--ink); }
+  tr.cut td{ background:#fdf2ec; font-weight:700; }
+
+  .table-scroll{ overflow-x:auto; }
+
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:4px 0 14px; }
+  .kpi{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:var(--panel); }
+  .kpi .k{ font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+  .kpi .v{ font-size:24px; font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .kpi .s{ font-size:12px; color:var(--muted); }
+  .kpi.hl{ border-color:var(--blue); box-shadow:inset 0 2px 0 var(--blue); }
+  .kpi .v.blue{ color:var(--blue); }
+  .up{ color:var(--good); font-weight:700; }
+
+  .script{
+    background:var(--soft); border-left:4px solid var(--navy); border-radius:0 8px 8px 0;
+    padding:14px 16px; font-size:14.5px; line-height:1.65; margin:0 0 12px;
+  }
+  .script p{ font-size:14.5px; margin:0 0 10px; }
+  .script p:last-child{ margin-bottom:0; }
+  .script .cue{ display:block; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:2px; }
+
+  .note{
+    background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:8px;
+    padding:11px 14px; font-size:13px; color:#78350f; margin:0 0 12px;
+  }
+  .note b{ color:#92400e; }
+  .ok{
+    background:var(--good-bg); border:1px solid var(--good-border); border-radius:8px;
+    padding:11px 14px; font-size:13px; color:#14532d; margin:0 0 12px;
+  }
+
+  details{ border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin:0 0 8px; background:var(--panel); }
+  summary{ cursor:pointer; font-weight:700; font-size:13.5px; }
+  details p{ margin:8px 0 2px; }
+
+  .formula{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+  .formula span{ font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--soft); border:1px solid var(--border); border-radius:6px; padding:3px 8px; }
+
+  /* Chart */
+  .chart-box{ position:relative; }
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--ink); margin:0 0 6px; }
+  .legend i{ display:inline-block; width:22px; height:0; vertical-align:middle; margin-right:6px; border-top:2px solid; }
+  .legend i.pv{ border-top:2px dashed #334155; }
+  .legend i.ev{ border-color:var(--blue); }
+  .legend i.ac{ border-color:var(--orange); }
+  svg text{ font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .tip{
+    position:absolute; pointer-events:none; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:8px 10px; font-size:12px; box-shadow:0 4px 14px rgba(15,23,42,.12);
+    opacity:0; transition:opacity .1s; min-width:170px;
+  }
+  .tip b{ display:block; margin-bottom:4px; }
+  .tip .row{ display:flex; justify-content:space-between; gap:12px; font-variant-numeric:tabular-nums; }
+  .tip .sw{ display:inline-block; width:10px; height:2px; vertical-align:middle; margin-right:6px; }
+
+  .two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:760px){ .two{ grid-template-columns:1fr; } body{ padding:16px 16px 48px; } .who{ float:none; display:block; margin-bottom:6px; } }
+  .foot{ margin-top:18px; font-size:12px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="title">
+  Steering 17/09 · Presupuesto y Valor ganado
+  <small>Guion, qué recalcar y qué mostrar en las diapositivas 05 y 06 del deck · Corte: semana 6 (13/08 → 17/09)</small>
+</div>
+
+<nav class="tabs">
+  <a href="#alinear">Antes de presentar</a>
+  <a href="#presupuesto">05 · Presupuesto</a>
+  <a href="#valor-ganado">06 · Valor ganado</a>
+  <a href="#preguntas">Preguntas probables</a>
+</nav>
+
+<!-- ============================================================ ALINEAR -->
+<div class="card" id="alinear">
+  <h2>Antes de presentar: tres cosas para alinear</h2>
+  <p class="lead">Son las inconsistencias que un docente puede detectar. Conviene resolverlas antes del 17/09.</p>
+
+  <div class="note">
+    <b>1 · El BAC de 11.221,20 USD no sale del Excel.</b>
+    Con las tarifas de referencia, el costo base es 6.000 USD de horas-hombre más 219,42 USD de infra e IA.
+    Con 20 % de contingencia da <b>7.463,30 USD</b>. El número anterior supone unos
+    <b>3.351 USD de CAPEX</b> que no están detallados en ningún lado.
+    Si ese CAPEX existe (equipos, licencias), agréguenlo como fila con su detalle. Si no existe, usen 7.463,30 USD.
+  </div>
+  <div class="note">
+    <b>2 · El EAC tiene que calcularse sobre la misma base que mide el EVM.</b>
+    PV, EV y AC miden desarrollo, infra e IA (BAC de esa base: 2.379,42 USD).
+    Dividir el BAC total del proyecto por ese CPI mezcla alcances. En la hoja <i>Curva S</i> del Excel,
+    la celda <code>L7</code> hoy usa 11.221,20 USD y da un EAC de 9.986 USD.
+    Para la diapositiva usen <b>EAC = 2.379,42 / 1,124 = 2.117,59 USD</b>, o cambien esa celda.
+  </div>
+  <div class="note">
+    <b>3 · El rol de Juan Francisco no coincide entre diapositivas.</b>
+    En «Equipo y roles» figura en <i>Diseño</i>, pero en Linear y en el presupuesto es el dev 3.
+    Solución propuesta: dejarlo como «Desarrollo (incluye diseño)» y que la fila «Diseño y QA» pase a llamarse «QA».
+  </div>
+</div>
+
+<!-- ============================================================ SLIDE 05 -->
+<div class="card" id="presupuesto">
+  <span class="who">♾️ Mati</span>
+  <h2><span class="slide-tag">DIAPO 05</span>Presupuesto</h2>
+  <p class="lead">El pedido del docente es incorporar el esfuerzo en horas-hombre (HH) valorizado a tarifas de referencia, porque es la base del análisis de valor ganado.</p>
+
+  <h3>Qué poner en la diapositiva</h3>
+  <p>Completar la tabla de la plantilla así (horizonte: 12 semanas, del 13/08 al 29/10):</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Rol</th><th class="num">Tarifa ref.</th><th class="num">HH</th><th class="num">Costo</th><th>Cómo se calcula</th></tr></thead>
+    <tbody>
+      <tr><td><b>Gestión</b> (PM, PO, Tech Lead)</td><td class="num">$20/HH</td><td class="num">144</td><td class="num">$2.880</td><td>3 roles × 4 h/sem × 12 sem</td></tr>
+      <tr><td><b>Desarrollo</b> (3 devs, incluye diseño)</td><td class="num">$10/HH</td><td class="num">216</td><td class="num">$2.160</td><td>3 devs × 6 h/sem × 12 sem</td></tr>
+      <tr><td><b>QA</b> (QA Lead)</td><td class="num">$20/HH</td><td class="num">48</td><td class="num">$960</td><td>1 rol × 4 h/sem × 12 sem</td></tr>
+      <tr class="new"><td>+ Infra y herramientas IA <span style="font-weight:400">(fila nueva)</span></td><td class="num">—</td><td class="num">—</td><td class="num">$219,42</td><td>Azure B1 13,14 USD/mes × 3 + Claude Code/ChatGPT 3 × 20 USD/mes × 3</td></tr>
+      <tr class="total"><td>Subtotal</td><td></td><td class="num">408</td><td class="num">$6.219,42</td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Franja inferior de la plantilla:</p>
+  <div class="kpis">
+    <div class="kpi hl"><div class="k">BAC</div><div class="v blue">$7.463</div><div class="s">subtotal + 20 % de contingencia</div></div>
+    <div class="kpi"><div class="k">HH totales</div><div class="v">408</div><div class="s">216 dev + 192 gestión y QA</div></div>
+    <div class="kpi"><div class="k">Contingencia</div><div class="v">$1.244</div><div class="s">20 % del subtotal</div></div>
+    <div class="kpi"><div class="k">Línea base EVM</div><div class="v">$2.379</div><div class="s">dev + infra + IA · <b>agregar</b></div></div>
+  </div>
+
+  <h3>Qué agregar</h3>
+  <ul>
+    <li><b>Un cuarto KPI, «Línea base EVM: $2.379».</b> Conecta esta diapositiva con la siguiente: es el monto sobre el que se mide el valor ganado.</li>
+    <li><b>La fila de infra e IA</b>, con la nota «Vercel, Neon, Firebase y GitHub Actions en plan gratuito». Muestra que los costos no laborales se relevaron.</li>
+    <li><b>Una línea al pie:</b> «HH planificadas a dedicación fija. Tarifas de referencia: dev 10 USD/h, gestión 20 USD/h».</li>
+    <li>Opcional: la curva de <b>PV semanal</b>. No es plana: en las semanas 1, 5 y 10 se cobra la IA y en las 4, 8 y 12, Azure.</li>
+  </ul>
+
+  <h3>Guion (≈ 60 s)</h3>
+  <div class="script">
+    <p><span class="cue">Abrir</span>Armamos el presupuesto desde el esfuerzo: cuántas horas-hombre pone cada rol y a qué tarifa de referencia. Es la misma base que después usamos para medir valor ganado.</p>
+    <p><span class="cue">Tabla</span>Gestión son tres roles a cuatro horas por semana, 144 horas a 20 dólares. Desarrollo son tres devs a seis horas por semana, 216 horas a 10 dólares. QA suma 48 horas más. En total son 408 horas-hombre y 6.000 dólares de mano de obra en las doce semanas.</p>
+    <p><span class="cue">Costos no laborales</span>Además relevamos lo que pagamos fuera de las horas: el back en Azure, 13 dólares por mes desde que deployamos el 29/08, y la IA de cada dev, 20 dólares por mes. Vercel, Neon y Firebase están en plan gratuito.</p>
+    <p><span class="cue">Cierre</span>Con un 20 % de contingencia, el BAC es de 7.463 dólares. Para el valor ganado tomamos la parte que se mide contra entregables, desarrollo más infra e IA: 2.379 dólares. Esa es la línea base de la próxima diapositiva.</p>
+  </div>
+
+  <h3>Qué recalcar (demuestra comprensión)</h3>
+  <ul>
+    <li><b>BAC = línea base de costos:</b> el costo de las tareas más la <b>contingencia</b>, que es la reserva para riesgos ya identificados. Las reservas de gestión, para imprevistos no identificados, quedan fuera del BAC.</li>
+    <li>Presupuestamos por <b>esfuerzo</b> (HH × tarifa), no por calendario. Por eso el presupuesto se puede comparar directo con el avance.</li>
+    <li>La tarifa de gestión duplica la de desarrollo, pero el <b>entregable medible</b> es el software. Por eso el EVM se ancla en las horas de desarrollo.</li>
+    <li>La <b>PV no es lineal</b>: los costos mensuales (Azure, IA) generan escalones en la curva.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ SLIDE 06 -->
+<div class="card" id="valor-ganado">
+  <h2><span class="slide-tag">DIAPO 06</span>Valor ganado</h2>
+  <p class="lead">Pide PV, EV, AC, SPI y CPI, más ETC y EAC «si se animan». Los valores son al corte de la semana 6 (17/09) y salen de la hoja <i>Curva S</i> del Excel.</p>
+
+  <h3>Qué poner en la diapositiva</h3>
+  <p>Fila superior de la plantilla (sumar las horas debajo de cada monto, como en el ejemplo de referencia):</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">PV</div><div class="v">$1.213</div><div class="s">108 h planificadas</div></div>
+    <div class="kpi hl"><div class="k">EV</div><div class="v blue">$1.363</div><div class="s">123 h ganadas</div></div>
+    <div class="kpi"><div class="k">AC</div><div class="v">$1.213</div><div class="s">108 h reales</div></div>
+  </div>
+  <p>Fila inferior:</p>
+  <div class="kpis">
+    <div class="kpi"><div class="k">SPI</div><div class="v">1,12</div><div class="s up">▲ adelantados</div></div>
+    <div class="kpi"><div class="k">CPI</div><div class="v">1,12</div><div class="s up">▲ eficientes</div></div>
+    <div class="kpi"><div class="k">ETC</div><div class="v">$904</div><div class="s">costo para terminar</div></div>
+    <div class="kpi hl"><div class="k">EAC</div><div class="v blue">$2.118</div><div class="s">vs BAC $2.379 · <span class="up">ahorro $262</span></div></div>
+  </div>
+  <div class="formula">
+    <span>SV = EV − PV = +$150 (+15 h)</span>
+    <span>CV = EV − AC = +$150 (+15 h)</span>
+    <span>SPI = EV / PV</span>
+    <span>CPI = EV / AC</span>
+    <span>EAC = BAC / CPI</span>
+    <span>ETC = EAC − AC</span>
+    <span>VAC = BAC − EAC</span>
+  </div>
+
+  <h3>Qué agregar</h3>
+  <ul>
+    <li><b>La curva S</b>, arriba de los números. Pueden usar la de abajo (captura de pantalla) o la del Excel. Es lo que más comunica.</li>
+    <li><b>SV y CV en horas y en dólares</b> (+15 h / +$150), con flecha verde, como en el ejemplo de referencia.</li>
+    <li><b>Avance: 57 % ganado vs 51 % planificado</b> (EV/BAC vs PV/BAC). Traduce el SPI a algo intuitivo.</li>
+    <li><b>Una línea al pie:</b> «+15 h ≈ 0,8 semana de adelanto. Semana 1 floja (SPI 0,58), recuperada en la semana 2».</li>
+  </ul>
+
+  <h3>Curva S · USD acumulados</h3>
+  <div class="legend" aria-hidden="true">
+    <span><i class="pv"></i>PV · planificado</span>
+    <span><i class="ev"></i>EV · ganado</span>
+    <span><i class="ac"></i>AC · costo real</span>
+  </div>
+  <div class="chart-box" id="chart-box">
+    <svg id="chart" viewBox="0 0 900 340" width="100%" role="img" aria-label="Curva S: PV, EV y AC acumulados por semana, del 13/08 al 29/10"></svg>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <div class="table-scroll" style="margin-top:12px">
+  <table>
+    <thead><tr><th>Sem.</th><th>Cierre</th><th class="num">PV acum.</th><th class="num">EV acum.</th><th class="num">AC acum.</th><th class="num">Horas ganadas</th><th class="num">SPI</th><th class="num">CPI</th><th>Qué pasó</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>13/08</td><td class="num">$240</td><td class="num">$140</td><td class="num">$240</td><td class="num">8 h</td><td class="num">0,58</td><td class="num">0,58</td><td>Capacitación con alcance recortado; arranque lento</td></tr>
+      <tr><td>2</td><td>20/08</td><td class="num">$420</td><td class="num">$440</td><td class="num">$420</td><td class="num">30 h</td><td class="num">1,05</td><td class="num">1,05</td><td>Se cierra la capacitación (16/08) y se pone al día</td></tr>
+      <tr><td>3</td><td>27/08</td><td class="num">$600</td><td class="num">$640</td><td class="num">$600</td><td class="num">20 h</td><td class="num">1,07</td><td class="num">1,07</td><td>Modelo y API de partidos, CI y Docker</td></tr>
+      <tr><td>4</td><td>03/09</td><td class="num">$793</td><td class="num">$863</td><td class="num">$793</td><td class="num">21 h</td><td class="num">1,09</td><td class="num">1,09</td><td>Deploy de front y back el 29/08, antes de lo planeado</td></tr>
+      <tr><td>5</td><td>10/09</td><td class="num">$1.033</td><td class="num">$1.133</td><td class="num">$1.033</td><td class="num">21 h</td><td class="num">1,10</td><td class="num">1,10</td><td>Solicitudes, wizard, «Tus partidos»</td></tr>
+      <tr class="cut"><td>6</td><td>17/09</td><td class="num">$1.213</td><td class="num">$1.363</td><td class="num">$1.213</td><td class="num">23 h</td><td class="num">1,12</td><td class="num">1,12</td><td>Rating, perfil ajeno, landing · <b>corte</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Guion (≈ 90 s)</h3>
+  <div class="script">
+    <p><span class="cue">Qué medimos</span>Medimos el valor ganado sobre la línea base de desarrollo más infra e IA: 2.379 dólares en doce semanas. El EV sale de las horas estimadas de los tickets de Linear que se entregaron: 123 horas al corte.</p>
+    <p><span class="cue">Los tres números</span>A la semana 6 teníamos planificado gastar 1.213 dólares, o sea 108 horas. Gastamos exactamente eso, porque la dedicación es fija. Pero el trabajo que entregamos vale 1.363 dólares: 123 horas de la WBS.</p>
+    <p><span class="cue">La curva</span>La curva no fue pareja. La semana 1 fue floja: recortamos el alcance de la capacitación y el EV quedó por debajo del plan, con un SPI de 0,58. En la semana 2 cerramos la capacitación y nos pusimos al día. De la 3 a la 6 avanzamos un poco más rápido de lo previsto, y por eso el deploy quedó hecho el 29/08.</p>
+    <p><span class="cue">Índices</span>Terminamos con SPI y CPI de 1,12: por cada dólar planificado, y por cada dólar gastado, entregamos 1,12 dólares de valor. En tiempo son 15 horas a favor, casi una semana de desarrollo.</p>
+    <p><span class="cue">Proyección</span>Si mantenemos este rendimiento, el EAC es de 2.118 dólares contra un BAC de 2.379, o sea un ahorro de unos 260 dólares, y nos faltan 904 para terminar. Aun si el rendimiento vuelve al plan, el EAC sería de 2.229 dólares y seguiríamos dentro del presupuesto.</p>
+  </div>
+
+  <h3>Qué recalcar (demuestra comprensión)</h3>
+  <ul>
+    <li><b>PV = AC no es casualidad:</b> la dedicación es fija (18 h/sem) y los costos de infra e IA fueron los planeados. La diferencia está en el <b>EV</b>, es decir, en cuánto valor rinde cada hora.</li>
+    <li><b>SPI = CPI</b> justamente porque PV = AC. Mencionarlo evita que parezca un error.</li>
+    <li><b>SPI &gt; 1 no significa «terminamos antes»:</b> significa que el trabajo entregado a la fecha vale más que el planificado a la fecha. Cierre de la curva: <b>57 % ganado vs 51 % planificado</b>.</li>
+    <li><b>Dos EAC posibles:</b> el típico (BAC/CPI = $2.118) supone que la eficiencia se mantiene. El atípico (AC + BAC − EV = $2.229) supone que lo que falta sale según el plan. Mostrar el rango demuestra criterio.</li>
+    <li><b>TCPI = 0,87:</b> para terminar dentro del presupuesto alcanza con rendir al 87 % de lo planificado. Hay margen.</li>
+    <li>La <b>semana 1</b> es el único punto con SPI y CPI menores a 1. Se detectó y se corrigió en la semana 2: eso es control, no solo reporte.</li>
+  </ul>
+</div>
+
+<!-- ============================================================ PREGUNTAS -->
+<div class="card" id="preguntas">
+  <h2>Preguntas probables del docente</h2>
+  <p class="lead">Respuestas cortas para tener a mano.</p>
+
+  <details open>
+    <summary>¿Por qué el EVM no incluye las horas de gestión?</summary>
+    <p>Porque gestión es <b>nivel de esfuerzo</b> (level of effort): no produce entregables medibles por separado y su EV se toma igual a su PV. Incluirla empuja los índices hacia 1 y oculta el desempeño real. Por eso medimos donde hay entregables (tickets y paquetes de la WBS), y gestión y QA quedan en el presupuesto total.</p>
+  </details>
+  <details>
+    <summary>¿Cómo calcularon el EV?</summary>
+    <p>Sumando las horas estimadas (1 SP ≈ 1 h) de los tickets entregados: 69 Done, más 1 In Review y 4 Todo que cierran antes del steering. Total: 123 h × 10 USD/h. Las horas por semana siguen el ritmo real (8, 30, 20, 21, 21 y 23 h). A eso se suman infra e IA como costo consumido.</p>
+  </details>
+  <details>
+    <summary>Si el SPI es mayor a 1, ¿por qué el mapa, las notificaciones y la moderación no están hechos?</summary>
+    <p>El SPI compara contra lo planificado <b>a la fecha</b>. Notificaciones y moderación están planificadas para después (steering 3), y el mapa se replanificó. Además, parte del EV viene de trabajo que se agregó en la ejecución (landing, tab bar, login con Google, agentes de QA: unos 32 SP). <b>Esos extras tienen que entrar a la WBS como cambio de alcance aprobado</b> (ver Changelog). Si no entran, no cuentan como valor ganado sobre la línea base.</p>
+  </details>
+  <details>
+    <summary>¿Qué significa que el EAC sea menor que el BAC?</summary>
+    <p>Que si la eficiencia actual se mantiene, terminamos gastando menos de lo presupuestado (VAC = +$262). No es plata «que sobra»: es margen para absorber riesgos, como la curva de adaptación por el cambio de roles.</p>
+  </details>
+  <details>
+    <summary>¿Por qué la semana 1 da 0,58?</summary>
+    <p>Porque se recortó el alcance de la capacitación y no se cerró ningún ticket antes del 15/08. Las horas se trabajaron (AC), pero el valor entró la semana siguiente. En la semana 2 el SPI ya estaba en 1,05.</p>
+  </details>
+  <details>
+    <summary>¿La línea base es la WBS o la capacidad del equipo?</summary>
+    <p>La PV se armó con la capacidad comprometida (3 devs × 6 h/sem). La WBS v3 estima 170 h de desarrollo contra 216 h de capacidad en 12 semanas, así que queda un colchón de unas 46 h para fixes, deuda técnica y los extras.</p>
+  </details>
+</div>
+
+<p class="foot">Fuente: <code>Claude outputs/SportMatch - Equipo 11 - EVM y Curva S.xlsx</code> (hojas PRESUPUESTO, Curva S y Avance semanal) · Linear export 15/09 · docs/planning/Estado-real-WBS-15-09.md</p>
+
+</div>
+
+<script>
+(function(){
+  const weeks = ['13/08','20/08','27/08','03/09','10/09','17/09','24/09','01/10','08/10','15/10','22/10','29/10'];
+  const pv = [240,420,600,793.14,1033.14,1213.14,1393.14,1586.28,1766.28,2006.28,2186.28,2379.42];
+  const ev = [140,440,640,863.14,1133.14,1363.14];
+  const ac = [240,420,600,793.14,1033.14,1213.14];
+  const pvh = [18,36,54,72,90,108,126,144,162,180,198,216];
+  const evh = [8,38,58,79,100,123];
+  const ach = [18,36,54,72,90,108];
+  const CUT = 5;
+
+  const W = 900, H = 340, m = {l:56, r:84, t:18, b:38};
+  const iw = W - m.l - m.r, ih = H - m.t - m.b, yMax = 2500;
+  const x = i => m.l + (iw * i) / (weeks.length - 1);
+  const y = v => m.t + ih - (ih * v) / yMax;
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('chart');
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); (parent || svg).appendChild(n); return n; };
+  const fmt = v => '$' + Math.round(v).toLocaleString('es-AR');
+
+  // grid + y labels
+  for (let v = 0; v <= yMax; v += 500) {
+    el('line', {x1:m.l, x2:W-m.r, y1:y(v), y2:y(v), stroke: v === 0 ? '#94a3b8' : '#e2e8f0', 'stroke-width':1});
+    const t = el('text', {x:m.l-8, y:y(v)+4, 'text-anchor':'end', 'font-size':11, fill:'#64748b'}); t.textContent = fmt(v);
+  }
+  weeks.forEach((w, i) => { const t = el('text', {x:x(i), y:H-m.b+18, 'text-anchor':'middle', 'font-size':11, fill:'#64748b'}); t.textContent = w; });
+
+  // cut marker
+  el('line', {x1:x(CUT), x2:x(CUT), y1:m.t, y2:m.t+ih, stroke:'#cbd5e1', 'stroke-width':1, 'stroke-dasharray':'3 3'});
+  const ct = el('text', {x:x(CUT)+6, y:m.t+12, 'font-size':11, fill:'#64748b'}); ct.textContent = 'Corte 17/09';
+
+  const path = arr => arr.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+  el('path', {d:path(ac), fill:'none', stroke:'#eb6834', 'stroke-width':2, 'stroke-linejoin':'round', 'stroke-linecap':'round'});
+  el('path', {d:path(pv), fill:'none', stroke:'#334155', 'stroke-width':2, 'stroke-dasharray':'6 5', 'stroke-linecap':'round'});
+  el('path', {d:path(ev), fill:'none', stroke:'#2a78d6', 'stroke-width':2, 'stroke-linejoin':'round', 'stroke-linecap':'round'});
+
+  // end markers + direct labels at the cut
+  [[ev, '#2a78d6', 'EV ' + fmt(ev[CUT]), -12, -8, 'end'], [ac, '#eb6834', 'AC = PV ' + fmt(ac[CUT]), 24, 10, 'start']].forEach(([arr, c, label, dy, dx, anchor]) => {
+    el('circle', {cx:x(CUT), cy:y(arr[CUT]), r:4.5, fill:c, stroke:'#fff', 'stroke-width':2});
+    const t = el('text', {x:x(CUT)+dx, y:y(arr[CUT])+dy, 'text-anchor':anchor, 'font-size':12, 'font-weight':700, fill:'#0f172a'}); t.textContent = label;
+  });
+  const bt = el('text', {x:W-m.r+6, y:y(pv[11])+4, 'font-size':12, 'font-weight':700, fill:'#0f172a'}); bt.textContent = 'BAC ' + fmt(pv[11]);
+
+  // hover layer
+  const box = document.getElementById('chart-box'), tip = document.getElementById('tip');
+  const cross = el('line', {x1:0, x2:0, y1:m.t, y2:m.t+ih, stroke:'#94a3b8', 'stroke-width':1, opacity:0});
+  const hit = el('rect', {x:m.l-20, y:m.t, width:iw+40, height:ih, fill:'transparent'});
+  const move = evt => {
+    const r = svg.getBoundingClientRect();
+    const px = (evt.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(weeks.length - 1, Math.round((px - m.l) / (iw / (weeks.length - 1)))));
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
+    let html = '<b>Semana ' + (i + 1) + ' · ' + weeks[i] + '</b>';
+    html += '<div class="row"><span><span class="sw" style="background:#334155"></span>PV</span><span>' + fmt(pv[i]) + ' · ' + pvh[i] + ' h</span></div>';
+    if (i <= CUT) {
+      html += '<div class="row"><span><span class="sw" style="background:#2a78d6"></span>EV</span><span>' + fmt(ev[i]) + ' · ' + evh[i] + ' h</span></div>';
+      html += '<div class="row"><span><span class="sw" style="background:#eb6834"></span>AC</span><span>' + fmt(ac[i]) + ' · ' + ach[i] + ' h</span></div>';
+      html += '<div class="row"><span>SPI / CPI</span><span>' + (ev[i] / pv[i]).toFixed(2).replace('.', ',') + '</span></div>';
+    } else {
+      html += '<div class="row"><span>EV / AC</span><span>pendiente</span></div>';
+    }
+    tip.innerHTML = html;
+    const bx = box.getBoundingClientRect();
+    let left = evt.clientX - bx.left + 14;
+    if (left + 190 > bx.width) left = evt.clientX - bx.left - 200;
+    tip.style.left = left + 'px';
+    tip.style.top = Math.max(0, evt.clientY - bx.top - 40) + 'px';
+    tip.style.opacity = 1;
+  };
+  hit.addEventListener('pointermove', move);
+  hit.addEventListener('pointerleave', () => { tip.style.opacity = 0; cross.setAttribute('opacity', 0); });
+})();
+</script>
+</body>
+</html>
