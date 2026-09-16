@@ -132,7 +132,7 @@
   <span><b id="st-pkgs">0</b> paquetes</span>
   <span><b id="st-subs">0</b> sub-paquetes</span>
   <span><b id="st-leaves">0</b> entregables</span>
-  <span class="newkey" id="newkey" hidden><i>NUEVO</i> agregado en v2</span>
+  <span class="newkey" id="newkey" hidden><i>NUEVO</i> agregado en <span id="newkey-ver">v2</span></span>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -208,16 +208,53 @@ const V2_ADD = [
     "12.1.3 Interfaz de reporte"]],
 ];
 
+/* ---- v4 = v2 + estas altas ---------------------------------------------
+   Lo que el equipo construyó y la v2 no nombraba (WBS-SportMatch-v4.md), más el
+   panel de moderación 12.2 que la v3 había sumado. Mismo formato que V2_ADD.
+   Generado por scripts/generate-v4.py. */
+const V4_ADD = [
+ ["4.0 Autenticación", "4.1 Backend de autenticación",
+   ["4.1.4 Integración con proveedor de identidad federada"]],
+ ["4.0 Autenticación", "4.2 Frontend de autenticación y acceso a la app",
+   ["4.2.2 Inicio de sesión con Google", "4.2.3 Recuperación de contraseña", "4.2.4 Landing pública y entrada a la app", "4.2.5 Shell de navegación de la app"]],
+ ["5.0 Perfil de Usuario", "5.1 Modelo y backend de perfil",
+   ["5.1.5 Estadísticas de actividad del perfil"]],
+ ["5.0 Perfil de Usuario", "5.2 Frontend de perfil",
+   ["5.2.5 Perfil público de otro jugador"]],
+ ["6.0 Gestión de Partidos", "6.1 Modelo y backend de partidos",
+   ["6.1.5 Catálogo de deportes"]],
+ ["6.0 Gestión de Partidos", "6.2 Frontend de gestión de partidos",
+   ["6.2.4 Vista \"Mis partidos\""]],
+ ["6.0 Gestión de Partidos", "6.3 Sistema de solicitudes",
+   ["6.3.5 Inscripción directa y baja del partido"]],
+ ["8.0 QA Manual y Validación", "8.3 QA automatizado en el pipeline",
+   ["8.3.1 Revisión automática de pull requests", "8.3.2 Harness de pruebas end-to-end de la API"]],
+ ["9.0 Deployment", "9.1 Deploy",
+   ["9.1.4 Contenedorización del backend y registro de imágenes"]],
+ ["12.0 Moderación y Reportes", "12.2 Panel de moderación",
+   ["12.2.1 Panel de revisión de reportes", "12.2.2 Suspensión de usuario", "12.2.3 Historial de moderación"]],
+];
+
+/* Textos que cambiaron entre la v2 y la WBS v4, sin cambiar de número. */
+const V4_RENAME = {
+ "2.2.8 Pantallas de reporte de usuario": "2.2.8 Pantallas de moderación",
+ "8.1.10 Prueba manual de reportes": "8.1.10 Prueba manual de moderación",
+ "4.2 Frontend de autenticación": "4.2 Frontend de autenticación y acceso a la app",
+};
+
 const VER_DESC = {
   v1: "Alcance original del WBS.",
   v2: "Extensión propuesta: notificaciones, invitaciones, cancelación con motivo y moderación.",
+  v4: "Lo que se construyó de verdad: entrada al producto, auth federada, deportes, mis partidos, inscripción directa, perfil público, QA automatizado y contenedores; más el panel de moderación.",
 };
 
-/* Aplica V2_ADD sobre una copia profunda de v1 y marca lo nuevo. */
-function buildV2(){
-  const out = WBS_V1.map(([pkg, subs]) => [pkg, subs.map(([s, items]) => [s, items.slice()])]);
+/* Aplica una lista de altas sobre una copia profunda del árbol base, con renombres
+   opcionales, y marca lo nuevo. */
+function applyAdds(base, adds, renames = {}){
+  const ren = (x) => renames[x] || x;
+  const out = base.map(([pkg, subs]) => [ren(pkg), subs.map(([s, items]) => [ren(s), items.map(ren)])]);
   const newLeaves = new Set(), newSubs = new Set(), newPkgs = new Set();
-  V2_ADD.forEach(([pkgName, subName, items]) => {
+  adds.forEach(([pkgName, subName, items]) => {
     let pkg = out.find(p => p[0] === pkgName);
     if(!pkg){ pkg = [pkgName, []]; out.push(pkg); newPkgs.add(pkgName); }
     let sub = pkg[1].find(s => s[0] === subName);
@@ -226,15 +263,18 @@ function buildV2(){
   });
   return { tree: out, newLeaves, newSubs, newPkgs };
 }
+const buildV2 = () => applyAdds(WBS_V1, V2_ADD);
+const buildV4 = () => applyAdds(buildV2().tree, V4_ADD, V4_RENAME);
 
 const VIEWS = {
   v1: { tree: WBS_V1, newLeaves:new Set(), newSubs:new Set(), newPkgs:new Set() },
   v2: buildV2(),
+  v4: buildV4(),
 };
 
 const gridEl = document.getElementById('grid');
 const btn = document.getElementById('toggle');
-let VER = 'v2';
+let VER = 'v4';
 
 function render(ver){
   VER = ver;
@@ -256,7 +296,8 @@ function render(ver){
   document.getElementById('st-subs').textContent   = tree.reduce((n, [, s]) => n + s.length, 0);
   document.getElementById('st-leaves').textContent = tree.reduce((n, [, s]) => n + s.reduce((m, [, i]) => m + i.length, 0), 0);
   document.getElementById('ver-desc').textContent  = VER_DESC[ver];
-  document.getElementById('newkey').hidden = ver !== 'v2';
+  document.getElementById('newkey').hidden = ver === 'v1';
+  document.getElementById('newkey-ver').textContent = ver;
 
   btn.textContent = 'Expandir todo';
 }
@@ -273,7 +314,7 @@ verSelect.innerHTML = Object.keys(VIEWS).map(v => `<option value="${v}">${v}</op
 verSelect.value = VER;
 verSelect.addEventListener('change', () => render(verSelect.value));
 
-render('v2');
+render('v4');
 </script>
 </body>
 </html>

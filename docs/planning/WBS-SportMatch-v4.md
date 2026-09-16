@@ -12,14 +12,16 @@ sobre cada pull request y la contenedorización del backend. Son **13 paquetes n
 **No** se incorporan como paquetes los arreglos ni el retrabajo surgidos del propio desarrollo: no son
 alcance, son consecuencia. Dos paquetes existentes amplían su contenido sin cambiar de número (**3.1.2**
 y **3.2.3**) y dos actualizan su descripción para reflejar cómo se resolvieron (**2.3.1** y **4.1.2**).
+Además, **3.1.2 se recalibra de 3 h a 15 h** contra lo que la capacitación costó en la ejecución.
 
 | | v2 | v3 | v4 | Δ v3→v4 |
 |---|---:|---:|---:|---:|
 | Paquetes de trabajo | 79 | 103 | **116** | +13 |
-| Esfuerzo total estimado | 433,17 h | 395,77 h | **428,27 h** | +32,50 h |
+| Esfuerzo total estimado | 433,17 h | 395,77 h | **440,27 h** | +44,50 h |
 
-De esas 32,50 h, **25,00 h son de desarrollo de producto** (módulos 4.0 a 7.0) y 7,50 h son de QA
-automatizado y deployment (8.3 y 9.1.4).
+De las 44,50 h de diferencia, **32,50 h son los 13 paquetes nuevos** —25,00 h de desarrollo de producto
+(módulos 4.0 a 7.0) y 7,50 h de QA automatizado y deployment (8.3 y 9.1.4)— y **12,00 h son la
+recalibración de 3.1.2**.
 
 **Convención.** Cada paquete lleva número, descripción, dependencias y estimación en horas.
 La estimación usa el método PERT sobre tres puntos: DO optimista, DM más probable, DP pesimista,
@@ -201,8 +203,8 @@ conviene resolverla al inicio del módulo, no al final.
 <br>*Dependencias:* 1.1.1 · *Estimación:* 4 h (DO 2 / DM 4 / DP 6)
 
 **3.1.2** — Equipo capacitado en stack: nivelación de conocimientos en framework FE/BE y base de datos, mediante la implementación completa de una feature de referencia end-to-end en un repositorio de práctica por persona.
-<br>*Dependencias:* 3.1.1 · *Estimación:* 3 h (DO 1.5 / DM 3 / DP 4.5)
-<br>⚠️ *La ejecución real costó 15 h (5 h por dev). La estimación se mantiene en 3 h hasta que se decida si se recalibra.*
+<br>*Dependencias:* 3.1.1 · *Estimación:* 15 h (DO 10 / DM 15 / DP 20)
+<br>*Recalibrado en la v4: la v3 estimaba 3 h sobre el supuesto de una nivelación teórica. El ejercicio real fue una feature completa por dev y costó 5 h por persona.*
 
 **3.1.3** — Equipo capacitado en buenas prácticas: uso de issue tracker, Git, PRs, branches y convenciones.
 <br>*Dependencias:* 3.1.1 · *Estimación:* 1.5 h (DO 0.8 / DM 1.5 / DP 2.2)

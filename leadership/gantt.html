@@ -137,6 +137,30 @@
     flex:none; background:#dcfce7; color:#15803d; font-size:9px; font-weight:800;
     padding:1px 5px; border-radius:4px; letter-spacing:.03em;
   }
+  /* Nivel "entregables": una fila por paquete X.X.X, agrupadas bajo su sub-paquete X.X. */
+  .task-label.l3{ padding-left:36px; }
+  .task-label.l3 .idx{ min-width:46px; }
+  .task-label .st{ width:8px; height:8px; border-radius:50%; flex:none; background:#cbd5e1; }
+  .task-label .st.done{ background:#16a34a; }
+  .task-label .st.wip{ background:#f59e0b; }
+  .task-label .dev{
+    flex:none; font-size:9.5px; font-weight:700; color:#334155;
+    background:#eef2f7; border-radius:4px; padding:1px 5px;
+  }
+  .sub-label{
+    display:flex; align-items:center; gap:8px;
+    height: var(--row-h);
+    padding: 0 12px 0 22px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11.5px; font-weight:700; color:#475569;
+    background:#fcfcfd;
+    white-space:nowrap; overflow:hidden;
+  }
+  .sub-label .idx{ font-variant-numeric: tabular-nums; min-width:34px; color:var(--muted); }
+  .sub-label .nm{ overflow:hidden; text-overflow:ellipsis; }
+  .sub-label .hrs{ margin-left:auto; color:var(--muted); font-weight:500; font-size:10.5px; flex:none; }
+  .row-line.sub{ background:#fcfcfd; }
+  .controls .lvl{ color:var(--muted); font-size:12px; }
 
   .plot{ position: relative; }
   .plot-rows{ position:absolute; inset:0; }
@@ -179,6 +203,10 @@
 
 <div class="controls">
   <label><input type="checkbox" id="tg-crit" checked> Camino crítico</label>
+  <div class="sep"></div>
+  <span class="lvl">Nivel:</span>
+  <label title="Una fila por sub-paquete de la WBS (5.1, 5.2…)"><input type="radio" name="lvl" value="l2" checked> Paquetes (X.X)</label>
+  <label title="Una fila por entregable de la WBS (5.1.4, 5.2.2…), con su dev y su estado: es el nivel al que se escriben los tickets"><input type="radio" name="lvl" value="l3"> Entregables (X.X.X)</label>
   <div class="sep"></div>
   <button class="ctl" id="btn-fold">Colapsar épicas</button>
   <div class="sep"></div>
@@ -393,6 +421,135 @@ const DATA = {
     { date:"2026-11-10", label:"Fin desarrollo", type:"event" },
     ],
   },
+  // v4-begin — generado por scripts/generate-v4.py sobre WBS-SportMatch-v4.md y el export de Linear del 15/09.
+  v4: {
+    label: 'WBS v4 · 3 devs · 76 tareas',
+    sub: '3 devs · 76 tareas · 222 h de desarrollo · semanas de jueves a jueves (cierre 18 h) · lo hecho con fechas reales de Linear, lo pendiente planificado a 6 h por dev y semana · el desarrollo cierra el 05/11 y la semana hasta la entrega del 12/11 queda de reserva',
+    rangeEnd: '2026-11-20',
+    weekly: true,
+    tasks: [
+    { id:"3.1.1", mod:"3.0 Capacitación y Setup", name:"Stack tecnológico definido", dev:3, start:"2026-08-06", end:"2026-08-13", hours:4.00, status:"done", deps:[] },
+    { id:"3.1.2", mod:"3.0 Capacitación y Setup", name:"Equipo capacitado en stack", dev:1, start:"2026-08-13", end:"2026-08-20", hours:15.00, status:"done", deps:["3.1.1"] },
+    { id:"3.1.3", mod:"3.0 Capacitación y Setup", name:"Equipo capacitado en buenas prácticas", dev:3, start:"2026-08-06", end:"2026-08-13", hours:1.50, status:"done", deps:["3.1.1"] },
+    { id:"3.2.1", mod:"3.0 Capacitación y Setup", name:"Repositorios y entornos", dev:3, start:"2026-08-13", end:"2026-08-20", hours:1.63, status:"done", deps:["3.1.1", "3.1.3"] },
+    { id:"3.2.2", mod:"3.0 Capacitación y Setup", name:"Base de datos inicial con seed mínima", dev:2, start:"2026-08-13", end:"2026-08-27", hours:1.50, status:"done", deps:["3.2.1"] },
+    { id:"3.2.3", mod:"3.0 Capacitación y Setup", name:"Pipeline de CI", dev:3, start:"2026-08-20", end:"2026-09-03", hours:2.23, status:"done", deps:["3.2.1"] },
+    { id:"4.1.1", mod:"4.0 Autenticación", name:"Modelo de usuario", dev:2, start:"2026-08-13", end:"2026-08-20", hours:2.88, status:"done", deps:["3.1.2", "3.2.2"] },
+    { id:"4.1.2", mod:"4.0 Autenticación", name:"Servicio de registro, login y logout", dev:2, start:"2026-08-20", end:"2026-08-27", hours:2.22, status:"done", deps:["4.1.1"] },
+    { id:"4.1.3", mod:"4.0 Autenticación", name:"Middleware de rutas privadas", dev:2, start:"2026-08-13", end:"2026-08-20", hours:2.35, status:"done", deps:["4.1.2"] },
+    { id:"4.1.4", mod:"4.0 Autenticación", name:"Integración con proveedor de identidad federada", dev:1, start:"2026-08-13", end:"2026-08-20", hours:4.00, status:"done", deps:["4.1.1"] },
+    { id:"4.2.1", mod:"4.0 Autenticación", name:"Pantalla de registro e inicio de sesión", dev:1, start:"2026-08-13", end:"2026-08-20", hours:2.35, status:"done", deps:["4.1.2"] },
+    { id:"4.2.2", mod:"4.0 Autenticación", name:"Inicio de sesión con Google", dev:1, start:"2026-08-13", end:"2026-08-20", hours:1.50, status:"done", deps:["4.1.4", "4.2.1"] },
+    { id:"4.2.3", mod:"4.0 Autenticación", name:"Recuperación de contraseña", dev:1, start:"2026-08-13", end:"2026-08-20", hours:1.50, status:"done", deps:["4.2.1"] },
+    { id:"4.2.4", mod:"4.0 Autenticación", name:"Landing pública y entrada a la app", dev:1, start:"2026-09-10", end:"2026-09-17", hours:3.00, status:"done", deps:["4.2.1"] },
+    { id:"4.2.5", mod:"4.0 Autenticación", name:"Shell de navegación de la app", dev:1, start:"2026-08-20", end:"2026-09-03", hours:3.50, status:"done", deps:["4.1.3"] },
+    { id:"5.1.1", mod:"5.0 Perfil de Usuario", name:"Modelo de perfil", dev:3, start:"2026-08-13", end:"2026-10-01", hours:1.50, status:"wip", deps:["4.1.1"] },
+    { id:"5.1.2", mod:"5.0 Perfil de Usuario", name:"API de visualización y edición de perfil", dev:2, start:"2026-08-13", end:"2026-09-10", hours:2.22, status:"done", deps:["5.1.1", "4.1.3"] },
+    { id:"5.1.3", mod:"5.0 Perfil de Usuario", name:"API de historial de partidos", dev:2, start:"2026-08-27", end:"2026-09-17", hours:2.22, status:"done", deps:["6.1.1", "6.3.1"] },
+    { id:"5.1.4", mod:"5.0 Perfil de Usuario", name:"Servicio de cálculo de rating", dev:2, start:"2026-09-10", end:"2026-10-08", hours:3.00, status:"wip", deps:["6.4.1", "6.4.2", "6.4.3"] },
+    { id:"5.1.5", mod:"5.0 Perfil de Usuario", name:"Estadísticas de actividad del perfil", dev:2, start:"2026-09-10", end:"2026-09-17", hours:2.00, status:"done", deps:["5.1.3"] },
+    { id:"5.2.1", mod:"5.0 Perfil de Usuario", name:"Vista de perfil", dev:1, start:"2026-08-20", end:"2026-09-10", hours:2.23, status:"done", deps:["5.1.2"] },
+    { id:"5.2.2", mod:"5.0 Perfil de Usuario", name:"Edición de perfil", dev:1, start:"2026-10-08", end:"2026-10-15", hours:2.22, status:"todo", deps:["5.1.2"] },
+    { id:"5.2.3", mod:"5.0 Perfil de Usuario", name:"Vista de historial", dev:3, start:"2026-09-03", end:"2026-10-08", hours:1.50, status:"wip", deps:["5.1.3"] },
+    { id:"5.2.4", mod:"5.0 Perfil de Usuario", name:"Visualización de rating", dev:1, start:"2026-09-03", end:"2026-09-17", hours:1.63, status:"done", deps:["5.1.4"] },
+    { id:"5.2.5", mod:"5.0 Perfil de Usuario", name:"Perfil público de otro jugador", dev:3, start:"2026-09-10", end:"2026-09-17", hours:2.00, status:"done", deps:["5.2.1", "5.1.5"] },
+    { id:"6.1.1", mod:"6.0 Gestión de Partidos", name:"Modelo de partido", dev:2, start:"2026-08-20", end:"2026-08-27", hours:1.50, status:"done", deps:[] },
+    { id:"6.1.2", mod:"6.0 Gestión de Partidos", name:"CRUD de partidos", dev:2, start:"2026-08-20", end:"2026-09-03", hours:3.00, status:"done", deps:["6.1.1"] },
+    { id:"6.1.3", mod:"6.0 Gestión de Partidos", name:"Endpoint de listado de partidos disponibles", dev:2, start:"2026-08-27", end:"2026-09-10", hours:2.35, status:"done", deps:["6.1.1"] },
+    { id:"6.1.4", mod:"6.0 Gestión de Partidos", name:"Cancelación de partido con motivo", dev:1, start:"2026-09-17", end:"2026-09-24", hours:2.35, status:"todo", deps:["6.1.1", "6.1.2"] },
+    { id:"6.1.5", mod:"6.0 Gestión de Partidos", name:"Catálogo de deportes", dev:1, start:"2026-08-27", end:"2026-09-03", hours:2.00, status:"done", deps:["6.1.1"] },
+    { id:"6.2.1", mod:"6.0 Gestión de Partidos", name:"Formulario de creación de partido", dev:1, start:"2026-08-20", end:"2026-09-10", hours:3.90, status:"done", deps:["6.1.2"] },
+    { id:"6.2.2", mod:"6.0 Gestión de Partidos", name:"Formulario de edición de partido", dev:3, start:"2026-09-10", end:"2026-09-17", hours:3.00, status:"done", deps:["6.1.2"] },
+    { id:"6.2.3", mod:"6.0 Gestión de Partidos", name:"Detalle de partido", dev:1, start:"2026-08-27", end:"2026-09-03", hours:2.10, status:"done", deps:["6.1.2", "6.1.3"] },
+    { id:"6.2.4", mod:"6.0 Gestión de Partidos", name:"Vista \"Mis partidos\"", dev:1, start:"2026-09-03", end:"2026-09-10", hours:2.50, status:"done", deps:["6.1.2", "6.3.4"] },
+    { id:"6.2.5", mod:"6.0 Gestión de Partidos", name:"Interfaz de cancelación", dev:1, start:"2026-09-17", end:"2026-09-24", hours:1.63, status:"todo", deps:["6.1.4", "6.2.3"] },
+    { id:"6.2.6", mod:"6.0 Gestión de Partidos", name:"Notificación de cancelación a participantes", dev:3, start:"2026-10-08", end:"2026-10-15", hours:1.50, status:"todo", deps:["6.1.4", "11.1.3"] },
+    { id:"6.3.1", mod:"6.0 Gestión de Partidos", name:"Modelo de solicitud", dev:3, start:"2026-09-03", end:"2026-09-10", hours:2.35, status:"done", deps:["4.1.1", "6.1.1"] },
+    { id:"6.3.2", mod:"6.0 Gestión de Partidos", name:"Envío de solicitud para unirse a partido", dev:3, start:"2026-09-03", end:"2026-09-10", hours:3.90, status:"done", deps:["6.3.1", "6.2.3"] },
+    { id:"6.3.3", mod:"6.0 Gestión de Partidos", name:"Gestión de solicitudes por el organizador", dev:3, start:"2026-09-03", end:"2026-09-10", hours:2.22, status:"done", deps:["6.3.2"] },
+    { id:"6.3.4", mod:"6.0 Gestión de Partidos", name:"Visualización de estado de solicitud", dev:3, start:"2026-09-03", end:"2026-09-17", hours:2.47, status:"done", deps:["6.3.2", "6.3.3"] },
+    { id:"6.3.5", mod:"6.0 Gestión de Partidos", name:"Inscripción directa y baja del partido", dev:2, start:"2026-08-20", end:"2026-09-03", hours:3.00, status:"done", deps:["6.1.1", "6.3.1"] },
+    { id:"6.4.1", mod:"6.0 Gestión de Partidos", name:"Modelo de calificación", dev:2, start:"2026-09-10", end:"2026-09-17", hours:2.23, status:"done", deps:["4.1.1", "6.1.1"] },
+    { id:"6.4.2", mod:"6.0 Gestión de Partidos", name:"Interfaz de calificación", dev:1, start:"2026-09-10", end:"2026-09-24", hours:1.63, status:"wip", deps:["6.4.1"] },
+    { id:"6.4.3", mod:"6.0 Gestión de Partidos", name:"Regla de penalización por no-show", dev:2, start:"2026-09-17", end:"2026-09-24", hours:2.35, status:"todo", deps:["6.4.1"] },
+    { id:"6.5.1", mod:"6.0 Gestión de Partidos", name:"Link compartible de partido", dev:1, start:"2026-10-15", end:"2026-10-22", hours:2.47, status:"todo", deps:["6.1.1", "6.2.3"] },
+    { id:"6.5.2", mod:"6.0 Gestión de Partidos", name:"Invitación directa a un usuario", dev:2, start:"2026-10-15", end:"2026-10-22", hours:3.90, status:"todo", deps:["6.1.1", "4.1.1", "11.1.3"] },
+    { id:"6.5.3", mod:"6.0 Gestión de Partidos", name:"Aceptación de invitación", dev:2, start:"2026-10-22", end:"2026-10-29", hours:3.00, status:"todo", deps:["6.5.2", "6.3.1"] },
+    { id:"7.1.1", mod:"7.0 Sistema de Matchmaking", name:"Búsqueda de partidos", dev:3, start:"2026-09-03", end:"2026-09-24", hours:4.62, status:"wip", deps:["6.1.3"] },
+    { id:"7.1.2", mod:"7.0 Sistema de Matchmaking", name:"Filtros (deporte, nivel, fecha)", dev:1, start:"2026-10-08", end:"2026-10-15", hours:3.12, status:"todo", deps:["7.1.1"] },
+    { id:"7.1.3", mod:"7.0 Sistema de Matchmaking", name:"Ordenamiento por rating y compatibilidad", dev:2, start:"2026-10-01", end:"2026-10-08", hours:1.63, status:"todo", deps:["7.1.1", "5.1.4"] },
+    { id:"7.2.1", mod:"7.0 Sistema de Matchmaking", name:"Tarjeta de partido", dev:1, start:"2026-08-27", end:"2026-09-03", hours:3.12, status:"done", deps:["7.1.1"] },
+    { id:"7.2.2", mod:"7.0 Sistema de Matchmaking", name:"Navegación tipo swipe", dev:1, start:"2026-08-27", end:"2026-09-10", hours:4.62, status:"done", deps:["7.2.1", "6.3.2"] },
+    { id:"7.3.1", mod:"7.0 Sistema de Matchmaking", name:"Integración con proveedor de mapa", dev:3, start:"2026-09-24", end:"2026-10-01", hours:4.28, status:"todo", deps:["3.2.1", "3.2.3"] },
+    { id:"7.3.2", mod:"7.0 Sistema de Matchmaking", name:"Visualización de partidos en mapa", dev:1, start:"2026-10-01", end:"2026-10-08", hours:2.47, status:"todo", deps:["7.3.1", "7.1.1"] },
+    { id:"7.3.3", mod:"7.0 Sistema de Matchmaking", name:"Detalle de partido desde mapa", dev:1, start:"2026-10-01", end:"2026-10-08", hours:3.90, status:"todo", deps:["7.3.2", "6.2.3"] },
+    { id:"9.1.1", mod:"9.0 Deployment", name:"Ambiente productivo configurado", dev:3, start:"2026-08-27", end:"2026-09-03", hours:4.75, status:"done", deps:["3.2.1", "3.2.2", "3.2.3"] },
+    { id:"9.1.2", mod:"9.0 Deployment", name:"Deploy final del MVP", dev:3, start:"2026-08-27", end:"2026-09-03", hours:3.37, status:"done", deps:["9.1.1"] },
+    { id:"9.1.3", mod:"9.0 Deployment", name:"Smoke test manual post-deploy", dev:3, start:"2026-08-27", end:"2026-09-03", hours:3.23, status:"done", deps:["9.1.2"] },
+    { id:"9.1.4", mod:"9.0 Deployment", name:"Contenedorización del backend y registro de imágenes", dev:3, start:"2026-08-20", end:"2026-08-27", hours:3.50, status:"done", deps:["3.2.3"] },
+    { id:"10.1.1", mod:"10.0 Documentación Final", name:"Manual de uso y descripción de funcionalidades", dev:3, start:"2026-10-22", end:"2026-10-29", hours:6.00, status:"todo", deps:["9.1.2", "9.1.3"] },
+    { id:"10.1.2", mod:"10.0 Documentación Final", name:"Entrega final de diseño UX/UI", dev:3, start:"2026-10-08", end:"2026-10-15", hours:3.17, status:"wip", deps:[] },
+    { id:"10.2.1", mod:"10.0 Documentación Final", name:"README del proyecto", dev:3, start:"2026-08-13", end:"2026-08-20", hours:1.50, status:"done", deps:["3.2.3"] },
+    { id:"10.2.2", mod:"10.0 Documentación Final", name:"Documentación de APIs", dev:3, start:"2026-10-15", end:"2026-10-22", hours:1.50, status:"todo", deps:["4.1.3", "5.1.4", "6.1.3", "6.3.4", "7.1.3", "11.1.3", "12.1.2"] },
+    { id:"11.1.1", mod:"11.0 Notificaciones", name:"Modelo de notificación", dev:2, start:"2026-09-17", end:"2026-09-24", hours:2.35, status:"todo", deps:["4.1.1"] },
+    { id:"11.1.2", mod:"11.0 Notificaciones", name:"Selección de proveedor de push y email", dev:3, start:"2026-09-17", end:"2026-09-24", hours:1.63, status:"todo", deps:["4.1.1"] },
+    { id:"11.1.3", mod:"11.0 Notificaciones", name:"Servicio de envío de notificaciones", dev:2, start:"2026-09-24", end:"2026-10-01", hours:4.75, status:"todo", deps:["11.1.1", "11.1.2", "6.3.2", "6.3.3"] },
+    { id:"11.1.4", mod:"11.0 Notificaciones", name:"Job de recordatorio pre-partido", dev:2, start:"2026-10-22", end:"2026-10-29", hours:3.12, status:"todo", deps:["11.1.3", "6.1.1"] },
+    { id:"11.2.1", mod:"11.0 Notificaciones", name:"Centro de notificaciones", dev:1, start:"2026-09-24", end:"2026-10-01", hours:3.90, status:"todo", deps:["11.1.1"] },
+    { id:"11.2.2", mod:"11.0 Notificaciones", name:"Recepción de push en cliente", dev:3, start:"2026-10-01", end:"2026-10-08", hours:4.03, status:"todo", deps:["11.1.2"] },
+    { id:"11.2.3", mod:"11.0 Notificaciones", name:"Preferencias de notificación", dev:1, start:"2026-09-24", end:"2026-10-01", hours:1.63, status:"todo", deps:["11.2.1"] },
+    { id:"12.1.1", mod:"12.0 Moderación y Reportes", name:"Modelo de reporte", dev:3, start:"2026-10-15", end:"2026-10-22", hours:2.35, status:"todo", deps:["4.1.1"] },
+    { id:"12.1.2", mod:"12.0 Moderación y Reportes", name:"Endpoint de creación de reporte", dev:3, start:"2026-10-15", end:"2026-10-22", hours:1.63, status:"todo", deps:["12.1.1"] },
+    { id:"12.1.3", mod:"12.0 Moderación y Reportes", name:"Interfaz de reporte", dev:1, start:"2026-10-29", end:"2026-11-05", hours:3.00, status:"todo", deps:["12.1.2", "5.2.1", "6.2.3"] },
+    { id:"12.2.1", mod:"12.0 Moderación y Reportes", name:"Panel de revisión de reportes", dev:1, start:"2026-10-22", end:"2026-10-29", hours:6.27, status:"todo", deps:["12.1.2"] },
+    { id:"12.2.2", mod:"12.0 Moderación y Reportes", name:"Suspensión de usuario", dev:2, start:"2026-10-29", end:"2026-11-05", hours:4.03, status:"todo", deps:["12.2.1", "4.1.3"] },
+    { id:"12.2.3", mod:"12.0 Moderación y Reportes", name:"Historial de moderación", dev:3, start:"2026-10-29", end:"2026-11-05", hours:3.12, status:"todo", deps:["12.2.1"] },
+    ],
+    devs: {1:"Pache", 2:"Rudolph", 3:"Siaba"},
+    critical: ["3.1.1", "3.1.2", "4.1.1", "6.3.1", "6.3.2", "6.3.3", "11.1.3", "6.5.2", "6.5.3"],
+    newIds: ["4.1.4", "4.2.2", "4.2.3", "4.2.4", "4.2.5", "5.1.5", "5.2.5", "6.1.5", "6.2.4", "6.3.5", "9.1.4", "12.2.1", "12.2.2", "12.2.3"],
+    knownDepViolations: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1", "5.1.4<6.4.2", "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4", "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3"],
+    names: {
+    "3.1":"Configuración técnica",   "3.2":"Setup del entorno",
+    "4.1":"Autenticación backend",   "4.2":"Auth frontend y acceso",
+    "5.1":"Backend de perfil",       "5.2":"Frontend de perfil",
+    "6.1":"Backend de partidos",     "6.2":"Frontend de partidos",
+    "6.3":"Solicitudes",             "6.4":"Calificación",
+    "6.5":"Invitación a partido",
+    "7.1":"Motor de búsqueda",       "7.2":"Experiencia swipe",
+    "7.3":"Visualización en mapa",
+    "9.1":"Despliegue",
+    "10.1":"Docs de usuario",        "10.2":"Docs técnicas",
+    "11.1":"Notificaciones backend",  "11.2":"Notificaciones frontend",
+    "12.1":"Reportar usuario",        "12.2":"Panel de moderación",
+    },
+    colors: {
+    "3.0 Capacitación y Setup":   "#64748b",
+    "4.0 Autenticación":          "#6366f1",
+    "5.0 Perfil de Usuario":      "#0ea5e9",
+    "6.0 Gestión de Partidos":    "#10b981",
+    "7.0 Sistema de Matchmaking": "#f59e0b",
+    "9.0 Deployment":             "#0d9488",
+    "10.0 Documentación Final":   "#a855f7",
+    "11.0 Notificaciones":        "#ec4899",
+    "12.0 Moderación y Reportes": "#ef4444",
+    },
+    sprints: [
+    { name:"Sprint 1", start:"2026-08-06", end:"2026-09-17" },
+    { name:"Sprint 2", start:"2026-09-17", end:"2026-10-15" },
+    { name:"Sprint 3", start:"2026-10-15", end:"2026-11-05" },
+    { name:"Reserva",  start:"2026-11-05", end:"2026-11-12" },
+    ],
+    milestones: [
+    { date:"2026-08-06", label:"Presentación", type:"event" },
+    { date:"2026-08-13", label:"Kickoff", type:"event" },
+    { date:"2026-09-17", label:"Steering 1 · Entrega 1", type:"delivery" },
+    { date:"2026-10-15", label:"Steering 2 · Entrega 2", type:"delivery" },
+    { date:"2026-11-05", label:"Fin desarrollo", type:"event" },
+    { date:"2026-11-12", label:"Entrega 3", type:"delivery" },
+    ],
+  },
+  // v4-end
 };
 
 /* ---------------- CONSTANTS ---------------- */
@@ -404,11 +561,13 @@ const HEADER_H = 80;
 const RANGE_START = "2026-07-30";
 
 /* Cadena crítica del cronograma nivelado: la secuencia CONTIGUA de tareas que fija
-   el fin del proyecto (enlaces por dependencia y por recurso). Igual en v1 y v2. */
+   el fin del proyecto (enlaces por dependencia y por recurso). Igual en v1 y v2;
+   una versión puede traer la suya en `critical` (v4 usa el camino crítico del PERT). */
 const CRITICAL_L3 = ["4.1.1","6.1.3","6.3.1","6.2.3","9.1.1","6.3.2","6.4.3","7.2.1",
                      "5.1.4","7.2.2","6.2.1","7.1.3","6.2.2","5.2.2","5.2.3","9.1.2","9.1.3","10.2.1"];
 
 const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const STATUS_LABEL = { done:"hecho", wip:"parcial", todo:"pendiente" };
 
 /* ---------------- HELPERS ---------------- */
 function parse(d){ const [y,m,dd] = d.split("-").map(Number); return new Date(Date.UTC(y, m-1, dd)); }
@@ -429,8 +588,15 @@ function svgEl(name, attrs){
   return e;
 }
 
-/* Level-2 groups present in v1 — anything outside is new in v2. */
-const V1_GROUPS = new Set(DATA.v1.tasks.map(t => l2id(t.id)));
+/* Un grupo es nuevo si no existía en la versión anterior del selector; además, una versión
+   puede listar en `newIds` los paquetes que sumó dentro de grupos que ya existían. */
+const VERSIONS = Object.keys(DATA);
+function isNewGroup(ver, gid){
+  const i = VERSIONS.indexOf(ver);
+  if(i <= 0) return false;
+  return !new Set(DATA[VERSIONS[i-1]].tasks.map(t => l2id(t.id))).has(gid);
+}
+function newPkgsIn(ver, gid){ return (DATA[ver].newIds || []).filter(p => l2id(p) === gid); }
 
 /* ---------------- DOM refs ---------------- */
 const headSvg    = document.getElementById("headSvg");
@@ -441,11 +607,13 @@ const overlaySvg = document.getElementById("overlaySvg");
 const tooltip    = document.getElementById("tooltip");
 
 /* ---------------- STATE ---------------- */
-const state = { collapsed:{}, highlighted:null, showCrit:true, allCollapsed:false };
-let VER = "v2";
+const state = { collapsed:{}, highlighted:null, showCrit:true, allCollapsed:false, level:"l2" };
+let VER = "v4";
+let WEEKLY = false;   // true: las fechas van de jueves a jueves y la barra termina justo en la línea del cierre
 
 /* Everything below is rebuilt by loadVersion() */
 let TASKS = [], groups = [], modOrder = [], MOD_COLORS = {}, MILESTONES = [], SPRINTS = [];
+let RAW = [], NAMES = {}, DEVS = {}, CRIT_IDS = [];   // datos crudos de la versión cargada (nivel X.X.X)
 let rangeStart = null, rangeEnd = null, totalDays = 0;
 let taskById = {}, successors = {}, criticalSet = new Set();
 let barEls = {};
@@ -481,27 +649,12 @@ function loadVersion(ver){
   rangeEnd   = parse(d.rangeEnd);
   totalDays  = days(RANGE_START, d.rangeEnd) + 1;
 
-  TASKS = aggregateL2(d.tasks, d.names);
-
-  modOrder = Object.keys(MOD_COLORS);
-  groups = modOrder.map(mod => ({
-    mod, color: MOD_COLORS[mod],
-    tasks: TASKS.filter(t => t.mod === mod)
-                .sort((a,b) => parse(a.start)-parse(b.start) || a.id.localeCompare(b.id))
-  })).filter(g => g.tasks.length);
-
-  taskById = {};
-  TASKS.forEach(t => taskById[t.id] = t);
-  successors = {};
-  TASKS.forEach(t => t.deps.forEach(dep => { (successors[dep] = successors[dep]||[]).push(t.id); }));
-
-  groups.forEach(g => {
-    g.minStart   = g.tasks.reduce((m,t) => parse(t.start) < parse(m) ? t.start : m, g.tasks[0].start);
-    g.maxEnd     = g.tasks.reduce((m,t) => parse(t.end)   > parse(m) ? t.end   : m, g.tasks[0].end);
-    g.totalHours = g.tasks.reduce((s,t) => s + t.hours, 0);
-  });
-
-  criticalSet = new Set(CRITICAL_L3.map(l2id).filter(g => taskById[g]));
+  RAW      = d.tasks;
+  NAMES    = d.names;
+  DEVS     = d.devs || {};
+  CRIT_IDS = d.critical || CRITICAL_L3;
+  WEEKLY   = !!d.weekly;
+  rebuildTasks();
 
   state.collapsed = {};
   state.highlighted = null;
@@ -516,14 +669,55 @@ function loadVersion(ver){
   render();
 }
 
+/* Filas según el nivel elegido: "l2" agrega a sub-paquete (X.X), "l3" muestra cada
+   entregable (X.X.X) bajo su sub-paquete. Se rehace al cambiar de versión o de nivel. */
+function rebuildTasks(){
+  const numeric = (a,b) => a.localeCompare(b, undefined, { numeric:true });
+  if(state.level === "l3"){
+    const ids = new Set(RAW.map(t => t.id));
+    TASKS = RAW.map(t => ({ ...t, group: l2id(t.id), deps: t.deps.filter(d => ids.has(d)) }));
+    criticalSet = new Set(CRIT_IDS.filter(id => ids.has(id)));
+  } else {
+    TASKS = aggregateL2(RAW, NAMES);
+    const ids = new Set(TASKS.map(t => t.id));
+    criticalSet = new Set(CRIT_IDS.map(l2id).filter(g => ids.has(g)));
+  }
+
+  modOrder = Object.keys(MOD_COLORS);
+  const byStart = (a,b) => parse(a.start)-parse(b.start) || numeric(a.id, b.id);
+  const sortKey = state.level === "l3" ? (a,b) => numeric(a.group, b.group) || byStart(a,b) : byStart;
+  groups = modOrder.map(mod => ({
+    mod, color: MOD_COLORS[mod],
+    tasks: TASKS.filter(t => t.mod === mod).sort(sortKey)
+  })).filter(g => g.tasks.length);
+
+  taskById = {};
+  TASKS.forEach(t => taskById[t.id] = t);
+  successors = {};
+  TASKS.forEach(t => t.deps.forEach(dep => { (successors[dep] = successors[dep]||[]).push(t.id); }));
+
+  groups.forEach(g => {
+    g.minStart   = g.tasks.reduce((m,t) => parse(t.start) < parse(m) ? t.start : m, g.tasks[0].start);
+    g.maxEnd     = g.tasks.reduce((m,t) => parse(t.end)   > parse(m) ? t.end   : m, g.tasks[0].end);
+    g.totalHours = g.tasks.reduce((s,t) => s + t.hours, 0);
+    // En "l3", la envolvente de cada sub-paquete se dibuja como fila de cabecera.
+    g.subs = state.level === "l3" ? Object.fromEntries(aggregateL2(g.tasks, NAMES).map(x => [x.id, x])) : {};
+  });
+}
+
 /* ---------------- SCALE ---------------- */
 function dayIndex(d){ return (parse(d) - rangeStart) / DAY_MS; }
 function plotW(){ return totalDays * DAY_W; }
 function xLine(d){ return dayIndex(d) * DAY_W; }
 function barGeom(start, end){
-  return { x: dayIndex(start) * DAY_W, w: Math.max(DAY_W, (days(start, end)+1) * DAY_W) };
+  // Fechas inclusivas (v1/v2): la barra cubre el último día. Semanales (v4): `end` es el
+  // jueves de cierre y la barra termina exactamente sobre esa línea.
+  return { x: dayIndex(start) * DAY_W, w: Math.max(DAY_W, (days(start, end) + (WEEKLY ? 0 : 1)) * DAY_W) };
 }
-function isNew(id){ return VER === "v2" && !V1_GROUPS.has(id); }
+function isNew(id){
+  if(state.level === "l3") return (DATA[VER].newIds || []).includes(id) || isNewGroup(VER, l2id(id));
+  return isNewGroup(VER, id);
+}
 
 /* Línea vertical del día de hoy, con tooltip nativo para identificarla. */
 function todayLine(x, y1, y2){
@@ -643,7 +837,14 @@ function visibleRows(){
   groups.forEach(g => {
     rows.push({ type:"group", g, y, h:ROW_H }); y += ROW_H;
     if(!state.collapsed[g.mod]){
-      g.tasks.forEach(t => { rows.push({ type:"task", task:t, color:g.color, y, h:ROW_H }); y += ROW_H; });
+      let lastSub = null;
+      g.tasks.forEach(t => {
+        if(state.level === "l3" && t.group !== lastSub){
+          lastSub = t.group;
+          rows.push({ type:"sub", sub:g.subs[t.group], color:g.color, y, h:ROW_H }); y += ROW_H;
+        }
+        rows.push({ type:"task", task:t, color:g.color, y, h:ROW_H }); y += ROW_H;
+      });
     }
   });
   rows.totalHeight = y;
@@ -669,12 +870,12 @@ function drawBar(parent, t, rowY, color){
   barEls[t.id] = { g, rect, x, w, barY, barH, baseStroke: rect.getAttribute("stroke-width") };
 }
 
-/* Collapsed épica: one envelope bar spanning the whole module. */
-function drawEnvelope(parent, g, rowY){
-  const { x, w } = barGeom(g.minStart, g.maxEnd);
+/* Envelope bar: a collapsed épica (whole module) or, in "l3", a sub-package header row. */
+function drawEnvelope(parent, start, end, color, rowY, opacity = 0.35){
+  const { x, w } = barGeom(start, end);
   const barH = 18, barY = rowY + (ROW_H - barH)/2;
   parent.appendChild(svgEl("rect",{ x, y:barY, width:w, height:barH, rx:5, ry:5,
-    fill:g.color, "fill-opacity":0.35, stroke:g.color, "stroke-width":1.4 }));
+    fill:color, "fill-opacity":opacity, stroke:color, "stroke-width":1.4, "stroke-opacity":opacity + 0.2 }));
 }
 
 /* ---------------- RENDER ---------------- */
@@ -707,13 +908,24 @@ function render(){
         <span class="count">${g.tasks.length} · ${g.totalHours.toFixed(1)} h</span>`;
       el.addEventListener("click", () => { state.collapsed[g.mod] = !state.collapsed[g.mod]; render(); });
       labelsEl.appendChild(el);
+    } else if(r.type === "sub"){
+      const sb = r.sub;
+      const el = document.createElement("div");
+      el.className = "sub-label";
+      el.innerHTML = `<span class="idx">${sb.id}</span><span class="nm">${sb.name}</span>`
+        + `<span class="hrs">${sb.hours.toFixed(1)} h</span>`;
+      labelsEl.appendChild(el);
     } else {
       const t = r.task;
+      const l3 = state.level === "l3";
       const el = document.createElement("div");
-      el.className = "task-label";
+      el.className = "task-label" + (l3 ? " l3" : "");
       el.dataset.id = t.id;
-      el.innerHTML = `<span class="idx">${t.id}</span><span class="nm">${t.name}</span>`
-        + (isNew(t.id) ? `<span class="new">NUEVO</span>` : ``)
+      const status = l3 && t.status ? `<span class="st ${t.status}" title="${STATUS_LABEL[t.status] || t.status}"></span>` : ``;
+      const dev    = l3 && t.dev ? `<span class="dev" title="Dev asignado">${DEVS[t.dev] || ("D" + t.dev)}</span>` : ``;
+      const newTag = isNew(t.id) ? `<span class="new">NUEVO</span>`
+        : (!l3 && newPkgsIn(VER, t.id).length) ? `<span class="new" title="Nuevos en ${VER}: ${newPkgsIn(VER, t.id).join(', ')}">+${newPkgsIn(VER, t.id).length}</span>` : ``;
+      el.innerHTML = status + `<span class="idx">${t.id}</span><span class="nm">${t.name}</span>` + newTag + dev
         + `<span class="hrs">${t.hours.toFixed(1)} h</span>`;
       el.addEventListener("click", () => toggleHighlight(t.id));
       labelsEl.appendChild(el);
@@ -724,7 +936,7 @@ function render(){
   plotRows.innerHTML = "";
   rows.forEach(r => {
     const el = document.createElement("div");
-    el.className = "row-line" + (r.type==="group" ? " grp" : "");
+    el.className = "row-line" + (r.type==="group" ? " grp" : r.type==="sub" ? " sub" : "");
     el.style.height = r.h + "px";
     plotRows.appendChild(el);
   });
@@ -752,7 +964,8 @@ function render(){
 
   rows.forEach(r => {
     if(r.type === "task") drawBar(gBars, r.task, r.y, r.color);
-    else if(state.collapsed[r.g.mod]) drawEnvelope(gBars, r.g, r.y);
+    else if(r.type === "sub") drawEnvelope(gBars, r.sub.start, r.sub.end, r.color, r.y, 0.18);
+    else if(state.collapsed[r.g.mod]) drawEnvelope(gBars, r.g.minStart, r.g.maxEnd, r.g.color, r.y);
   });
 
   MILESTONES.forEach(m => {
@@ -770,14 +983,19 @@ function render(){
 /* ---------------- TOOLTIP ---------------- */
 function showTip(e, t){
   const critTag = criticalSet.has(t.id) ? ` <span class="crit-tag">◆ crítica</span>` : "";
-  const newTag  = isNew(t.id) ? ` <span class="new-tag">nuevo en v2</span>` : "";
+  const newPk   = newPkgsIn(VER, t.id);
+  const newTag  = isNew(t.id) ? ` <span class="new-tag">nuevo en ${VER}</span>`
+                : newPk.length ? ` <span class="new-tag">+${newPk.length} en ${VER}: ${newPk.join(", ")}</span>` : "";
   tooltip.innerHTML = `
     <h4>${t.id} · ${t.name}${critTag}${newTag}</h4>
     <div style="color:${MOD_COLORS[t.mod]}">${t.mod}</div>
     <dl>
+      ${t.group ? `<dt>Sub-paquete</dt><dd>${t.group} · ${NAMES[t.group] || ""}</dd>` : ``}
       <dt>Inicio</dt><dd>${t.start}</dd>
       <dt>Fin</dt><dd>${t.end}</dd>
       <dt>Horas</dt><dd>${t.hours.toFixed(2)} h</dd>
+      ${t.dev ? `<dt>Dev</dt><dd>${DEVS[t.dev] || ("D" + t.dev)}</dd>` : ``}
+      ${t.status ? `<dt>Estado</dt><dd>${STATUS_LABEL[t.status] || t.status}</dd>` : ``}
       <dt>Deps</dt><dd>${t.deps.length ? t.deps.join(", ") : "—"}</dd>
     </dl>`;
   tooltip.style.opacity = "1";
@@ -821,6 +1039,14 @@ function toggleHighlight(id){
 /* ---------------- CONTROLS ---------------- */
 document.getElementById("tg-crit").addEventListener("change", e => { state.showCrit = e.target.checked; render(); });
 
+document.querySelectorAll('input[name="lvl"]').forEach(r => r.addEventListener("change", () => {
+  if(!r.checked) return;
+  state.level = r.value;
+  state.highlighted = null;
+  rebuildTasks();
+  render();
+}));
+
 const foldBtn = document.getElementById("btn-fold");
 foldBtn.addEventListener("click", () => {
   state.allCollapsed = !state.allCollapsed;
@@ -848,14 +1074,14 @@ function doExport(){
   const target = document.getElementById("grid");
   html2canvas(target, { backgroundColor:"#ffffff", scale:2, windowWidth: target.scrollWidth }).then(canvas => {
     const a = document.createElement("a");
-    a.download = `SportMatch-Gantt-${VER}.png`;
+    a.download = `SportMatch-Gantt-${VER}-${state.level === "l3" ? "entregables" : "paquetes"}.png`;
     a.href = canvas.toDataURL("image/png");
     a.click();
   });
 }
 
 /* ---------------- INIT ---------------- */
-loadVersion("v2");
+loadVersion("v4");
 </script>
 </body>
 </html>

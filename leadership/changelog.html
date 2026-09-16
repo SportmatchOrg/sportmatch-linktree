@@ -52,6 +52,7 @@
   }
   .ver-tag.v1{ background:#e2e8f0; color:#334155; }
   .ver-tag.v2{ background:var(--new-bg); color:var(--new); border:1px solid var(--new-border); }
+  .ver-tag.v4{ background:#e0ecfb; color:#1d4f91; border:1px solid #bfdbfe; }
 
   h3{ margin:20px 0 8px; font-size:13.5px; font-weight:800; color:var(--navy); }
   h3:first-of-type{ margin-top:0; }
@@ -160,8 +161,81 @@
   </div>
 </div>
 
+<div class="card">
+  <h2><span class="ver-tag v4">v4</span>Qué cambió</h2>
+  <p class="lead">La WBS pasa a reflejar lo que el equipo construyó de verdad, y el cronograma se baja a semanas con fecha de inicio y de cierre.</p>
+
+  <h3>1 · Se incorporaron 13 paquetes que se construyeron sin estar en el plan</h3>
+  <ul>
+    <li>
+      <b>Entrada al producto y acceso</b> — landing pública en la raíz con animación de entrada (4.2.4),
+      shell de navegación con la barra inferior de cinco ítems (4.2.5), inicio de sesión con Google (4.2.2),
+      recuperación de contraseña (4.2.3) y la integración con el proveedor de identidad federada (4.1.4),
+      que reemplazó a las sesiones propias que preveía 4.1.2.
+    </li>
+    <li>
+      <b>Producto</b> — catálogo de deportes como entidad (6.1.5), vista "Mis partidos" (6.2.4),
+      inscripción directa y baja del partido (6.3.5), estadísticas de actividad del perfil (5.1.5)
+      y perfil público de otro jugador (5.2.5).
+    </li>
+    <li>
+      <b>Proceso</b> — revisión automática de pull requests y harness de pruebas end-to-end de la API
+      (8.3, sub-paquete nuevo) y contenedorización del backend con registro de imágenes (9.1.4).
+    </li>
+  </ul>
+  <p>
+    Son <b>32,50 h</b> de alcance que la v2 no tenía. Los arreglos y el retrabajo surgidos del propio
+    desarrollo no se incorporan: no son alcance, son consecuencia.
+  </p>
+
+  <h3>2 · Se recuperó el panel de moderación y se recalibró la capacitación</h3>
+  <ul>
+    <li>
+      <b>12.2 Panel de moderación</b> — listado de reportes con filtros, suspensión de usuario e
+      historial de moderación (12.2.1 a 12.2.3). Lo había sumado la v3, que fue una versión sólo
+      documental y nunca llegó a estas vistas. Obliga a introducir un rol de administrador.
+    </li>
+    <li>
+      <b>3.1.2 Equipo capacitado en stack</b> — de 3 h a <b>15 h</b>: el ejercicio real fue una feature
+      completa por dev en un repositorio de práctica y costó 5 h por persona.
+    </li>
+  </ul>
+
+  <h3>3 · Cambió la base de planificación</h3>
+  <ul>
+    <li>
+      <b>Semanas de jueves a jueves.</b> Cada paquete del Gantt tiene fecha de inicio y de cierre en un
+      jueves: los sprints cierran los jueves a las 18 h y el jueves de cierre es el <code>dueDate</code>
+      de los tickets de esa semana.
+    </li>
+    <li>
+      Lo ya hecho lleva las fechas reales de Linear, semana por semana. Lo pendiente se planificó con
+      3 devs a 6 h por semana, respetando las dependencias y la asignación S2 / S3 del cronograma.
+    </li>
+    <li>
+      El desarrollo termina el <b>05/11</b>. La semana del 05/11 al 12/11 queda <b>de reserva</b>, sin
+      trabajo planificado, hasta la entrega final del 12/11.
+    </li>
+    <li>
+      El PERT vuelve a correr sobre la WBS completa (116 paquetes); el Gantt sigue mostrando sólo el
+      desarrollo (76 paquetes, módulos 3.0 a 12.0 sin el 8.0).
+    </li>
+    <li>
+      El Gantt suma un selector de <b>nivel</b>: "Paquetes (X.X)", la vista de siempre, o
+      "Entregables (X.X.X)", con una fila por paquete de la WBS bajo su sub-paquete, el dev asignado
+      y el estado. Es el nivel al que se escriben los tickets.
+    </li>
+  </ul>
+
+  <div class="note">
+    <b>Camino crítico:</b> setup → modelo de usuario → solicitudes → <b>servicio de notificaciones (11.1.3)</b>
+    → invitaciones. De 11.1.3 cuelgan la invitación directa, su aceptación y el aviso de cancelación:
+    conviene cerrarlo en las dos primeras semanas del S2.
+  </div>
+</div>
+
 <div class="foot">
-  Usá el selector <b>v1 / v2</b> en las vistas de WBS, PERT y Gantt para comparar cada versión.
+  Usá el selector <b>v1 / v2 / v4</b> en las vistas de WBS, PERT y Gantt para comparar cada versión.
 </div>
 
 </div>
