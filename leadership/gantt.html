@@ -210,6 +210,7 @@
   <div class="sep"></div>
   <button class="ctl" id="btn-fold">Colapsar épicas</button>
   <div class="sep"></div>
+  <button class="ctl" id="btn-svg">Exportar SVG</button>
   <button class="ctl" id="btn-png">Exportar PNG</button>
 </div>
 
@@ -548,6 +549,14 @@ const DATA = {
     { date:"2026-11-05", label:"Fin desarrollo", type:"event" },
     { date:"2026-11-12", label:"Entrega 3", type:"delivery" },
     ],
+    // Hitos del Charter: rombo dorado sobre la barra del paquete (X.X) al que pertenecen.
+    // "Aprobación Project Charter" (11/06) queda fuera: es anterior al rango y a los paquetes del Gantt.
+    charterHitos: [
+    { date:"2026-08-13", label:"Inicio Desarrollo", pkg:"4.1" },
+    { date:"2026-10-29", label:"MVP Funcional", pkg:"6.5" },
+    { date:"2026-09-03", label:"Deploy del sistema", pkg:"9.1" },
+    { date:"2026-11-05", label:"Finalización del sistema", pkg:"12.2" },
+    ],
   },
   // v4-end
 };
@@ -766,12 +775,12 @@ function buildHeader(){
     const beyond = i >= totalDays;
     if(beyond || dt.getUTCMonth() !== curMonth){
       months.push({ label: MONTHS[curMonth] + " " + (curYear%100), from: monthStartX, to: x });
-      headSvg.appendChild(svgEl("line",{ x1:x, y1:0, x2:x, y2:HEADER_H, stroke:"#cbd5e1","stroke-width":1 }));
+      headSvg.appendChild(svgEl("line",{ x1:x, y1:0, x2:x, y2:HEADER_H, stroke:"#cbd5e1","stroke-width":1, "data-no-export":"" }));
       if(!beyond){ curMonth = dt.getUTCMonth(); curYear = dt.getUTCFullYear(); monthStartX = x; }
     }
     if(beyond) break;
     if(dt.getUTCDay() === 4){ // jueves = inicio de semana académica
-      headSvg.appendChild(svgEl("line",{ x1:x, y1:WEEK_BAND_TOP, x2:x, y2:HEADER_H, stroke:"#e2e8f0","stroke-width":1 }));
+      headSvg.appendChild(svgEl("line",{ x1:x, y1:WEEK_BAND_TOP, x2:x, y2:HEADER_H, stroke:"#e2e8f0","stroke-width":1, "data-no-export":"" }));
       const t = svgEl("text",{ x:x+3, y:Y_WEEK, "font-size":10, fill:"#64748b" });
       t.textContent = dt.getUTCDate()+"/"+(dt.getUTCMonth()+1);
       headSvg.appendChild(t);
@@ -828,7 +837,7 @@ function buildHeader(){
     headSvg.appendChild(headLabel(lx, MILE_ROWS[row], m.label, st.size, st.weight, st.fill));
   });
 
-  headSvg.appendChild(svgEl("line",{ x1:0, y1:HEADER_H-0.5, x2:W, y2:HEADER_H-0.5, stroke:"#e2e8f0" }));
+  headSvg.appendChild(svgEl("line",{ x1:0, y1:HEADER_H-0.5, x2:W, y2:HEADER_H-0.5, stroke:"#e2e8f0", "data-no-export":"" }));
 }
 
 /* ---------------- ROWS ---------------- */
@@ -943,7 +952,7 @@ function render(){
 
   /* bars svg layers */
   barsSvg.innerHTML = "";
-  const gWeekend = svgEl("g",{}), gSprint = svgEl("g",{}), gGrid = svgEl("g",{}),
+  const gWeekend = svgEl("g",{ "data-no-export":"" }), gSprint = svgEl("g",{ "data-no-export":"" }), gGrid = svgEl("g",{ "data-no-export":"" }),
         gBars = svgEl("g",{}), gMile = svgEl("g",{});
   [gWeekend, gSprint, gGrid, gBars, gMile].forEach(x => barsSvg.appendChild(x));
 
@@ -976,6 +985,22 @@ function render(){
   if(parse(TODAY) >= rangeStart && parse(TODAY) <= rangeEnd){
     gMile.appendChild(todayLine(xLine(TODAY), 0, plotHeight));
   }
+
+  /* Hitos del Charter: la fila es la del paquete; en "l3", su cabecera de sub-paquete;
+     con la épica colapsada, la fila de la épica. */
+  (DATA[VER].charterHitos || []).forEach(h => {
+    const mod = h.pkg.split(".")[0] + ".0";
+    const r = rows.find(r => (r.type === "task" && r.task.id === h.pkg) || (r.type === "sub" && r.sub.id === h.pkg)
+                          || (r.type === "group" && state.collapsed[r.g.mod] && r.g.mod.startsWith(mod + " ")));
+    if(!r) return;
+    const x = xLine(h.date), cy = r.y + ROW_H/2, s = 7;
+    const d = svgEl("polygon", { points:`${x},${cy-s} ${x+s},${cy} ${x},${cy+s} ${x-s},${cy}`,
+      fill:"#f5cd57", stroke:"#b8860b", "stroke-width":1.2 });
+    const t = document.createElementNS(SVGNS, "title");
+    t.textContent = `Hito: ${h.label} · ${h.date}`;
+    d.appendChild(t);
+    gMile.appendChild(d);
+  });
 
   if(state.highlighted && barEls[state.highlighted]) applyHighlight(state.highlighted);
 }
@@ -1061,24 +1086,74 @@ verSelect.innerHTML = Object.keys(DATA).map(v => `<option value="${v}">${v}</opt
 verSelect.value = VER;
 verSelect.addEventListener("change", () => loadVersion(verSelect.value));
 
-/* ---------------- EXPORT PNG ---------------- */
-document.getElementById("btn-png").addEventListener("click", () => {
-  if(window.html2canvas){ doExport(); return; }
-  const s = document.createElement("script");
-  s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-  s.onload = doExport;
-  s.onerror = () => alert("No se pudo cargar html2canvas (sin internet). Usá imprimir → PDF en su lugar.");
-  document.head.appendChild(s);
-});
-function doExport(){
-  const target = document.getElementById("grid");
-  html2canvas(target, { backgroundColor:"#ffffff", scale:2, windowWidth: target.scrollWidth }).then(canvas => {
-    const a = document.createElement("a");
-    a.download = `SportMatch-Gantt-${VER}-${state.level === "l3" ? "entregables" : "paquetes"}.png`;
-    a.href = canvas.toDataURL("image/png");
-    a.click();
+/* ---------------- EXPORT SVG ---------------- */
+/* Un solo SVG, fondo transparente: etiquetas como texto, encabezado y barras clonados
+   de los SVG en pantalla (salvo lo marcado con data-no-export). Sin líneas ni franjas de
+   fondo: sólo barras, hitos y textos. La épica sale sin conteo ni horas, y la columna
+   de etiquetas es más angosta que en pantalla. */
+const LABEL_W = 240;
+function buildExportSvg(){
+  const rows = visibleRows(), W = plotW(), H = rows.totalHeight;
+  const out = svgEl("svg", { xmlns:SVGNS, width:LABEL_W + W, height:HEADER_H + H, viewBox:`0 0 ${LABEL_W + W} ${HEADER_H + H}`,
+    "font-family":'-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' });
+  const text = (x, y, str, attrs) => { const t = svgEl("text", { x, y, ...attrs }); t.textContent = str; out.appendChild(t); return t; };
+  const fit = (str, font, max) => { if(textW(str, font) <= max) return str;
+    while(str && textW(str + "…", font) > max) str = str.slice(0, -1); return str + "…"; };
+
+  text(12, HEADER_H - 10, "ÍNDICE · TAREA", { "font-size":11, "font-weight":600, fill:"#64748b", "letter-spacing":".04em" });
+  const place = (svg, x, y) => { const g = svgEl("g", { transform:`translate(${x},${y})` });
+    [...svg.childNodes].filter(n => !n.hasAttribute("data-no-export")).forEach(n => g.appendChild(n.cloneNode(true))); out.appendChild(g); };
+  place(headSvg, LABEL_W, 0);
+  place(barsSvg, LABEL_W, HEADER_H);
+  place(overlaySvg, LABEL_W, HEADER_H);
+
+  rows.forEach(r => {
+    const y = HEADER_H + r.y, cy = y + ROW_H/2 + 4;
+    if(r.type === "group"){
+      out.appendChild(svgEl("rect", { x:12, y:cy - 9, width:10, height:10, rx:3, fill:r.g.color }));
+      text(30, cy, fit(r.g.mod, HFONT(12.5, 700), LABEL_W - 42), { "font-size":12.5, "font-weight":700, fill:"#0f172a" });
+      return;
+    }
+    const item = r.type === "sub" ? r.sub : r.task, l3 = state.level === "l3";
+    const x0 = r.type === "sub" ? 22 : l3 ? 36 : 26, idxW = r.type === "task" && l3 ? 46 : 34;
+    if(r.type === "task" && l3 && item.status)
+      out.appendChild(svgEl("circle", { cx:x0 - 8, cy:cy - 4, r:4,
+        fill:{ done:"#16a34a", wip:"#f59e0b" }[item.status] || "#cbd5e1" }));
+    const hrs = item.hours.toFixed(1) + " h", dev = r.type === "task" && l3 && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
+    const tail = (dev ? dev + "  " : "") + hrs;
+    const size = r.type === "sub" ? 11.5 : 12.5, weight = r.type === "sub" ? 700 : 400;
+    text(x0, cy, item.id, { "font-size":11.5, fill:"#64748b" });
+    text(x0 + idxW + 8, cy, fit(item.name, HFONT(size, weight), LABEL_W - 12 - (x0 + idxW + 8) - textW(tail, HFONT(10.5, 500)) - 10),
+      { "font-size":size, "font-weight":weight, fill:r.type === "sub" ? "#475569" : "#0f172a" });
+    text(LABEL_W - 12, cy, tail, { "font-size":10.5, fill:"#64748b", "text-anchor":"end" });
   });
+  return out;
 }
+
+function download(ext, href){
+  const a = document.createElement("a");
+  a.download = `SportMatch-Gantt-${VER}-${state.level === "l3" ? "entregables" : "paquetes"}.${ext}`;
+  a.href = href;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(href), 1000);
+}
+const svgUrl = (out) => URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(out)], { type:"image/svg+xml" }));
+
+document.getElementById("btn-svg").addEventListener("click", () => download("svg", svgUrl(buildExportSvg())));
+
+/* PNG: el mismo SVG rasterizado a 2x; el canvas arranca transparente. */
+document.getElementById("btn-png").addEventListener("click", () => {
+  const out = buildExportSvg(), url = svgUrl(out), img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas");
+    c.width = out.getAttribute("width") * 2;
+    c.height = out.getAttribute("height") * 2;
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    c.toBlob(b => download("png", URL.createObjectURL(b)), "image/png");
+  };
+  img.src = url;
+});
 
 /* ---------------- INIT ---------------- */
 loadVersion("v4");
