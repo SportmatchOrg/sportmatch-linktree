@@ -5,7 +5,7 @@ del calendario semana a semana del Cronograma v4.
 
 Entradas
   docs/planning/WBS-SportMatch-v4.md        116 paquetes: título, dependencias, horas PERT
-  docs/planning/Export Tue Sep 15 2026.csv  export de Linear: estado y fechas reales por ticket
+  docs/planning/Export Thu Sep 17 2026.csv  export de Linear: estado y fechas reales por ticket
 
 Salidas (intermedias; se pegan a mano en los HTML y en el doc, no se commitean)
   scripts/_v4_wbs.js          bloque V4_ADD para leadership/wbs.html
@@ -23,7 +23,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WBS = ROOT / 'docs' / 'planning' / 'WBS-SportMatch-v4.md'
-EXPORT = ROOT / 'docs' / 'planning' / 'Export Tue Sep 15 2026.csv'
+EXPORT = ROOT / 'docs' / 'planning' / 'Export Thu Sep 17 2026.csv'
 OUT = ROOT / 'scripts'
 
 # ───────────────────────── calendario ─────────────────────────
@@ -144,19 +144,20 @@ MANUAL_WEEK = {
  '3.1.3': (1, 1, 3),   # convenciones de ramas/PR/Linear escritas en AGENTS.md la semana del kick-off
  '10.2.1': (2, 2, 3),  # README con instalación y ejecución local, junto con la base del repo (SPO-143)
 }
-# Estado según Cronograma-y-PERT-v4.md §4/§5: 42 ✅ (S1), 6 🟡 (parciales, cierran en S2).
+# Estado según Cronograma-y-PERT-v4.md §4/§5: 43 ✅ (S1), 5 🟡 (parciales, cierran en S2).
+# 6.4.2 cierra en el S1: SPO-215 y SPO-218 pasaron a Done el 15/09 y el 16/09 (export del 17/09).
 DONE = {'3.1.1','3.1.2','3.1.3','3.2.1','3.2.2','3.2.3','4.1.1','4.1.2','4.1.3','4.1.4','4.2.1','4.2.2',
         '4.2.3','4.2.4','4.2.5','5.1.2','5.1.3','5.1.5','5.2.1','5.2.4','5.2.5','6.1.1','6.1.2','6.1.3',
         '6.1.5','6.2.1','6.2.2','6.2.3','6.2.4','6.3.1','6.3.2','6.3.3','6.3.4','6.3.5','6.4.1','7.2.1',
-        '7.2.2','9.1.1','9.1.2','9.1.3','9.1.4','10.2.1'}
-WIP = {'5.1.1', '5.1.4', '5.2.3', '6.4.2', '7.1.1', '10.1.2'}
+        '6.4.2','7.2.2','9.1.1','9.1.2','9.1.3','9.1.4','10.2.1'}
+WIP = {'5.1.1', '5.1.4', '5.2.3', '7.1.1', '10.1.2'}
 SPRINT_OF = {}
 for k in DONE: SPRINT_OF[k] = 'S1'
-for k in ['5.1.1','5.1.4','5.2.2','5.2.3','6.1.4','6.2.5','6.2.6','6.4.2','6.4.3','7.1.1','7.1.2','7.1.3',
+for k in ['5.1.1','5.1.4','5.2.2','5.2.3','6.1.4','6.2.5','6.2.6','6.4.3','7.1.1','7.1.2','7.1.3',
           '7.3.1','7.3.2','7.3.3','10.1.2','11.1.1','11.1.2','11.1.3','11.2.1','11.2.2','11.2.3']: SPRINT_OF[k] = 'S2'
 for k in ['6.5.1','6.5.2','6.5.3','10.1.1','10.2.2','11.1.4','12.1.1','12.1.2','12.1.3','12.2.1','12.2.2','12.2.3']: SPRINT_OF[k] = 'S3'
 assert set(SPRINT_OF) == set(DEV), set(DEV) ^ set(SPRINT_OF)
-assert len(DONE) == 42 and len([k for k, s in SPRINT_OF.items() if s == 'S2']) == 22
+assert len(DONE) == 43 and len([k for k, s in SPRINT_OF.items() if s == 'S2']) == 21
 
 # Dev preferido para lo pendiente, por naturaleza del paquete. El scheduler puede dárselo a otro
 # dev si así termina antes: Siaba (3) tomó tickets de front en los sprints 4 y 5.

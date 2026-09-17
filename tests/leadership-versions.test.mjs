@@ -158,8 +158,8 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
     if (t.status === "done") assert.ok(Date.parse(t.end) <= Date.parse("2026-09-17"), `${t.id} is done but ends after the 17/09 steering`);
     assert.ok([1, 2, 3].includes(t.dev), `${t.id}: dev must be 1, 2 or 3`);
   }
-  // Cronograma-y-PERT-v4.md §5: 42 hechos, 6 parciales, 28 pendientes.
-  assert.deepEqual(counts, { done: 42, wip: 6, todo: 28 });
+  // Cronograma-y-PERT-v4.md §5: 43 hechos, 5 parciales, 28 pendientes.
+  assert.deepEqual(counts, { done: 43, wip: 5, todo: 28 });
   assert.equal(d.tasks.length, 76);
   // Sprint bands and milestones must cover the same calendar the tasks use.
   assert.ok(d.sprints.some((s) => s.end === "2026-11-05"), "S3 must close on 05/11");
@@ -173,7 +173,7 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
 const KNOWN_DEP_VIOLATIONS = {
   v1: [],
   v2: ["4.1.3<4.1.2", "4.2.1<4.1.2", "5.2.1<5.1.2", "6.3.2<6.2.3", "7.2.1<7.1.1"],
-  v4: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1", "5.1.4<6.4.2",
+  v4: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1",
        "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4",
        "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3"],
 };

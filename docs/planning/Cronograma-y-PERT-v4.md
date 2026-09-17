@@ -127,8 +127,8 @@ flowchart LR
 
 | Sprint | Paquetes | Esfuerzo | Capacidad | Uso |
 |---|---:|---:|---:|---:|
-| S1 | 42 | 122.07 h | 108 h | 113% |
-| S2 | 22 | 59.16 h | 72 h | 82% |
+| S1 | 43 | 123.70 h | 108 h | 115% |
+| S2 | 21 | 57.53 h | 72 h | 80% |
 | S3 | 12 | 40.39 h | 54 h | 75% |
 | **Total** | **76** | **221.62 h** | **234 h** | **95%** |
 
@@ -136,7 +136,7 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 **fin** (siempre jueves). Para lo hecho son las semanas reales de Linear; para lo pendiente, el plan de §9.
 
 <!-- v4:sprints:begin — generado por scripts/generate-v4.py -->
-### S1 — 122.07 h
+### S1 — 123.70 h
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
@@ -175,6 +175,7 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 6.3.4 | Visualización de estado de solicitud | 2.47 | 6.68 | Siaba | 03/09 | 17/09 | ✅ |
 | 6.3.5 | Inscripción directa y baja del partido | 3.00 | 14.77 | Rudolph | 20/08 | 03/09 | ✅ |
 | 6.4.1 | Modelo de calificación | 2.23 | 9.41 | Rudolph | 10/09 | 17/09 | ✅ |
+| 6.4.2 | Interfaz de calificación | 1.63 | 10.13 | Pache | 10/09 | 17/09 | ✅ |
 | 7.2.1 | Tarjeta de partido | 3.12 | 25.79 | Pache | 27/08 | 03/09 | ✅ |
 | 7.2.2 | Navegación tipo swipe | 4.62 | 9.25 | Pache | 27/08 | 10/09 | ✅ |
 | 9.1.1 | Ambiente productivo configurado | 4.75 | 15.29 | Siaba | 27/08 | 03/09 | ✅ |
@@ -183,18 +184,17 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 9.1.4 | Contenedorización del backend y registro de imágenes | 3.50 | 29.14 | Siaba | 20/08 | 27/08 | ✅ |
 | 10.2.1 | README del proyecto | 1.50 | 31.14 | Siaba | 13/08 | 20/08 | ✅ |
 
-### S2 — 59.16 h
+### S2 — 57.53 h
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
 | 5.1.1 | Modelo de perfil | 1.50 | 11.17 | Siaba | 13/08 | 01/10 | 🟡 |
 | 5.1.4 | Servicio de cálculo de rating | 3.00 | 9.41 | Rudolph | 10/09 | 08/10 | 🟡 |
 | 5.2.2 | Edición de perfil | 2.22 | 11.11 | Pache | 08/10 | 15/10 | ⬜ |
-| 5.2.3 | Vista de historial | 1.50 | 14.05 | Siaba | 03/09 | 08/10 | 🟡 |
+| 5.2.3 | Vista de historial | 1.50 | 14.05 | Siaba | 03/09 | 15/10 | 🟡 |
 | 6.1.4 | Cancelación de partido con motivo | 2.35 | 33.52 | Pache | 17/09 | 24/09 | ⬜ |
-| 6.2.5 | Interfaz de cancelación | 1.63 | 33.52 | Pache | 17/09 | 24/09 | ⬜ |
+| 6.2.5 | Interfaz de cancelación | 1.63 | 33.52 | Pache | 24/09 | 01/10 | ⬜ |
 | 6.2.6 | Notificación de cancelación a participantes | 1.50 | 5.40 | Siaba | 08/10 | 15/10 | ⬜ |
-| 6.4.2 | Interfaz de calificación | 1.63 | 10.13 | Pache | 10/09 | 24/09 | 🟡 |
 | 6.4.3 | Regla de penalización por no-show | 2.35 | 9.41 | Rudolph | 17/09 | 24/09 | ⬜ |
 | 7.1.1 | Búsqueda de partidos | 4.62 | 25.79 | Siaba | 03/09 | 24/09 | 🟡 |
 | 7.1.2 | Filtros (deporte, nivel, fecha) | 3.12 | 30.41 | Pache | 08/10 | 15/10 | ⬜ |
@@ -202,13 +202,13 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 7.3.1 | Integración con proveedor de mapa | 4.28 | 21.99 | Siaba | 24/09 | 01/10 | ⬜ |
 | 7.3.2 | Visualización de partidos en mapa | 2.47 | 21.99 | Pache | 01/10 | 08/10 | ⬜ |
 | 7.3.3 | Detalle de partido desde mapa | 3.90 | 21.99 | Pache | 01/10 | 08/10 | ⬜ |
-| 10.1.2 | Entrega final de diseño UX/UI | 3.17 | 38.83 | Siaba | 08/10 | 15/10 | 🟡 |
+| 10.1.2 | Entrega final de diseño UX/UI | 3.17 | 38.83 | Pache | 17/09 | 24/09 | 🟡 |
 | 11.1.1 | Modelo de notificación | 2.35 | 6.12 | Rudolph | 17/09 | 24/09 | ⬜ |
 | 11.1.2 | Selección de proveedor de push y email | 1.63 | 6.84 | Siaba | 17/09 | 24/09 | ⬜ |
 | 11.1.3 | Servicio de envío de notificaciones | 4.75 | -0.00 | Rudolph | 24/09 | 01/10 | ⬜ |
 | 11.2.1 | Centro de notificaciones | 3.90 | 12.24 | Pache | 24/09 | 01/10 | ⬜ |
 | 11.2.2 | Recepción de push en cliente | 4.03 | 14.46 | Siaba | 01/10 | 08/10 | ⬜ |
-| 11.2.3 | Preferencias de notificación | 1.63 | 12.24 | Pache | 24/09 | 01/10 | ⬜ |
+| 11.2.3 | Preferencias de notificación | 1.63 | 12.24 | Siaba | 01/10 | 08/10 | ⬜ |
 
 ### S3 — 40.39 h
 
@@ -234,8 +234,8 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 
 | Estado | Paquetes | Esfuerzo | % del esfuerzo |
 |---|---:|---:|---:|
-| ✅ Hecho | 42 | 122.07 h | 55.1% |
-| 🟡 Parcial | 6 | 15.42 h | 7.0% |
+| ✅ Hecho | 43 | 123.70 h | 55.8% |
+| 🟡 Parcial | 5 | 13.79 h | 6.2% |
 | ⬜ Pendiente | 28 | 84.13 h | 38.0% |
 | **Total** | **76** | **221.62 h** | **100%** |
 
@@ -243,27 +243,27 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 
 | | Valor |
 |---|---|
-| Esfuerzo de desarrollo cerrado | **122,07 h de 221,62 h = 55,1%** |
-| Paquetes cerrados | **42 de 76 = 55,3%** |
+| Esfuerzo de desarrollo cerrado | **123,70 h de 221,62 h = 55,8%** |
+| Paquetes cerrados | **43 de 76 = 56,6%** |
 | Calendario transcurrido | **6 de 13 semanas de trabajo = 46,2%** |
-| **Adelanto** | **+8,9 puntos de avance sobre el calendario** |
+| **Adelanto** | **+9,7 puntos de avance sobre el calendario** |
 
 ### Qué dice esto sobre la estimación
 
 La capacidad real del S1 fue de **108 h** (3 devs × 6 h/semana × 6 semanas) y los paquetes cerrados suman
-**122,07 h estimadas**. Separando la capacitación, que es el único paquete del que se conoce el costo real
+**123,70 h estimadas**. Separando la capacitación, que es el único paquete del que se conoce el costo real
 exacto y que la v4 ya recalibró:
 
 | | Estimado | Real / disponible |
 |---|---:|---:|
 | 3.1.2 Capacitación | 15,00 h | 15,00 h consumidas |
-| Los otros 41 paquetes cerrados | 107,07 h | 93,00 h de capacidad restante |
+| Los otros 42 paquetes cerrados | 108,70 h | 93,00 h de capacidad restante |
 
-Esos 41 paquetes estaban estimados en **107,07 h** y entraron en las **93 h** que quedaban: el equipo
-entregó con un **13% menos de tiempo** del que la estimación preveía.
+Esos 42 paquetes estaban estimados en **108,70 h** y entraron en las **93 h** que quedaban: el equipo
+entregó con un **14% menos de tiempo** del que la estimación preveía.
 
 Y ese 13% es un piso, no un techo: dentro de esas mismas 93 h también se avanzó parcialmente en otros
-6 paquetes y se resolvieron los arreglos que no son paquetes de la WBS.
+5 paquetes y se resolvieron los arreglos que no son paquetes de la WBS.
 
 **La conclusión para el steering:** el adelanto no viene de haber recortado alcance, viene de ejecución
 —y encima sobre un alcance **mayor** que el planificado, porque se sumaron 32,50 h de paquetes que la v3
@@ -306,7 +306,7 @@ funcionando con integración continua desde el S1.
 | R1 | **11.1.3 está en el camino crítico** y arrastra invitaciones y aviso de cancelación. | Alto | Arrancar el S2 por el módulo 11.0 completo, no por el mapa. |
 | R2 | **12.2.1 obliga a introducir un rol de administrador** que hoy no existe en el modelo de usuario ni en el guard. | Alto | Resolver el rol al inicio del S3, no al final. Es la dependencia oculta más cara. |
 | R3 | **7.3 (mapa) no tiene coordenadas en el modelo.** `Partido.ubicacion` es texto libre. | Medio | El S2 tiene que sumar coordenadas a `Partido` y a `User` en una sola decisión, antes de 7.3.2. |
-| R4 | El S2 usa el 82% de la capacidad; el S3, el 75%. | Bajo | Quedan 12,38 h de margen en las 13 semanas de trabajo, más la semana de reserva del 05/11 al 12/11, que no lleva nada planificado. |
+| R4 | El S2 usa el 80% de la capacidad; el S3, el 75%. | Bajo | Quedan 12,38 h de margen en las 13 semanas de trabajo, más la semana de reserva del 05/11 al 12/11, que no lleva nada planificado. |
 
 ---
 
@@ -407,10 +407,10 @@ El orden día por día dentro de la semana lo fija el plan de sprint, como hasta
 <!-- v4:semanas:begin — generado por scripts/generate-v4.py -->
 | Sem | Ventana | Sprint | Pache (Front) | Rudolph (Back) | Siaba (Infra) | Carga |
 |---|---|---|---|---|---|---:|
-| 7 | 17/09 → 24/09 | S2 | 6.1.4 Cancelación de partido con motivo<br>6.2.5 Interfaz de cancelación<br>6.4.2 Interfaz de calificación | 6.4.3 Regla de penalización por no-show<br>11.1.1 Modelo de notificación | 7.1.1 Búsqueda de partidos<br>11.1.2 Selección de proveedor de push y email | 16.6 / 18 h |
-| 8 | 24/09 → 01/10 | S2 | 11.2.1 Centro de notificaciones<br>11.2.3 Preferencias de notificación | 11.1.3 Servicio de envío de notificaciones | 5.1.1 Modelo de perfil<br>7.3.1 Integración con proveedor de mapa | 16.1 / 18 h |
-| 9 | 01/10 → 08/10 | S2 | 7.3.2 Visualización de partidos en mapa<br>7.3.3 Detalle de partido desde mapa | 5.1.4 Servicio de cálculo de rating<br>7.1.3 Ordenamiento por rating y compatibilidad | 5.2.3 Vista de historial<br>11.2.2 Recepción de push en cliente | 16.5 / 18 h |
-| 10 | 08/10 → 15/10 | S2 | 5.2.2 Edición de perfil<br>7.1.2 Filtros (deporte, nivel, fecha) | — | 6.2.6 Notificación de cancelación a participantes<br>10.1.2 Entrega final de diseño UX/UI | 10.0 / 18 h |
+| 7 | 17/09 → 24/09 | S2 | 6.1.4 Cancelación de partido con motivo<br>10.1.2 Entrega final de diseño UX/UI | 6.4.3 Regla de penalización por no-show<br>11.1.1 Modelo de notificación | 7.1.1 Búsqueda de partidos<br>11.1.2 Selección de proveedor de push y email | 16.5 / 18 h |
+| 8 | 24/09 → 01/10 | S2 | 6.2.5 Interfaz de cancelación<br>11.2.1 Centro de notificaciones | 11.1.3 Servicio de envío de notificaciones | 5.1.1 Modelo de perfil<br>7.3.1 Integración con proveedor de mapa | 16.1 / 18 h |
+| 9 | 01/10 → 08/10 | S2 | 7.3.2 Visualización de partidos en mapa<br>7.3.3 Detalle de partido desde mapa | 5.1.4 Servicio de cálculo de rating<br>7.1.3 Ordenamiento por rating y compatibilidad | 11.2.2 Recepción de push en cliente<br>11.2.3 Preferencias de notificación | 16.7 / 18 h |
+| 10 | 08/10 → 15/10 | S2 | 5.2.2 Edición de perfil<br>7.1.2 Filtros (deporte, nivel, fecha) | — | 5.2.3 Vista de historial<br>6.2.6 Notificación de cancelación a participantes | 8.3 / 18 h |
 | 11 | 15/10 → 22/10 | S3 | 6.5.1 Link compartible de partido | 6.5.2 Invitación directa a un usuario | 10.2.2 Documentación de APIs<br>12.1.1 Modelo de reporte<br>12.1.2 Endpoint de creación de reporte | 11.9 / 18 h |
 | 12 | 22/10 → 29/10 | S3 | 12.2.1 Panel de revisión de reportes | 6.5.3 Aceptación de invitación<br>11.1.4 Job de recordatorio pre-partido | 10.1.1 Manual de uso y descripción de funcionalidades | 18.4 / 18 h |
 | 13 | 29/10 → 05/11 | S3 | 12.1.3 Interfaz de reporte | 12.2.2 Suspensión de usuario | 12.2.3 Historial de moderación | 10.2 / 18 h |

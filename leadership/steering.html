@@ -195,7 +195,7 @@ const STEERINGS = {
     cut: 6,
     reserve: "05/11 → 12/11",
     devEffort: 221.62,                 // horas estimadas de los 76 paquetes de desarrollo
-    avance: { done: [42, 122.07], wip: [6, 15.42], todo: [28, 84.13] },
+    avance: { done: [43, 123.70], wip: [5, 13.79], todo: [28, 84.13] },
     roles: [
       { rol: "Gestión", who: "PM, PO, Tech Lead", people: 3, hWeek: 4, rate: 20 },
       { rol: "Desarrollo", who: "3 devs", people: 3, hWeek: 6, rate: 10, evm: true },
@@ -216,7 +216,7 @@ const STEERINGS = {
       { h: 8.72,  pkgs: ["3.2.2", "4.1.2", "6.1.1", "9.1.4"] },
       { h: 30.3,  pkgs: ["3.2.3", "4.2.5", "6.1.2", "6.1.5", "6.2.3", "6.3.5", "7.2.1", "9.1.1", "9.1.2", "9.1.3"] },
       { h: 26.29, pkgs: ["5.1.2", "5.2.1", "6.1.3", "6.2.1", "6.2.4", "6.3.1", "6.3.2", "6.3.3", "7.2.2"] },
-      { h: 18.55, pkgs: ["4.2.4", "5.1.3", "5.1.5", "5.2.4", "5.2.5", "6.2.2", "6.3.4", "6.4.1"] },
+      { h: 20.18, pkgs: ["4.2.4", "5.1.3", "5.1.5", "5.2.4", "5.2.5", "6.2.2", "6.3.4", "6.4.1", "6.4.2"] },
     ],
     hitos: [
       ["Kick-off técnico", "Principios de agosto", "13/08", "✅ Cumplido"],
@@ -228,7 +228,7 @@ const STEERINGS = {
       ["R1", "11.1.3 (servicio de notificaciones) está en el camino crítico y arrastra invitaciones y aviso de cancelación.", "Alto", "Arrancar el S2 por el módulo 11.0 completo, no por el mapa."],
       ["R2", "12.2.1 obliga a introducir un rol de administrador que hoy no existe en el modelo de usuario ni en el guard.", "Alto", "Resolver el rol al inicio del S3, no al final."],
       ["R3", "7.3 (mapa) no tiene coordenadas en el modelo: Partido.ubicacion es texto libre.", "Medio", "Sumar coordenadas a Partido y a User en una sola decisión, antes de 7.3.2."],
-      ["R4", "El S2 usa el 82 % de la capacidad; el S3, el 75 %.", "Bajo", "12,38 h de margen en las 13 semanas, más la semana de reserva."],
+      ["R4", "El S2 usa el 80 % de la capacidad; el S3, el 75 %.", "Bajo", "12,38 h de margen en las 13 semanas, más la semana de reserva."],
     ],
   },
 };
@@ -353,7 +353,7 @@ function render(ver) {
   $("evm-kpis-1").innerHTML =
     kpi("PV", usd(m.PV), `${m.devWeek * m.c} h planificadas · ${pct(m.PV / m.bac)} del BAC`) +
     kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas · ${pct(m.EV / m.bac)} del BAC`, true) +
-    kpi("AC", usd(m.AC), `${sum(d.actualHours)} h reales`);
+    kpi("AC", usd(m.AC), `${sum(d.actualHours)} h de dedicación pactada`);
   $("evm-kpis-2").innerHTML =
     kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
     kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo")) +
@@ -403,7 +403,7 @@ function render(ver) {
   const weak = d.earned.map((_, i) => i).filter((i) => m.ev[i] / m.pv[i] < 1);
   const eacAtip = m.AC + m.bac - m.EV;
   $("evm-recalcar").innerHTML = li([
-    Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> la dedicación es fija (${m.devWeek} h/sem) y los costos de infra e IA fueron los planeados. Por eso <b>SPI = CPI</b>, y la diferencia está en el EV: cuánto valor rinde cada hora.`,
+    Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
     `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
     `<b>Dos EAC posibles:</b> el típico (BAC / CPI = ${usd(m.eac)}) supone que la eficiencia se mantiene; el atípico (AC + BAC − EV = ${usd(eacAtip)}) supone que lo que falta sale según el plan. ${Math.max(m.eac, eacAtip) <= m.bac ? "Los dos quedan dentro del BAC." : "Uno de los dos supera el BAC."}`,
     `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
