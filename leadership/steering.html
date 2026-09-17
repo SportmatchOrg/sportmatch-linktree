@@ -276,13 +276,14 @@ const head = (cols) => `<thead><tr>${cols.map(([t, cls]) => `<th${cls ? ` class=
 /* ---- Curva S ----------------------------------------------------------- */
 // Devuelve el SVG como texto, con la leyenda adentro y sin fondo, para mostrarlo y para descargarlo.
 function curveSvg(d, m) {
-  const W = 900, H = 370, pad = { l: 56, r: 84, t: 48, b: 38 };
+  const W = 900, H = 370, pad = { l: 56, r: 112, t: 48, b: 38 };
   const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
   const yMax = Math.ceil(m.bac / 500) * 500;
   const x = (i) => pad.l + (iw * i) / (m.n - 1), y = (v) => pad.t + ih - (ih * v) / yMax;
   const o = [];
   const el = (tag, a, text) => o.push(`<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(" ")}${text == null ? "/>" : `>${text}</${tag}>`}`);
-  [["PV · planificado", "#334155", "6 5"], ["EV · ganado", "#2a78d6"], ["AC · costo real", "#eb6834"]].forEach(([label, c, dash], i) => {
+  const eacColor = m.vac >= 0 ? "#16a34a" : "#dc2626";
+  [["PV · planificado", "#334155", "6 5"], ["EV · ganado", "#2a78d6"], ["AC · costo real", "#eb6834"], ["EAC · proyección", eacColor, "2 4"]].forEach(([label, c, dash], i) => {
     const lx = pad.l + i * 150, a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
     if (dash) a["stroke-dasharray"] = dash;
     el("line", a);
@@ -306,7 +307,15 @@ function curveSvg(d, m) {
     el("circle", { cx: x(k), cy: y(arr[k]), r: 4.5, fill: c, stroke: "#fff", "stroke-width": 2 });
     el("text", { x: x(k) + dx, y: y(arr[k]) + dy, "text-anchor": anchor, "font-size": 12, "font-weight": 700, fill: "#0f172a" }, label);
   });
-  el("text", { x: W - pad.r + 6, y: y(m.bac) + 4, "font-size": 12, "font-weight": 700, fill: "#0f172a" }, "BAC " + usd(m.bac));
+  // Proyección: desde el costo real al corte hasta el EAC en la última semana. Es un pronóstico,
+  // no una curva medida, así que va punteada y con su propio color según caiga bajo o sobre la base.
+  el("path", { d: `M${x(k).toFixed(1)} ${y(m.AC).toFixed(1)} L${x(m.n - 1).toFixed(1)} ${y(m.eac).toFixed(1)}`, stroke: eacColor, ...line, "stroke-dasharray": "2 4" });
+  el("circle", { cx: x(m.n - 1), cy: y(m.eac), r: 4, fill: eacColor, stroke: "#fff", "stroke-width": 2 });
+  // La línea base no es "el BAC" a secas: el BAC del proyecto incluye gestión, QA y contingencia.
+  el("text", { x: W - pad.r + 8, y: y(m.bac) - 3, "font-size": 10, "font-weight": 600, fill: "#64748b" }, "Línea base EVM");
+  el("text", { x: W - pad.r + 8, y: y(m.bac) + 11, "font-size": 12.5, "font-weight": 700, fill: "#0f172a" }, usd(m.bac));
+  el("text", { x: W - pad.r + 8, y: y(m.eac) - 3, "font-size": 10, "font-weight": 600, fill: eacColor }, "EAC");
+  el("text", { x: W - pad.r + 8, y: y(m.eac) + 11, "font-size": 12.5, "font-weight": 700, fill: eacColor }, usd(m.eac));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Curva S: PV, EV y AC acumulados por semana">\n${o.join("\n")}\n</svg>\n`;
   return { svg, geo: { W, pad, iw } };
 }
@@ -358,7 +367,7 @@ function render(ver) {
     kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
     kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo")) +
     kpi("ETC", usd(m.etc), "costo para terminar") +
-    kpi("EAC", usd(m.eac), `vs BAC ${usd(m.bac)} · ${m.vac >= 0 ? `<span class="up">ahorro ${usd(m.vac)}</span>` : `<span class="down">sobrecosto ${usd(-m.vac)}</span>`}`, true);
+    kpi("EAC", usd(m.eac), `vs línea base ${usd(m.bac)} · ${m.vac >= 0 ? `<span class="up">ahorro ${usd(m.vac)}</span>` : `<span class="down">sobrecosto ${usd(-m.vac)}</span>`}`, true);
   $("evm-formula").innerHTML = [
     `SV = EV − PV = ${signed(m.EV - m.PV)}`, `CV = EV − AC = ${signed(m.EV - m.AC)}`,
     "EV = % completo × BAC", "EAC = BAC / CPI", "ETC = EAC − AC", `VAC = BAC − EAC = ${signed(m.vac)}`, `TCPI = ${num(m.tcpi)}`,
