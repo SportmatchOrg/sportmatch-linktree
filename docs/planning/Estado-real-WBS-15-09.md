@@ -13,7 +13,7 @@ Los tickets en **Backlog** cuentan como no hechos.
 
 | Módulo                   | ✅      | 🟡     | ⬜      | Lectura                                           |
 | ------------------------ | ------ | ------ | ------ | ------------------------------------------------- |
-| 1.0 Gestión del proyecto | 4      | 3      | 1      | Falta el informe final y reajustar el cronograma. |
+| 1.0 Gestión del proyecto | 4      | 6      | 2      | Falta el informe final, las minutas y sostener el seguimiento. |
 | 2.0 Diseño del producto  | 8      | 2      | 2      | Diseño completo salvo los módulos nuevos.         |
 | 3.0 Capacitación y setup | 6      | 0      | 0      | Cerrado, y con más alcance del planificado.       |
 | 4.0 Autenticación        | 4      | 0      | 0      | Cerrado.                                          |
@@ -25,7 +25,7 @@ Los tickets en **Backlog** cuentan como no hechos.
 | 10.0 Documentación final | 1      | 1      | 2      | Falta manual y documentación de API.              |
 | 11.0 Notificaciones      | 0      | 0      | 7      | Fuera de alcance.                                 |
 | 12.0 Moderación          | 0      | 0      | 6      | Fuera de alcance.                                 |
-| **Total**                | **46** | **13** | **40** | 99 paquetes.                                      |
+| **Total**                | **46** | **16** | **41** | 103 paquetes.                                     |
 
 **Esfuerzo real cargado en Linear (tickets de sprint, SPO-135 en adelante):** 107 SP ≈ 107 h.
 82 SP entregados, 8 SP en vuelo para el steering, 16 SP en backlog.
@@ -37,11 +37,15 @@ Los tickets en **Backlog** cuentan como no hechos.
 | WBS | Paquete | Estado | Qué se hizo | Qué falta |
 |---|---|---|---|---|
 | 1.1.1 | Project Charter | ✅ | Documento completo con objetivo, alcance, supuestos, stakeholders y RF-01…RF-06 con MoSCoW. | — |
-| 1.1.2 | WBS | ✅ | WBS v3 con 99 paquetes, bajada entera a Linear como 10 milestones + SPO-6…SPO-112. | Reflejar los entregables extra de la sección "Fuera de la WBS". |
-| 1.1.3 | Cronograma y PERT | 🟡 | Se hizo el PERT con camino crítico (`gestion/scripts/pert_v2.py`, `PERT y Camino Crítico.md`). | Está armado sobre 3 sprints mensuales. Hay que rehacerlo contra la ejecución real: 5 sprints semanales jueves a jueves, demo 17/09. **Es el objetivo de este relevamiento.** |
+| 1.1.2 | WBS | ✅ | WBS v3 con 103 paquetes, bajada entera a Linear como 10 milestones + SPO-6…SPO-112. | Reflejar los entregables extra de la sección "Fuera de la WBS". |
+| 1.1.3 | Cronograma y PERT | 🟡 | Se hizo el PERT con camino crítico (`gestion/scripts/pert_v2.py`, `PERT y Camino Crítico.md`). | Hay que rehacerlo contra la ejecución real: 3 sprints mensuales con semanas de jueves a jueves adentro; el S1 cierra en la semana 6 con la demo del 17/09. **Es el objetivo de este relevamiento.** |
 | 1.2.1 | Backlog priorizado | ✅ | Backlog completo: SPO-6…SPO-112 (WBS) y SPO-135…SPO-219 (85 tickets de sprint, con estimación, label y dependencias "blocked by" reales). | — |
-| 1.2.2 | Plan de sprints | 🟡 | Cinco planes escritos y ejecutados (`gestion/sprints/Sprint 1…5`), con capacidad, objetivo, reparto por dev y orden día por día. | **Desvío de fondo:** se planificó "3 sprints de un mes" y se ejecutó con sprints semanales. El paquete se cumplió, el supuesto no. |
+| 1.2.2 | Plan de sprints | 🟡 | Cinco planes semanales escritos y ejecutados dentro del S1 (`gestion/sprints/Sprint 1…5`, semanas 2 a 6), con capacidad, objetivo, reparto por dev y orden día por día. | Los planes semanales del S2 y el S3. |
+| 1.2.3 | Reportes de avance y control de desvíos | 🟡 | Primer reporte formal para el steering 1: este relevamiento, la vista Steering del linktree (avance, presupuesto y valor ganado) y la vista Discrepancias. | Sostenerlo en cada steering del S2 y el S3. |
+| 1.2.4 | Registro de riesgos | 🟡 | Registro inicial con impacto y mitigación en el Cronograma v4 §7 (R1–R4). | Actualizarlo en cada steering. |
 | 1.3.1 | Acta de kick-off | ✅ | Kick-off hecho: objetivos, roles (PO + 3 devs), forma de trabajo y convenciones. | — |
+| 1.3.2 | Minutas quincenales de seguimiento | ⬜ | — | No hay minutas en este repo. Si existen en otro lado, enlazarlas y pasar a 🟡. |
+| 1.3.3 | Sprint reviews | 🟡 | La review del S1 es la demo del steering del 17/09. | Las reviews del S2 (15/10) y el S3 (05/11). |
 | 1.4.1 | Informe final | ⬜ | — | Todo. Depende de 8.2.4 (que no se hizo) y 9.1.3. |
 | 1.4.2 | Presentación final | 🟡 | En armado: steering + demo del 17/09. | Cerrarla. |
 
@@ -136,7 +140,7 @@ Los tickets en **Backlog** cuentan como no hechos.
 
 | WBS | Paquete | Estado | Qué se hizo | Qué falta |
 |---|---|---|---|---|
-| 8.1.1 | Dataset de demo | ⬜ | Hay una seed mínima (deportes y poco más) que corre con `npm run db:seed`. | El dataset representativo desde JSON por entidad, incluyendo solicitudes sembradas (SPO-188, **en backlog desde el sprint 4**). **Riesgo directo sobre la demo del 17/09:** sin datos, el panel del organizador y el rating no se pueden mostrar con naturalidad. |
+| 8.1.1 | Dataset de demo | ⬜ | Hay una seed mínima (deportes y poco más) que corre con `npm run db:seed`. | El dataset representativo desde JSON por entidad, incluyendo solicitudes sembradas (SPO-188, **en backlog desde la semana 5**). **Riesgo directo sobre la demo del 17/09:** sin datos, el panel del organizador y el rating no se pueden mostrar con naturalidad. |
 | 8.1.2 | Prueba manual de autenticación | ✅ | Checklist de login, signup, Google, logout y rutas protegidas en `sportmatch/docs/smoke-test.md`, ejecutado después de cada deploy. | — |
 | 8.1.3 | Prueba manual de perfil | 🟡 | Se probó visualización, tiles y partidos recientes. | No hay edición ni historial completo que probar (5.2.2, 5.2.3). |
 | 8.1.4 | Prueba manual de partidos | ✅ | Cubierto en el smoke test y en la revisión automática de cada PR. | — |
@@ -203,28 +207,32 @@ antes de rehacer el cronograma, porque hoy son horas que se trabajaron y no figu
 | E13 | **Capacitación con repos de práctica**: cuatro repos privados donde cada dev implementó la feature "Partidos" entera antes de tocar el producto. La WBS estimaba 3 h de "nivelación". | SPO-113…SPO-126 | — | Amplía 3.1.2. |
 | E14 | **Refactor de idioma** (código en inglés, producto en castellano) con glosario de renombres en `AGENTS.md`. Escrito y estimado, **no ejecutado**. | SPO-200…SPO-205 | 10 | Paquete nuevo de deuda técnica. |
 
-**Peso:** los extras ya entregados suman del orden de **32 SP**, casi dos sprints enteros de los cinco que se
-corrieron. Ese es el motivo principal por el que el cronograma original no cierra contra la realidad: no es
+**Peso:** los extras ya entregados suman del orden de **32 SP**, casi dos semanas enteras de las cinco de
+desarrollo del S1. Ese es el motivo principal por el que el cronograma original no cierra contra la realidad: no es
 que se haya trabajado menos, es que se trabajó en cosas que la WBS no tenía.
 
 ---
 
 # Insumos para rehacer el cronograma
 
-**Calendario real ejecutado:** 5 sprints semanales de jueves a jueves, no 3 mensuales. Capacidad 6 SP por
-dev por semana, 18 SP por sprint, 3 devs.
+**Calendario real ejecutado:** el S1, primer sprint mensual del Charter, en 6 semanas de jueves a jueves.
+Capacidad 6 SP por dev por semana, 18 SP por semana, 3 devs.
 
-| Sprint | Cierre | SP entregados | Capacidad | Lectura |
+| Semana del S1 | Cierre | SP entregados | Capacidad | Lectura |
 |---|---|---|---|---|
-| Capacitación | 13/08 | — | — | Ejercicio previo en repos de práctica (SPO-113…SPO-126). |
-| S1 | 20/08 | 18 | 18 | Setup, Firebase Auth y modelo `User`. |
-| S2 | 27/08 | 16 | 18 | Perfil, modelo `Partido`, CI y Docker. |
-| S3 | 03/09 | 20 | 18 | Deploy, swipe, detalle de partido. Recupera lo del S2. |
-| S4 | 10/09 | 18 | 18 | Solicitudes, wizard, "Tus partidos". |
-| S5 | 17/09 | 10 + 8 en vuelo | 18 | Rating, perfil ajeno, landing. |
+| 1 · Capacitación | 13/08 | — | — | Ejercicio previo en repos de práctica (SPO-113…SPO-126). |
+| 2 | 20/08 | 18 | 18 | Setup, Firebase Auth y modelo `User`. |
+| 3 | 27/08 | 16 | 18 | Perfil, modelo `Partido`, CI y Docker. |
+| 4 | 03/09 | 20 | 18 | Deploy, swipe, detalle de partido. Recupera lo de la semana 3. |
+| 5 | 10/09 | 18 | 18 | Solicitudes, wizard, "Tus partidos". |
+| 6 | 17/09 | 10 + 8 en vuelo | 18 | Rating, perfil ajeno, landing. |
 
 **90 SP entregados sobre una capacidad de 90.** La velocity fue exacta: el desvío del proyecto no está en
 la ejecución ni en la estimación, está en el alcance — entraron ~32 SP de entregables que la WBS no tenía.
+
+> **Unidades.** Esta lectura es en story points de Linear. En horas de la WBS (Cronograma v4 §5), los paquetes
+> cerrados suman 122,07 h estimadas y entraron en 108 h de capacidad: la estimación quedó del lado conservador.
+> Las dos lecturas son compatibles. Para el steering se presenta la del Cronograma v4.
 
 **Pendiente vivo en backlog al 15/09 — 16 SP:**
 

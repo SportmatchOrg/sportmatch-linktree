@@ -310,3 +310,29 @@ test("WBS runtime: every version renders and v4 has the 116 packages", () => {
   assert.equal(evalIn(`VIEWS.v4.tree.reduce((n, [, s]) => n + s.reduce((m, [, i]) => m + i.length, 0), 0)`), 116);
   assert.equal(evalIn(`VIEWS.v4.newLeaves.size`), 16);
 });
+
+// ── Steering ─────────────────────────────────────────────────────────────────
+// Cada steering carga datos crudos; la página calcula PV, EV, AC y los índices. Acá se cruza lo
+// crudo contra el Cronograma v4, que es la fuente de verdad de avance y calendario.
+test("Steering v1: earned hours and progress match the Cronograma v4", () => {
+  const { v1: s1 } = constant(read("leadership/steering.html"), "STEERINGS");
+  const md = read("docs/planning/Cronograma-y-PERT-v4.md");
+  const s1Table = md.split("### S1")[1].split("### S2")[0];
+  const done = [...s1Table.matchAll(/^\| ([\d.]+) \| [^|]+ \| ([\d.]+) \|[^|]+\|[^|]+\| \d\d\/\d\d \| (\d\d\/\d\d) \| ✅/gm)];
+
+  assert.equal(s1.weeks.length, 13, "13 semanas de trabajo; la reserva no entra");
+  assert.equal(s1.weeks.at(-1), "05/11");
+  assert.equal(s1.earned.length, s1.cut);
+  assert.equal(s1.actualHours.length, s1.cut);
+  s1.earned.forEach((e, i) => {
+    const week = done.filter((m) => m[3] === s1.weeks[i]);
+    assert.deepEqual(e.pkgs, week.map((m) => m[1]), `semana ${i + 1}: paquetes cerrados`);
+    assert.ok(Math.abs(e.h - week.reduce((s, m) => s + Number(m[2]), 0)) < 0.005, `semana ${i + 1}: horas ganadas`);
+  });
+  const earned = s1.earned.reduce((s, e) => s + e.h, 0);
+  assert.ok(Math.abs(earned - s1.avance.done[1]) < 0.005, "horas ganadas = esfuerzo hecho");
+  const [dn, dh] = s1.avance.done, [wn, wh] = s1.avance.wip, [tn, th] = s1.avance.todo;
+  assert.equal(dn, done.length);
+  assert.equal(dn + wn + tn, 76);
+  assert.ok(Math.abs(dh + wh + th - s1.devEffort) < 0.005, "el avance suma el esfuerzo de desarrollo");
+});

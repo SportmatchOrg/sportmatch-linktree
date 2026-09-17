@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch — Discrepancias</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root{
+    --navy:#101c53;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --bg:#f8fafc;
+    --panel:#ffffff;
+    --border:#e2e8f0;
+    --soft:#f1f5f9;
+    --good:#15803d;
+    --good-bg:#f0fdf4;
+    --good-border:#bbf7d0;
+    --amber:#b45309;
+    --amber-bg:#fffbeb;
+    --amber-border:#fde68a;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:24px 24px 64px;
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  .wrap{ max-width:900px; margin:0 auto; }
+  .title{
+    background:var(--navy); color:#fff;
+    border-radius:10px; padding:16px;
+    text-align:center; font-size:22px; font-weight:800; letter-spacing:-0.01em;
+  }
+  .title small{ display:block; margin-top:5px; font-size:12.5px; font-weight:500; opacity:.8; letter-spacing:0; }
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:20px 22px; margin-top:16px;
+  }
+  .card > h2{ margin:0 0 4px; font-size:16px; font-weight:800; letter-spacing:-0.01em; }
+  .card > .lead{ margin:0 0 14px; color:var(--muted); font-size:13px; }
+  .item{ border-top:1px solid var(--border); padding:14px 0 4px; }
+  .item:first-of-type{ border-top:0; padding-top:4px; }
+  .item h3{ margin:0 0 8px; font-size:14px; font-weight:800; color:var(--navy); }
+  .tag{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:.03em;
+    padding:1px 7px; border-radius:5px; margin-right:6px; vertical-align:1px;
+  }
+  .tag.open{ background:var(--amber-bg); color:var(--amber); border:1px solid var(--amber-border); }
+  .tag.done{ background:var(--good-bg); color:var(--good); border:1px solid var(--good-border); }
+  .tag.st{ background:#e0ecfb; color:#1d4f91; border:1px solid #bfdbfe; }
+  .vs{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0 0 8px; }
+  .vs div{ background:var(--soft); border:1px solid var(--border); border-radius:8px; padding:8px 11px; font-size:13px; }
+  .vs b:first-child{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:2px; }
+  p{ margin:0 0 10px; font-size:13.5px; }
+  code{
+    background:var(--soft); border:1px solid var(--border); border-radius:4px;
+    padding:0 4px; font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  @media (max-width:640px){ body{ padding:16px 16px 48px; } .vs{ grid-template-columns:1fr; } }
+  .foot{ margin-top:18px; font-size:12px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="title">
+  Discrepancias de management
+  <small>Lo que no coincide entre documentos, planillas y vistas de gestión · Qué dice cada fuente y cómo se resolvió</small>
+</div>
+
+<div class="card">
+  <h2>Abiertas</h2>
+  <p class="lead">No hay discrepancias abiertas.</p>
+</div>
+
+<div class="card">
+  <h2>Resueltas</h2>
+  <p class="lead">Ya corregidas en la fuente.</p>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>El Excel de EVM tenía la base anterior</h3>
+    <div class="vs">
+      <div><b>Antes</b>12 semanas hasta el 29/10 · BAC EVM $2.379 · EV de 123 h de tickets de Linear, medido como horas × tarifa · SPI 1,12 · semanas rotuladas «Sprint 1…5» · había dos copias commiteadas.</div>
+      <div><b>Cronograma v4 (vista Steering)</b>13 semanas hasta el 05/11, más la reserva · BAC EVM $2.559 · EV = % completo × BAC con 122,07 h de paquetes de la WBS · SPI 1,16.</div>
+    </div>
+    <p><b>Resolución:</b> el Excel quedó alineado con la vista Steering y hay una sola copia, en <code>outputs/</code>. La cátedra no lo pide: es material de apoyo y la fuente es la vista Steering.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>BAC del proyecto de 11.221,20 USD sin respaldo</h3>
+    <div class="vs">
+      <div><b>Antes</b>BAC total 11.221,20 USD («OPEX 12 sem + CAPEX + 20 % de reservas»), con unos 3.351 USD de CAPEX sin detalle.</div>
+      <div><b>Presupuesto recalculado</b>442 HH a tarifas de referencia + 219,42 USD de infra e IA = 6.719,42 USD; con 20 % de contingencia, 8.063,30 USD.</div>
+    </div>
+    <p><b>Resolución:</b> no hay CAPEX: la infra está en planes gratuitos y cada dev usa su equipo. El BAC del proyecto es <b>8.063,30 USD</b>, en la vista Steering y en la celda <code>L7</code> del Excel.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>El EAC del Excel mezclaba bases</h3>
+    <div class="vs">
+      <div><b>Antes</b>Celda <code>L18</code>: EAC = BAC total del proyecto / CPI = 9.986 USD.</div>
+      <div><b>Vista Steering</b>PV, EV y AC miden desarrollo + infra + IA.</div>
+    </div>
+    <p><b>Resolución:</b> EAC, ETC y VAC usan el BAC de la línea base EVM (<code>L8</code>): EAC 2.202 USD, igual que la vista Steering.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>El rol de Juan Francisco</h3>
+    <div class="vs">
+      <div><b>Deck, «Equipo y roles»</b>Figuraba en Diseño.</div>
+      <div><b>Linear y presupuesto</b>Es el dev 3 (Siaba, infra).</div>
+    </div>
+    <p><b>Resolución:</b> se presenta como <b>«Desarrollo (incluye diseño)»</b>, y la fila «Diseño y QA» pasa a llamarse «QA». Hay que reflejarlo en el deck.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>Cuántos paquetes tenía la WBS v3</h3>
+    <div class="vs">
+      <div><b>Estado real al 15/09</b>«WBS v3 con 99 paquetes».</div>
+      <div><b>WBS v3 y WBS v4</b>La v3 tiene 103 paquetes.</div>
+    </div>
+    <p><b>Resolución:</b> faltaban 4 paquetes de gestión. Se sumaron al relevamiento: 1.2.3 reportes de avance 🟡, 1.2.4 registro de riesgos 🟡, 1.3.2 minutas ⬜ (sin registro en el repo) y 1.3.3 sprint reviews 🟡. El total pasa a 103 paquetes.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>Dónde está el desvío: alcance o estimación</h3>
+    <div class="vs">
+      <div><b>Estado real al 15/09</b>90 SP sobre 90 de capacidad: «el desvío está en el alcance, no en la estimación».</div>
+      <div><b>Cronograma v4 §5</b>122,07 h estimadas en 108 h de capacidad: «la estimación quedó del lado conservador».</div>
+    </div>
+    <p><b>Resolución:</b> son compatibles porque miden en unidades distintas (story points contra horas de la WBS). El relevamiento ahora lo aclara, y en el steering se presenta la lectura del Cronograma v4.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>Fila «TOTAL LAB 4» del CSV de estimaciones</h3>
+    <div class="vs">
+      <div><b>Antes</b>Subtotal de 189,28 h sin definición, heredado de la v1, donde valía 224,67 h.</div>
+      <div><b>Uso</b>Ningún script, vista ni documento la leía.</div>
+    </div>
+    <p><b>Resolución:</b> se sacó la fila del CSV.</p>
+  </div>
+
+<div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>Estimaciones del CSV contra la WBS v4</h3>
+    <div class="vs">
+      <div><b>Antes</b>19 paquetes (6.1.4, 6.2.5, 6.2.6, 6.5.x, 11.x y 12.x) seguían «sin recalibrar» en el CSV: total de 459,13 h. El desfase venía desde la v3.</div>
+      <div><b>WBS v4</b>Esos paquetes están recalibrados con factor 0,75: total de 440,27 h.</div>
+    </div>
+    <p><b>Resolución:</b> el CSV se alineó con la WBS v4 (DO, DM, DP, estimación y total). Vuelve a ser la fuente de verdad de las estimaciones.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>Sprints semanales o mensuales</h3>
+    <div class="vs">
+      <div><b>Estado real al 15/09</b>«5 sprints semanales de jueves a jueves, no 3 mensuales».</div>
+      <div><b>Charter y Cronograma v4</b>3 sprints de un mes, con semanas de jueves a jueves adentro.</div>
+    </div>
+    <p><b>Resolución:</b> es la misma ejecución contada de dos formas. El relevamiento ahora habla de las semanas 1 a 6 del S1. No cambia ningún dato.</p>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag done">Resuelta</span><span class="tag st">Steering 1</span>Horizonte y método del valor ganado</h3>
+    <div class="vs">
+      <div><b>Página de Steering anterior</b>Presupuesto de 12 semanas (408 HH, BAC $7.463, línea base EVM $2.379) y EV = horas de tickets × tarifa.</div>
+      <div><b>Cronograma v4</b>13 semanas de trabajo más una de reserva; avance medido sobre paquetes de la WBS.</div>
+    </div>
+    <p><b>Resolución:</b> la vista Steering usa el Cronograma v4 (442 HH, BAC $8.063, línea base EVM $2.559) y EV = % completo × BAC. La semana de reserva queda fuera del BAC por ser reserva de gestión.</p>
+  </div>
+</div>
+
+<p class="foot">Cuando una discrepancia se resuelve, pasa a «Resueltas» con la fuente que se corrigió.</p>
+
+</div>
+</body>
+</html>
