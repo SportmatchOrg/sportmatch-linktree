@@ -44,6 +44,8 @@
     padding:0 12px; cursor:pointer;
   }
   .ctl:hover{ background-color:#f1f5f9; }
+  .controls select{ font:inherit; font-size:12.5px; font-weight:700; color:var(--navy); cursor:pointer;
+    background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px 8px; }
   .ctl:focus-visible{ outline:2px solid #2563eb; outline-offset:2px; }
 
   /* El desplegable usa el mismo .ctl; sólo suma su propio chevron, separado
@@ -138,8 +140,8 @@
     padding:1px 5px; border-radius:4px; letter-spacing:.03em;
   }
   /* Nivel "entregables": una fila por paquete X.X.X, agrupadas bajo su sub-paquete X.X. */
-  .task-label.l3{ padding-left:36px; }
-  .task-label.l3 .idx{ min-width:46px; }
+  .task-label.leaf{ padding-left:36px; }
+  .task-label.leaf .idx{ min-width:46px; }
   .task-label .st{ width:8px; height:8px; border-radius:50%; flex:none; background:#cbd5e1; }
   .task-label .st.done{ background:#16a34a; }
   .task-label .st.wip{ background:#f59e0b; }
@@ -203,13 +205,19 @@
 
 <div class="controls">
   <label><input type="checkbox" id="tg-crit" checked> Camino crítico</label>
+  <select id="crit-mode" title="«Del plan»: la cadena más larga del proyecto entero, la que fijó su duración mínima. «+ desde el corte»: marca además la cadena que aprieta de acá en adelante, recalculada sobre lo que queda — al cierre del S1 ya hay 30 de esas 42 h recorridas, así que pasa a mandar otra">
+    <option value="plan">crítico del plan</option>
+    <option value="restante">crítico del plan + desde el corte</option>
+  </select>
   <div class="sep"></div>
   <span class="lvl">Nivel:</span>
   <label title="Una fila por sub-paquete de la WBS (5.1, 5.2…)"><input type="radio" name="lvl" value="l2" checked> Paquetes (X.X)</label>
   <label title="Una fila por entregable de la WBS (5.1.4, 5.2.2…), con su dev y su estado: es el nivel al que se escriben los tickets"><input type="radio" name="lvl" value="l3"> Entregables (X.X.X)</label>
+  <label title="Vista de steering: Autenticación, Perfil y Partidos se parten en tres bloques de trabajo cada una, para que se vea la secuencia y lo que ya quedó cerrado. El resto sigue en sub-paquetes"><input type="radio" name="lvl" value="mix"> Avance por bloques</label>
   <div class="sep"></div>
   <button class="ctl" id="btn-fold">Colapsar épicas</button>
   <div class="sep"></div>
+  <label title="Exporta en proporción de diapositiva (16:9): baja el alto de fila y estira el eje de tiempo para que la imagen llene la lámina en vez de quedar casi cuadrada"><input type="checkbox" id="tg-slide" checked> 16:9</label>
   <button class="ctl" id="btn-svg">Exportar SVG</button>
   <button class="ctl" id="btn-png">Exportar PNG</button>
 </div>
@@ -451,7 +459,7 @@ const DATA = {
     { id:"5.1.5", mod:"5.0 Perfil de Usuario", name:"Estadísticas de actividad del perfil", dev:2, start:"2026-09-10", end:"2026-09-17", hours:2.00, status:"done", deps:["5.1.3"] },
     { id:"5.2.1", mod:"5.0 Perfil de Usuario", name:"Vista de perfil", dev:1, start:"2026-08-20", end:"2026-09-10", hours:2.23, status:"done", deps:["5.1.2"] },
     { id:"5.2.2", mod:"5.0 Perfil de Usuario", name:"Edición de perfil", dev:1, start:"2026-10-08", end:"2026-10-15", hours:2.22, status:"todo", deps:["5.1.2"] },
-    { id:"5.2.3", mod:"5.0 Perfil de Usuario", name:"Vista de historial", dev:3, start:"2026-09-03", end:"2026-10-08", hours:1.50, status:"wip", deps:["5.1.3"] },
+    { id:"5.2.3", mod:"5.0 Perfil de Usuario", name:"Vista de historial", dev:3, start:"2026-09-03", end:"2026-10-15", hours:1.50, status:"wip", deps:["5.1.3"] },
     { id:"5.2.4", mod:"5.0 Perfil de Usuario", name:"Visualización de rating", dev:1, start:"2026-09-03", end:"2026-09-17", hours:1.63, status:"done", deps:["5.1.4"] },
     { id:"5.2.5", mod:"5.0 Perfil de Usuario", name:"Perfil público de otro jugador", dev:3, start:"2026-09-10", end:"2026-09-17", hours:2.00, status:"done", deps:["5.2.1", "5.1.5"] },
     { id:"6.1.1", mod:"6.0 Gestión de Partidos", name:"Modelo de partido", dev:2, start:"2026-08-20", end:"2026-08-27", hours:1.50, status:"done", deps:[] },
@@ -463,7 +471,7 @@ const DATA = {
     { id:"6.2.2", mod:"6.0 Gestión de Partidos", name:"Formulario de edición de partido", dev:3, start:"2026-09-10", end:"2026-09-17", hours:3.00, status:"done", deps:["6.1.2"] },
     { id:"6.2.3", mod:"6.0 Gestión de Partidos", name:"Detalle de partido", dev:1, start:"2026-08-27", end:"2026-09-03", hours:2.10, status:"done", deps:["6.1.2", "6.1.3"] },
     { id:"6.2.4", mod:"6.0 Gestión de Partidos", name:"Vista \"Mis partidos\"", dev:1, start:"2026-09-03", end:"2026-09-10", hours:2.50, status:"done", deps:["6.1.2", "6.3.4"] },
-    { id:"6.2.5", mod:"6.0 Gestión de Partidos", name:"Interfaz de cancelación", dev:1, start:"2026-09-17", end:"2026-09-24", hours:1.63, status:"todo", deps:["6.1.4", "6.2.3"] },
+    { id:"6.2.5", mod:"6.0 Gestión de Partidos", name:"Interfaz de cancelación", dev:1, start:"2026-09-24", end:"2026-10-01", hours:1.63, status:"todo", deps:["6.1.4", "6.2.3"] },
     { id:"6.2.6", mod:"6.0 Gestión de Partidos", name:"Notificación de cancelación a participantes", dev:3, start:"2026-10-08", end:"2026-10-15", hours:1.50, status:"todo", deps:["6.1.4", "11.1.3"] },
     { id:"6.3.1", mod:"6.0 Gestión de Partidos", name:"Modelo de solicitud", dev:3, start:"2026-09-03", end:"2026-09-10", hours:2.35, status:"done", deps:["4.1.1", "6.1.1"] },
     { id:"6.3.2", mod:"6.0 Gestión de Partidos", name:"Envío de solicitud para unirse a partido", dev:3, start:"2026-09-03", end:"2026-09-10", hours:3.90, status:"done", deps:["6.3.1", "6.2.3"] },
@@ -471,7 +479,7 @@ const DATA = {
     { id:"6.3.4", mod:"6.0 Gestión de Partidos", name:"Visualización de estado de solicitud", dev:3, start:"2026-09-03", end:"2026-09-17", hours:2.47, status:"done", deps:["6.3.2", "6.3.3"] },
     { id:"6.3.5", mod:"6.0 Gestión de Partidos", name:"Inscripción directa y baja del partido", dev:2, start:"2026-08-20", end:"2026-09-03", hours:3.00, status:"done", deps:["6.1.1", "6.3.1"] },
     { id:"6.4.1", mod:"6.0 Gestión de Partidos", name:"Modelo de calificación", dev:2, start:"2026-09-10", end:"2026-09-17", hours:2.23, status:"done", deps:["4.1.1", "6.1.1"] },
-    { id:"6.4.2", mod:"6.0 Gestión de Partidos", name:"Interfaz de calificación", dev:1, start:"2026-09-10", end:"2026-09-24", hours:1.63, status:"wip", deps:["6.4.1"] },
+    { id:"6.4.2", mod:"6.0 Gestión de Partidos", name:"Interfaz de calificación", dev:1, start:"2026-09-10", end:"2026-09-17", hours:1.63, status:"done", deps:["6.4.1"] },
     { id:"6.4.3", mod:"6.0 Gestión de Partidos", name:"Regla de penalización por no-show", dev:2, start:"2026-09-17", end:"2026-09-24", hours:2.35, status:"todo", deps:["6.4.1"] },
     { id:"6.5.1", mod:"6.0 Gestión de Partidos", name:"Link compartible de partido", dev:1, start:"2026-10-15", end:"2026-10-22", hours:2.47, status:"todo", deps:["6.1.1", "6.2.3"] },
     { id:"6.5.2", mod:"6.0 Gestión de Partidos", name:"Invitación directa a un usuario", dev:2, start:"2026-10-15", end:"2026-10-22", hours:3.90, status:"todo", deps:["6.1.1", "4.1.1", "11.1.3"] },
@@ -489,7 +497,7 @@ const DATA = {
     { id:"9.1.3", mod:"9.0 Deployment", name:"Smoke test manual post-deploy", dev:3, start:"2026-08-27", end:"2026-09-03", hours:3.23, status:"done", deps:["9.1.2"] },
     { id:"9.1.4", mod:"9.0 Deployment", name:"Contenedorización del backend y registro de imágenes", dev:3, start:"2026-08-20", end:"2026-08-27", hours:3.50, status:"done", deps:["3.2.3"] },
     { id:"10.1.1", mod:"10.0 Documentación Final", name:"Manual de uso y descripción de funcionalidades", dev:3, start:"2026-10-22", end:"2026-10-29", hours:6.00, status:"todo", deps:["9.1.2", "9.1.3"] },
-    { id:"10.1.2", mod:"10.0 Documentación Final", name:"Entrega final de diseño UX/UI", dev:3, start:"2026-10-08", end:"2026-10-15", hours:3.17, status:"wip", deps:[] },
+    { id:"10.1.2", mod:"10.0 Documentación Final", name:"Entrega final de diseño UX/UI", dev:1, start:"2026-09-17", end:"2026-09-24", hours:3.17, status:"wip", deps:[] },
     { id:"10.2.1", mod:"10.0 Documentación Final", name:"README del proyecto", dev:3, start:"2026-08-13", end:"2026-08-20", hours:1.50, status:"done", deps:["3.2.3"] },
     { id:"10.2.2", mod:"10.0 Documentación Final", name:"Documentación de APIs", dev:3, start:"2026-10-15", end:"2026-10-22", hours:1.50, status:"todo", deps:["4.1.3", "5.1.4", "6.1.3", "6.3.4", "7.1.3", "11.1.3", "12.1.2"] },
     { id:"11.1.1", mod:"11.0 Notificaciones", name:"Modelo de notificación", dev:2, start:"2026-09-17", end:"2026-09-24", hours:2.35, status:"todo", deps:["4.1.1"] },
@@ -498,7 +506,7 @@ const DATA = {
     { id:"11.1.4", mod:"11.0 Notificaciones", name:"Job de recordatorio pre-partido", dev:2, start:"2026-10-22", end:"2026-10-29", hours:3.12, status:"todo", deps:["11.1.3", "6.1.1"] },
     { id:"11.2.1", mod:"11.0 Notificaciones", name:"Centro de notificaciones", dev:1, start:"2026-09-24", end:"2026-10-01", hours:3.90, status:"todo", deps:["11.1.1"] },
     { id:"11.2.2", mod:"11.0 Notificaciones", name:"Recepción de push en cliente", dev:3, start:"2026-10-01", end:"2026-10-08", hours:4.03, status:"todo", deps:["11.1.2"] },
-    { id:"11.2.3", mod:"11.0 Notificaciones", name:"Preferencias de notificación", dev:1, start:"2026-09-24", end:"2026-10-01", hours:1.63, status:"todo", deps:["11.2.1"] },
+    { id:"11.2.3", mod:"11.0 Notificaciones", name:"Preferencias de notificación", dev:3, start:"2026-10-01", end:"2026-10-08", hours:1.63, status:"todo", deps:["11.2.1"] },
     { id:"12.1.1", mod:"12.0 Moderación y Reportes", name:"Modelo de reporte", dev:3, start:"2026-10-15", end:"2026-10-22", hours:2.35, status:"todo", deps:["4.1.1"] },
     { id:"12.1.2", mod:"12.0 Moderación y Reportes", name:"Endpoint de creación de reporte", dev:3, start:"2026-10-15", end:"2026-10-22", hours:1.63, status:"todo", deps:["12.1.1"] },
     { id:"12.1.3", mod:"12.0 Moderación y Reportes", name:"Interfaz de reporte", dev:1, start:"2026-10-29", end:"2026-11-05", hours:3.00, status:"todo", deps:["12.1.2", "5.2.1", "6.2.3"] },
@@ -509,7 +517,33 @@ const DATA = {
     devs: {1:"Pache", 2:"Rudolph", 3:"Siaba"},
     critical: ["3.1.1", "3.1.2", "4.1.1", "6.3.1", "6.3.2", "6.3.3", "11.1.3", "6.5.2", "6.5.3"],
     newIds: ["4.1.4", "4.2.2", "4.2.3", "4.2.4", "4.2.5", "5.1.5", "5.2.5", "6.1.5", "6.2.4", "6.3.5", "9.1.4", "12.2.1", "12.2.2", "12.2.3"],
-    knownDepViolations: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1", "5.1.4<6.4.2", "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4", "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3"],
+    knownDepViolations: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1", "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4", "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3"],
+    /* Nivel "Avance por bloques": para la lámina del steering, las tres épicas donde está el
+       grueso del trabajo se abren en tres bloques cronológicos en vez de una sola tira. El
+       resto de las épicas queda colapsada. Cada bloque agrupa paquetes de la WBS; su estado
+       sale de ellos (hecho si cerraron todos, parcial si cerró alguno). Los ids llevan letra
+       para que no se confundan con un índice de la WBS. */
+    blocks: {
+      "4.0 Autenticación": [
+        { id:"4.A", name:"Pantallas de acceso",        pkgs:["4.2.1","4.2.2","4.2.3"] },
+        { id:"4.B", name:"Identidad y sesión",         pkgs:["4.1.1","4.1.2","4.1.3","4.1.4"] },
+        { id:"4.C", name:"Navegación y landing",       pkgs:["4.2.4","4.2.5"] },
+      ],
+      "5.0 Perfil de Usuario": [
+        { id:"5.A", name:"API y vista de perfil",      pkgs:["5.1.2","5.2.1"] },
+        { id:"5.B", name:"Historial y estadísticas",   pkgs:["5.1.3","5.1.5"] },
+        { id:"5.C", name:"Rating y perfil ajeno",      pkgs:["5.2.4","5.2.5"] },
+        { id:"5.D", name:"Modelo de perfil y no-show", pkgs:["5.1.1","5.1.4"] },
+        { id:"5.E", name:"Edición e historial completo", pkgs:["5.2.2","5.2.3"] },
+      ],
+      "6.0 Gestión de Partidos": [
+        { id:"6.A", name:"Modelo y CRUD de partidos",  pkgs:["6.1.1","6.1.2","6.1.5","6.2.3"] },
+        { id:"6.B", name:"Listado, wizard e inscripción", pkgs:["6.1.3","6.2.1","6.2.4","6.3.5"] },
+        { id:"6.C", name:"Solicitudes",                pkgs:["6.3.1","6.3.2","6.3.3","6.3.4"] },
+        { id:"6.D", name:"Edición y calificación",     pkgs:["6.2.2","6.4.1","6.4.2"] },
+        { id:"6.E", name:"Cancelación e invitaciones", pkgs:["6.1.4","6.2.5","6.2.6","6.4.3","6.5.1","6.5.2","6.5.3"] },
+      ],
+    },
     names: {
     "3.1":"Configuración técnica",   "3.2":"Setup del entorno",
     "4.1":"Autenticación backend",   "4.2":"Auth frontend y acceso",
@@ -564,8 +598,8 @@ const DATA = {
 /* ---------------- CONSTANTS ---------------- */
 const SVGNS = "http://www.w3.org/2000/svg";
 const DAY_MS = 86400000;
-const DAY_W = 11;
-const ROW_H = 32;
+let DAY_W = 11;
+let ROW_H = 32;
 const HEADER_H = 80;
 const RANGE_START = "2026-07-30";
 
@@ -591,6 +625,7 @@ function todayISO(){
 }
 const TODAY = todayISO();
 function l2id(id){ const p=id.split('.'); return p[0]+'.'+p[1]; }
+function isLeafId(id){ return id.split('.').length === 3; }
 function svgEl(name, attrs){
   const e = document.createElementNS(SVGNS, name);
   for(const k in attrs) e.setAttribute(k, attrs[k]);
@@ -618,10 +653,11 @@ const tooltip    = document.getElementById("tooltip");
 /* ---------------- STATE ---------------- */
 const state = { collapsed:{}, highlighted:null, showCrit:true, allCollapsed:false, level:"l2" };
 let VER = "v4";
+let CRIT_MODE = "plan";   // "plan": la cadena del proyecto entero · "restante": la de lo que queda
 let WEEKLY = false;   // true: las fechas van de jueves a jueves y la barra termina justo en la línea del cierre
 
 /* Everything below is rebuilt by loadVersion() */
-let TASKS = [], groups = [], modOrder = [], MOD_COLORS = {}, MILESTONES = [], SPRINTS = [];
+let TASKS = [], groups = [], modOrder = [], MOD_COLORS = {}, MILESTONES = [], SPRINTS = [], BLOCKS = {}, ROW_OF = {};
 let RAW = [], NAMES = {}, DEVS = {}, CRIT_IDS = [];   // datos crudos de la versión cargada (nivel X.X.X)
 let rangeStart = null, rangeEnd = null, totalDays = 0;
 let taskById = {}, successors = {}, criticalSet = new Set();
@@ -640,10 +676,42 @@ function aggregateL2(raw, names){
     g.hours += t.hours;
     t.deps.forEach(d => { const pd = l2id(d); if(pd !== gid) g.deps.add(pd); });
   });
+  // Las dependencias salen sin filtrar: quién sobrevive depende de las filas que haya en la
+  // vista, y eso lo resuelve rebuildTasks().
   return Object.values(map).map(g => ({
     id:g.id, mod:g.mod, name:g.name, start:g.start, end:g.end,
-    hours:g.hours, deps:[...g.deps].filter(d => map[d])
+    hours:g.hours, deps:[...g.deps]
   }));
+}
+
+/* Junta los paquetes de la WBS en las filas que pide la vista: `rowOf` dice a qué fila va
+   cada uno. Una fila de un solo paquete conserva su nombre, su dev y su estado; una que
+   junta varios toma la envolvente de fechas, la suma de horas y un estado derivado. */
+function aggregateRows(raw, rowOf, nameOf){
+  const map = {};
+  raw.forEach(t => {
+    const id = rowOf[t.id];
+    if(!id) return;
+    const r = map[id] || (map[id] = { id, mod:t.mod, start:t.start, end:t.end, hours:0,
+      doneH:0, pkgs:[], deps:new Set(), src:t });
+    if(parse(t.start) < parse(r.start)) r.start = t.start;
+    if(parse(t.end)   > parse(r.end))   r.end   = t.end;
+    r.hours += t.hours;
+    if(t.status === "done") r.doneH += t.hours;
+    r.pkgs.push(t.id);
+    t.deps.forEach(d => r.deps.add(d));
+  });
+  return Object.values(map).map(r => {
+    const self = r.pkgs.length === 1 && r.pkgs[0] === r.id;   // la fila es el paquete mismo
+    return {
+      id:r.id, mod:r.mod, group:l2id(r.id), pkgs:r.pkgs, deps:[...r.deps],
+      name: self ? r.src.name : nameOf(r.id),
+      start:r.start, end:r.end, hours:r.hours,
+      dev: self ? r.src.dev : undefined,
+      status: self ? r.src.status
+        : r.doneH >= r.hours - 1e-9 ? "done" : r.doneH > 0 ? "wip" : "todo",
+    };
+  });
 }
 
 /* ---------------- VERSION LOAD ---------------- */
@@ -665,10 +733,9 @@ function loadVersion(ver){
   WEEKLY   = !!d.weekly;
   rebuildTasks();
 
-  state.collapsed = {};
   state.highlighted = null;
-  state.allCollapsed = false;
-  document.getElementById("btn-fold").textContent = "Colapsar épicas";
+  applyLevelCollapse();
+  fitLabelColumn();
   // El subtítulo es opcional: una versión sin `sub` no muestra la línea
   // (sin esto, textContent = undefined imprime literalmente "undefined").
   const subEl = document.getElementById("ver-sub");
@@ -678,26 +745,45 @@ function loadVersion(ver){
   render();
 }
 
-/* Filas según el nivel elegido: "l2" agrega a sub-paquete (X.X), "l3" muestra cada
-   entregable (X.X.X) bajo su sub-paquete. Se rehace al cambiar de versión o de nivel. */
+/* Filas según el nivel elegido: "l2" agrega a sub-paquete (X.X), "l3" muestra cada entregable
+   (X.X.X) bajo su sub-paquete, y "mix" usa los bloques que la versión declare en `blocks`.
+   Se rehace al cambiar de versión o de nivel. */
 function rebuildTasks(){
   const numeric = (a,b) => a.localeCompare(b, undefined, { numeric:true });
-  if(state.level === "l3"){
-    const ids = new Set(RAW.map(t => t.id));
-    TASKS = RAW.map(t => ({ ...t, group: l2id(t.id), deps: t.deps.filter(d => ids.has(d)) }));
-    criticalSet = new Set(CRIT_IDS.filter(id => ids.has(id)));
-  } else {
-    TASKS = aggregateL2(RAW, NAMES);
-    const ids = new Set(TASKS.map(t => t.id));
-    criticalSet = new Set(CRIT_IDS.map(l2id).filter(g => ids.has(g)));
-  }
-
   modOrder = Object.keys(MOD_COLORS);
+  const detail = state.level === "l3";
+  BLOCKS = state.level === "mix" ? (DATA[VER].blocks || {}) : {};
+
+  // A qué fila va cada paquete: él mismo en "l3", su bloque si la épica define bloques,
+  // su sub-paquete en el resto.
+  const rowOf = ROW_OF = {}, blockName = {};
+  RAW.forEach(t => { rowOf[t.id] = detail ? t.id : l2id(t.id); });
+  Object.values(BLOCKS).flat().forEach(b => {
+    blockName[b.id] = b.name;
+    b.pkgs.forEach(p => { if(rowOf[p]) rowOf[p] = b.id; });
+  });
+
+  TASKS = aggregateRows(RAW, rowOf, id => blockName[id] || NAMES[id] || id);
+  TASKS.forEach(t => { if(blockName[t.id]) t.block = true; });
+
+  // Una dependencia apunta a la fila donde haya quedado el paquete del que depende.
+  const ids = new Set(TASKS.map(t => t.id));
+  const resolve = d => { const r = rowOf[d]; return r && ids.has(r) ? r : null; };
+  TASKS.forEach(t => { t.deps = [...new Set(t.deps.map(resolve).filter(d => d && d !== t.id))]; });
+  // "restante" no reemplaza al camino del plan: le suma el de lo que queda, porque son dos
+  // lecturas que conviven — la que fijó la duración y la que aprieta desde el corte.
+  const critIds = CRIT_MODE === "restante"
+    ? [...new Set([...CRIT_IDS, ...criticalPath(RAW.filter(t => t.status !== "done")).ids])]
+    : CRIT_IDS;
+  criticalSet = new Set(critIds.map(resolve).filter(Boolean));
+
+  // Cronológico, salvo en "l3" (por sub-paquete) y en las épicas con bloques, que van A · B · C.
   const byStart = (a,b) => parse(a.start)-parse(b.start) || numeric(a.id, b.id);
-  const sortKey = state.level === "l3" ? (a,b) => numeric(a.group, b.group) || byStart(a,b) : byStart;
+  const bySub   = (a,b) => numeric(a.group, b.group) || byStart(a,b);
+  const byId    = (a,b) => numeric(a.id, b.id);
   groups = modOrder.map(mod => ({
-    mod, color: MOD_COLORS[mod],
-    tasks: TASKS.filter(t => t.mod === mod).sort(sortKey)
+    mod, color: MOD_COLORS[mod], detail,
+    tasks: TASKS.filter(t => t.mod === mod).sort(detail ? bySub : BLOCKS[mod] ? byId : byStart)
   })).filter(g => g.tasks.length);
 
   taskById = {};
@@ -709,9 +795,61 @@ function rebuildTasks(){
     g.minStart   = g.tasks.reduce((m,t) => parse(t.start) < parse(m) ? t.start : m, g.tasks[0].start);
     g.maxEnd     = g.tasks.reduce((m,t) => parse(t.end)   > parse(m) ? t.end   : m, g.tasks[0].end);
     g.totalHours = g.tasks.reduce((s,t) => s + t.hours, 0);
-    // En "l3", la envolvente de cada sub-paquete se dibuja como fila de cabecera.
-    g.subs = state.level === "l3" ? Object.fromEntries(aggregateL2(g.tasks, NAMES).map(x => [x.id, x])) : {};
+    // En una épica abierta, la envolvente de cada sub-paquete se dibuja como fila de cabecera.
+    g.subs = g.detail ? Object.fromEntries(aggregateL2(g.tasks, NAMES).map(x => [x.id, x])) : {};
   });
+}
+
+/* La columna de índice de la pantalla se ajusta al nivel: los entregables (X.X.X) tienen
+   nombres bastante más largos que los sub-paquetes y con un ancho fijo se recortaban. */
+function fitLabelColumn(){
+  const need = measureLabelW(visibleRows()) + 24;   // 24 px de respiro contra el borde del gráfico
+  document.documentElement?.style.setProperty("--label-w", Math.max(320, need) + "px");
+}
+
+/* Al cambiar de nivel o de versión se abre todo y el botón vuelve a su texto inicial. */
+function applyLevelCollapse(){
+  state.collapsed = {};
+  state.allCollapsed = false;
+  const btn = document.getElementById("btn-fold");
+  if(btn) btn.textContent = "Colapsar épicas";
+}
+
+/* El hito cuelga de un sub-paquete (4.1, 9.1…), que según el nivel puede no tener fila propia:
+   en "l3" es su cabecera y en la vista por bloques es el bloque donde cayó su primer paquete.
+   Sin esto, los hitos anclados a un sub-paquete repartido en bloques desaparecían del gráfico. */
+function hitoRow(pkg){
+  if(state.level === "l3" || TASKS.some(t => t.id === pkg)) return pkg;
+  const first = RAW.filter(t => l2id(t.id) === pkg)
+    .map(t => t.id).sort((a,b) => a.localeCompare(b, undefined, { numeric:true }))[0];
+  return (first && ROW_OF[first]) || pkg;
+}
+
+/* Camino crítico sobre un conjunto de paquetes: CPM hacia adelante y hacia atrás, y se quedan
+   los de holgura cero. Con el conjunto completo da la cadena que fijó la duración del proyecto;
+   con sólo lo pendiente da la que aprieta desde el corte, que no tiene por qué ser la misma:
+   al cierre del S1 el camino original ya está recorrido en sus tres cuartas partes. */
+function criticalPath(tasks){
+  const by = Object.fromEntries(tasks.map(t => [t.id, t]));
+  const deps = Object.fromEntries(tasks.map(t => [t.id, t.deps.filter(d => by[d])]));
+  const ES = {}, EF = {}, LS = {}, LF = {}, succ = {};
+  const ef = id => {
+    if(EF[id] != null) return EF[id];
+    EF[id] = 0;                                    // centinela: corta un ciclo si lo hubiera
+    ES[id] = Math.max(0, ...deps[id].map(ef));
+    return EF[id] = ES[id] + by[id].hours;
+  };
+  tasks.forEach(t => ef(t.id));
+  const total = Math.max(0, ...Object.values(EF));
+  tasks.forEach(t => deps[t.id].forEach(d => (succ[d] = succ[d] || []).push(t.id)));
+  const ls = id => {
+    if(LS[id] != null) return LS[id];
+    LS[id] = 0;
+    LF[id] = (succ[id] || []).length ? Math.min(...succ[id].map(ls)) : total;
+    return LS[id] = LF[id] - by[id].hours;
+  };
+  tasks.forEach(t => ls(t.id));
+  return { ids: tasks.filter(t => Math.abs(LS[t.id] - ES[t.id]) < 1e-6).map(t => t.id), total };
 }
 
 /* ---------------- SCALE ---------------- */
@@ -724,7 +862,9 @@ function barGeom(start, end){
   return { x: dayIndex(start) * DAY_W, w: Math.max(DAY_W, (days(start, end) + (WEEKLY ? 0 : 1)) * DAY_W) };
 }
 function isNew(id){
-  if(state.level === "l3") return (DATA[VER].newIds || []).includes(id) || isNewGroup(VER, l2id(id));
+  // Un bloque no es un paquete de la WBS: no se compara contra la versión anterior.
+  if(Object.values(BLOCKS).flat().some(b => b.id === id)) return false;
+  if(isLeafId(id)) return (DATA[VER].newIds || []).includes(id) || isNewGroup(VER, l2id(id));
   return isNewGroup(VER, id);
 }
 
@@ -848,7 +988,7 @@ function visibleRows(){
     if(!state.collapsed[g.mod]){
       let lastSub = null;
       g.tasks.forEach(t => {
-        if(state.level === "l3" && t.group !== lastSub){
+        if(g.detail && t.group !== lastSub){
           lastSub = t.group;
           rows.push({ type:"sub", sub:g.subs[t.group], color:g.color, y, h:ROW_H }); y += ROW_H;
         }
@@ -864,12 +1004,15 @@ function drawBar(parent, t, rowY, color){
   const { x, w } = barGeom(t.start, t.end);
   const barH = 18, barY = rowY + (ROW_H - barH)/2;
   const onCrit = state.showCrit && criticalSet.has(t.id);
+  // La lámina del steering usa barras translúcidas, como las envolventes de una épica colapsada.
+  const soft = state.level === "mix";
   const g = svgEl("g", { class:"bar-g", "data-id":t.id, style:"cursor:pointer" });
   const rect = svgEl("rect", {
     x, y:barY, width:w, height:barH, rx:5, ry:5, fill:color,
-    stroke: onCrit ? "#dc2626" : "rgba(0,0,0,0.18)",
-    "stroke-width": onCrit ? 2.6 : 1,
-    "fill-opacity": 0.9
+    stroke: onCrit ? "#dc2626" : soft ? color : "rgba(0,0,0,0.18)",
+    "stroke-width": onCrit ? 2.6 : soft ? 1.4 : 1,
+    "stroke-opacity": onCrit || !soft ? 1 : 0.55,
+    "fill-opacity": soft ? 0.35 : 0.9
   });
   g.appendChild(rect);
   g.addEventListener("mousemove", e => showTip(e, t));
@@ -926,14 +1069,14 @@ function render(){
       labelsEl.appendChild(el);
     } else {
       const t = r.task;
-      const l3 = state.level === "l3";
+      const leaf = isLeafId(t.id);
       const el = document.createElement("div");
-      el.className = "task-label" + (l3 ? " l3" : "");
+      el.className = "task-label" + (leaf ? " leaf" : "");
       el.dataset.id = t.id;
-      const status = l3 && t.status ? `<span class="st ${t.status}" title="${STATUS_LABEL[t.status] || t.status}"></span>` : ``;
-      const dev    = l3 && t.dev ? `<span class="dev" title="Dev asignado">${DEVS[t.dev] || ("D" + t.dev)}</span>` : ``;
+      const status = (leaf || t.block) && t.status ? `<span class="st ${t.status}" title="${STATUS_LABEL[t.status] || t.status}"></span>` : ``;
+      const dev    = leaf && t.dev ? `<span class="dev" title="Dev asignado">${DEVS[t.dev] || ("D" + t.dev)}</span>` : ``;
       const newTag = isNew(t.id) ? `<span class="new">NUEVO</span>`
-        : (!l3 && newPkgsIn(VER, t.id).length) ? `<span class="new" title="Nuevos en ${VER}: ${newPkgsIn(VER, t.id).join(', ')}">+${newPkgsIn(VER, t.id).length}</span>` : ``;
+        : (!leaf && newPkgsIn(VER, t.id).length) ? `<span class="new" title="Nuevos en ${VER}: ${newPkgsIn(VER, t.id).join(', ')}">+${newPkgsIn(VER, t.id).length}</span>` : ``;
       el.innerHTML = status + `<span class="idx">${t.id}</span><span class="nm">${t.name}</span>` + newTag + dev
         + `<span class="hrs">${t.hours.toFixed(1)} h</span>`;
       el.addEventListener("click", () => toggleHighlight(t.id));
@@ -990,7 +1133,8 @@ function render(){
      con la épica colapsada, la fila de la épica. */
   (DATA[VER].charterHitos || []).forEach(h => {
     const mod = h.pkg.split(".")[0] + ".0";
-    const r = rows.find(r => (r.type === "task" && r.task.id === h.pkg) || (r.type === "sub" && r.sub.id === h.pkg)
+    const target = hitoRow(h.pkg);
+    const r = rows.find(r => (r.type === "task" && r.task.id === target) || (r.type === "sub" && r.sub.id === target)
                           || (r.type === "group" && state.collapsed[r.g.mod] && r.g.mod.startsWith(mod + " ")));
     if(!r) return;
     const x = xLine(h.date), cy = r.y + ROW_H/2, s = 7;
@@ -1015,7 +1159,8 @@ function showTip(e, t){
     <h4>${t.id} · ${t.name}${critTag}${newTag}</h4>
     <div style="color:${MOD_COLORS[t.mod]}">${t.mod}</div>
     <dl>
-      ${t.group ? `<dt>Sub-paquete</dt><dd>${t.group} · ${NAMES[t.group] || ""}</dd>` : ``}
+      ${t.block ? `<dt>Paquetes</dt><dd>${t.pkgs.join(", ")}</dd>`
+        : t.group && t.group !== t.id ? `<dt>Sub-paquete</dt><dd>${t.group} · ${NAMES[t.group] || ""}</dd>` : ``}
       <dt>Inicio</dt><dd>${t.start}</dd>
       <dt>Fin</dt><dd>${t.end}</dd>
       <dt>Horas</dt><dd>${t.hours.toFixed(2)} h</dd>
@@ -1064,11 +1209,20 @@ function toggleHighlight(id){
 /* ---------------- CONTROLS ---------------- */
 document.getElementById("tg-crit").addEventListener("change", e => { state.showCrit = e.target.checked; render(); });
 
+document.getElementById("crit-mode").addEventListener("change", e => {
+  CRIT_MODE = e.target.value;
+  state.highlighted = null;
+  rebuildTasks();
+  render();
+});
+
 document.querySelectorAll('input[name="lvl"]').forEach(r => r.addEventListener("change", () => {
   if(!r.checked) return;
   state.level = r.value;
   state.highlighted = null;
   rebuildTasks();
+  applyLevelCollapse();
+  fitLabelColumn();
   render();
 }));
 
@@ -1091,9 +1245,54 @@ verSelect.addEventListener("change", () => loadVersion(verSelect.value));
    de los SVG en pantalla (salvo lo marcado con data-no-export). Sin líneas ni franjas de
    fondo: sólo barras, hitos y textos. La épica sale sin conteo ni horas, y la columna
    de etiquetas es más angosta que en pantalla. */
-const LABEL_W = 240;
+let LABEL_W = 240;
+const LABEL_W_MIN = 240, LABEL_W_MAX = 520;
+
+/* Ancho de la columna de índice: el que necesite el nombre más largo que se vaya a dibujar.
+   Antes era fijo en 240 y los nombres largos salían cortados con puntos suspensivos. Se mide
+   con la misma tipografía y los mismos tamaños con los que después se escriben. */
+function measureLabelW(rows){
+  let need = LABEL_W_MIN;
+  rows.forEach(r => {
+    if(r.type === "group"){
+      need = Math.max(need, 30 + textW(r.g.mod, HFONT(12.5, 700)) + 12);
+      return;
+    }
+    const item = r.type === "sub" ? r.sub : r.task, leaf = r.type === "task" && isLeafId(item.id);
+    const x0 = r.type === "sub" ? 22 : leaf ? 36 : 26, idxW = leaf ? 46 : 34;
+    const dev  = leaf && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
+    const tail = (dev ? dev + "  " : "") + item.hours.toFixed(1) + " h";
+    const size = r.type === "sub" ? 11.5 : 12.5, weight = r.type === "sub" ? 700 : 400;
+    // En pantalla la fila lleva además la chapa NUEVO / +N, que el SVG no dibuja pero ocupa lugar.
+    const badge = r.type === "task" && (isNew(item.id) || newPkgsIn(VER, item.id).length) ? 56 : 0;
+    need = Math.max(need, x0 + idxW + 8 + textW(item.name, HFONT(size, weight)) + 10
+                          + textW(tail, HFONT(10.5, 500)) + 12 + badge);
+  });
+  return Math.min(LABEL_W_MAX, Math.ceil(need));
+}
+
+/* La vista de pantalla exporta una imagen casi cuadrada (1494 × 1168 = 1,28). Metida en una
+   diapositiva 16:9 queda chica y con aire a los costados. Con "16:9" el export baja el alto de
+   fila y estira el eje de tiempo hasta la proporción de la lámina, re-renderiza con esa
+   geometría, arma el SVG y vuelve a la de pantalla. El estirado tiene tope para que un nivel
+   con muchas filas no termine con barras absurdas. */
+const SLIDE_ASPECT = 16 / 9;
+const SLIDE_ROW_H = 24, DAY_W_MIN = 9, DAY_W_MAX = 26;
+function forSlide(build){
+  if(!document.getElementById("tg-slide").checked) return build();
+  const dayW0 = DAY_W, rowH0 = ROW_H;
+  ROW_H = SLIDE_ROW_H;
+  const rows = visibleRows();
+  const h = HEADER_H + rows.length * ROW_H;
+  DAY_W = Math.min(DAY_W_MAX, Math.max(DAY_W_MIN, (SLIDE_ASPECT * h - measureLabelW(rows)) / totalDays));
+  render();
+  try { return build(); }
+  finally { DAY_W = dayW0; ROW_H = rowH0; render(); }
+}
+
 function buildExportSvg(){
   const rows = visibleRows(), W = plotW(), H = rows.totalHeight;
+  LABEL_W = measureLabelW(rows);
   const out = svgEl("svg", { xmlns:SVGNS, width:LABEL_W + W, height:HEADER_H + H, viewBox:`0 0 ${LABEL_W + W} ${HEADER_H + H}`,
     "font-family":'-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' });
   const text = (x, y, str, attrs) => { const t = svgEl("text", { x, y, ...attrs }); t.textContent = str; out.appendChild(t); return t; };
@@ -1114,12 +1313,13 @@ function buildExportSvg(){
       text(30, cy, fit(r.g.mod, HFONT(12.5, 700), LABEL_W - 42), { "font-size":12.5, "font-weight":700, fill:"#0f172a" });
       return;
     }
-    const item = r.type === "sub" ? r.sub : r.task, l3 = state.level === "l3";
-    const x0 = r.type === "sub" ? 22 : l3 ? 36 : 26, idxW = r.type === "task" && l3 ? 46 : 34;
-    if(r.type === "task" && l3 && item.status)
+    const item = r.type === "sub" ? r.sub : r.task, leaf = r.type === "task" && isLeafId(item.id);
+    const x0 = r.type === "sub" ? 22 : leaf ? 36 : 26, idxW = leaf ? 46 : 34;
+    // El punto de estado también va en las filas de bloque: es lo que se lee en la lámina.
+    if((leaf || (r.type === "task" && item.block)) && item.status)
       out.appendChild(svgEl("circle", { cx:x0 - 8, cy:cy - 4, r:4,
         fill:{ done:"#16a34a", wip:"#f59e0b" }[item.status] || "#cbd5e1" }));
-    const hrs = item.hours.toFixed(1) + " h", dev = r.type === "task" && l3 && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
+    const hrs = item.hours.toFixed(1) + " h", dev = leaf && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
     const tail = (dev ? dev + "  " : "") + hrs;
     const size = r.type === "sub" ? 11.5 : 12.5, weight = r.type === "sub" ? 700 : 400;
     text(x0, cy, item.id, { "font-size":11.5, fill:"#64748b" });
@@ -1132,18 +1332,20 @@ function buildExportSvg(){
 
 function download(ext, href){
   const a = document.createElement("a");
-  a.download = `SportMatch-Gantt-${VER}-${state.level === "l3" ? "entregables" : "paquetes"}.${ext}`;
+  a.download = `SportMatch-Gantt-${VER}-${ { l3:"entregables", mix:"lo-hecho-en-detalle" }[state.level] || "paquetes" }.${ext}`;
   a.href = href;
   a.click();
   setTimeout(() => URL.revokeObjectURL(href), 1000);
 }
 const svgUrl = (out) => URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(out)], { type:"image/svg+xml" }));
 
-document.getElementById("btn-svg").addEventListener("click", () => download("svg", svgUrl(buildExportSvg())));
+document.getElementById("btn-svg").addEventListener("click", () => forSlide(() => download("svg", svgUrl(buildExportSvg()))));
 
 /* PNG: el mismo SVG rasterizado a 2x; el canvas arranca transparente. */
 document.getElementById("btn-png").addEventListener("click", () => {
-  const out = buildExportSvg(), url = svgUrl(out), img = new Image();
+  // buildExportSvg y la serialización corren dentro de forSlide; el onload ya no depende de la geometría.
+  const { out, url } = forSlide(() => { const o = buildExportSvg(); return { out:o, url:svgUrl(o) }; });
+  const img = new Image();
   img.onload = () => {
     const c = document.createElement("canvas");
     c.width = out.getAttribute("width") * 2;

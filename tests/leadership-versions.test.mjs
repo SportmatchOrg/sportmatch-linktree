@@ -158,8 +158,8 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
     if (t.status === "done") assert.ok(Date.parse(t.end) <= Date.parse("2026-09-17"), `${t.id} is done but ends after the 17/09 steering`);
     assert.ok([1, 2, 3].includes(t.dev), `${t.id}: dev must be 1, 2 or 3`);
   }
-  // Cronograma-y-PERT-v4.md §5: 42 hechos, 6 parciales, 28 pendientes.
-  assert.deepEqual(counts, { done: 42, wip: 6, todo: 28 });
+  // Cronograma-y-PERT-v4.md §5: 43 hechos, 5 parciales, 28 pendientes.
+  assert.deepEqual(counts, { done: 43, wip: 5, todo: 28 });
   assert.equal(d.tasks.length, 76);
   // Sprint bands and milestones must cover the same calendar the tasks use.
   assert.ok(d.sprints.some((s) => s.end === "2026-11-05"), "S3 must close on 05/11");
@@ -173,7 +173,7 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
 const KNOWN_DEP_VIOLATIONS = {
   v1: [],
   v2: ["4.1.3<4.1.2", "4.2.1<4.1.2", "5.2.1<5.1.2", "6.3.2<6.2.3", "7.2.1<7.1.1"],
-  v4: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1", "5.1.4<6.4.2",
+  v4: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1",
        "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4",
        "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3"],
 };
@@ -302,6 +302,91 @@ test("Gantt runtime: both levels build rows for every version", () => {
       assert.equal(l3.crit, 9, "v4: the nine critical packages are marked at level X.X.X");
     }
   }
+});
+
+// La vista "Avance por bloques" es la lámina del steering: las épicas donde está el grueso del
+// trabajo se parten en bloques cronológicos en vez de una sola tira, y el resto queda en
+// sub-paquetes. Entra en una diapositiva y se ve qué bloques ya cerraron.
+test("Gantt runtime: el nivel por bloques parte las épicas declaradas y deja el resto en X.X", () => {
+  const evalIn = runPage("leadership/gantt.html");
+  const atLevel = (lvl) => evalIn(`state.level = "${lvl}"; loadVersion("v4"); ({ rows: visibleRows().length,
+    blocks: TASKS.filter((t) => t.block).map((t) => [t.id, t.status]),
+    hitos: (DATA.v4.charterHitos || []).map((h) => hitoRow(h.pkg)).filter((id) => TASKS.some((t) => t.id === id) || state.level === "l3"),
+    orphans: (() => { const ids = new Set(TASKS.map((t) => t.id)); return TASKS.flatMap((t) => t.deps).filter((d) => !ids.has(d)); })() })`);
+  // Ojo con los nombres: `l2` a secas es el helper de ids del módulo.
+  const vL2 = atLevel("l2"), mix = atLevel("mix"), vL3 = atLevel("l3");
+
+  const { blocks, tasks, charterHitos } = constant(read("leadership/gantt.html"), "DATA").v4;
+  const mods = new Set(tasks.map((t) => t.mod));
+  const rowsIn = (mod) => blocks[mod] ? blocks[mod].length : new Set(tasks.filter((t) => t.mod === mod).map((t) => l2(t.id))).size;
+  assert.equal(mix.rows, mods.size + [...mods].reduce((n, m) => n + rowsIn(m), 0), "una fila por épica más sus bloques o sub-paquetes");
+
+  // Los cuatro hitos del Charter tienen que encontrar fila en los tres niveles: al partir una
+  // épica en bloques, el sub-paquete del que cuelga el hito deja de existir como fila.
+  for (const [name, v] of [["l2", vL2], ["mix", mix], ["l3", vL3]])
+    assert.equal(v.hitos.length, charterHitos.length, `${name}: hitos sin fila donde dibujarse`);
+
+  // Cada épica con bloques los reparte todos, sin repetir ni dejar paquetes sueltos: si no,
+  // los huérfanos reaparecerían como filas X.X y la lámina crecería sin que se note.
+  for (const [mod, bs] of Object.entries(blocks)) {
+    const own = tasks.filter((t) => t.mod === mod).map((t) => t.id).sort(byNum);
+    const inBlocks = bs.flatMap((b) => b.pkgs);
+    assert.equal(new Set(inBlocks).size, inBlocks.length, `${mod}: un paquete en dos bloques`);
+    assert.deepEqual([...inBlocks].sort(byNum), own, `${mod}: los bloques deben cubrir la épica entera`);
+  }
+
+  // El estado del bloque se deriva de sus paquetes, no se escribe a mano.
+  const statusOf = (pkgs) => {
+    const hs = pkgs.map((id) => tasks.find((t) => t.id === id));
+    const done = hs.filter((t) => t.status === "done").reduce((s, t) => s + t.hours, 0);
+    const total = hs.reduce((s, t) => s + t.hours, 0);
+    return done >= total - 1e-9 ? "done" : done > 0 ? "wip" : "todo";
+  };
+  for (const [id, status] of mix.blocks) {
+    const b = Object.values(blocks).flat().find((x) => x.id === id);
+    assert.equal(status, statusOf(b.pkgs), `${id}: estado derivado`);
+  }
+
+  // Entra en una diapositiva y ninguna dependencia se pierde al mezclar granularidades.
+  assert.ok(mix.rows < vL3.rows, `filas: mix ${mix.rows} < l3 ${vL3.rows}`);
+  for (const v of [vL2, mix, vL3]) assert.deepEqual([...v.orphans], [], "toda dependencia apunta a una fila visible");
+
+  // v1 no declara bloques: el nivel existe igual y cae en la vista de sub-paquetes.
+  assert.deepEqual(
+    evalIn(`state.level = "mix"; loadVersion("v1"); [TASKS.filter((t) => t.block).length, visibleRows().length]`),
+    evalIn(`state.level = "l2";  loadVersion("v1"); [0, visibleRows().length]`),
+  );
+});
+
+// El Gantt sabe recalcular el camino crítico, y con eso ofrece dos lecturas: la del plan
+// completo (qué fijó la duración del proyecto) y la de lo que queda desde el corte (qué aprieta
+// ahora). La primera tiene que reproducir el camino que publican el PERT y el Cronograma v4;
+// si alguna vez dejan de coincidir, es que el dato pegado en la página quedó viejo.
+test("Gantt runtime: el CPM de la página reproduce el camino crítico publicado", () => {
+  const evalIn = runPage("leadership/gantt.html");
+  evalIn(`loadVersion("v4")`);
+
+  const plan = evalIn(`(() => { const c = criticalPath(RAW); return { ids: c.ids.join(","), total: +c.total.toFixed(2) }; })()`);
+  const publicado = constant(read("leadership/gantt.html"), "DATA").v4.critical;
+  assert.deepEqual(plan.ids.split(",").sort(byNum), [...publicado].sort(byNum), "el CPM no reproduce el camino publicado");
+  assert.equal(plan.total, 42.0, "duración del camino crítico de desarrollo (Cronograma v4 §3)");
+
+  // Lo ya cerrado no restringe nada, así que la cadena que manda desde el corte puede ser otra
+  // —y lo es: al cierre del S1 pasa a ser moderación, no notificaciones e invitaciones.
+  const rest = evalIn(`(() => { const c = criticalPath(RAW.filter((t) => t.status !== "done")); return { ids: c.ids.join(","), total: +c.total.toFixed(2) }; })()`);
+  assert.ok(rest.total < plan.total, "lo que queda no puede durar más que el plan entero");
+  assert.ok(rest.ids.split(",").every((id) => evalIn(`RAW.find((t) => t.id === "${id}").status`) !== "done"),
+    "el camino restante no puede incluir paquetes ya cerrados");
+
+  // El segundo modo SUMA: marca el camino del plan y además el de lo que queda, nunca menos.
+  const rojo = (mode, lvl) => evalIn(`CRIT_MODE = "${mode}"; state.level = "${lvl}"; rebuildTasks(); [...criticalSet].sort()`);
+  for (const lvl of ["mix", "l2", "l3"]) {
+    const soloPlan = [...rojo("plan", lvl)], ambos = [...rojo("restante", lvl)];
+    for (const id of soloPlan) assert.ok(ambos.includes(id), `${lvl}: el modo combinado perdió ${id} del camino del plan`);
+    assert.ok(ambos.length > soloPlan.length, `${lvl}: el modo combinado debe sumar la cadena restante`);
+  }
+  assert.deepEqual([...rojo("plan", "l3")].sort(byNum), [...publicado].sort(byNum), "en X.X.X el modo plan marca los paquetes publicados");
+  evalIn(`CRIT_MODE = "plan"`);
 });
 
 test("WBS runtime: every version renders and v4 has the 116 packages", () => {
