@@ -191,9 +191,9 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 5.1.1 | Modelo de perfil | 1.50 | 11.17 | Siaba | 13/08 | 01/10 | 🟡 |
 | 5.1.4 | Servicio de cálculo de rating | 3.00 | 9.41 | Rudolph | 10/09 | 08/10 | 🟡 |
 | 5.2.2 | Edición de perfil | 2.22 | 11.11 | Pache | 08/10 | 15/10 | ⬜ |
-| 5.2.3 | Vista de historial | 1.50 | 14.05 | Siaba | 03/09 | 15/10 | 🟡 |
-| 6.1.4 | Cancelación de partido con motivo | 2.35 | 33.52 | Pache | 17/09 | 24/09 | ⬜ |
-| 6.2.5 | Interfaz de cancelación | 1.63 | 33.52 | Pache | 24/09 | 01/10 | ⬜ |
+| 5.2.3 | Vista de historial | 1.50 | 14.05 | Siaba | 03/09 | 15/10 | ✅ |
+| 6.1.4 | Cancelación de partido con motivo | 2.35 | 33.52 | Pache | 17/09 | 24/09 | ✅ |
+| 6.2.5 | Interfaz de cancelación | 1.63 | 33.52 | Pache | 24/09 | 01/10 | 🟡 |
 | 6.2.6 | Notificación de cancelación a participantes | 1.50 | 5.40 | Siaba | 08/10 | 15/10 | ⬜ |
 | 6.4.3 | Regla de penalización por no-show | 2.35 | 9.41 | Rudolph | 17/09 | 24/09 | ⬜ |
 | 7.1.1 | Búsqueda de partidos | 4.62 | 25.79 | Siaba | 03/09 | 24/09 | 🟡 |
@@ -203,7 +203,7 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 7.3.2 | Visualización de partidos en mapa | 2.47 | 21.99 | Pache | 01/10 | 08/10 | ⬜ |
 | 7.3.3 | Detalle de partido desde mapa | 3.90 | 21.99 | Pache | 01/10 | 08/10 | ⬜ |
 | 10.1.2 | Entrega final de diseño UX/UI | 3.17 | 38.83 | Pache | 17/09 | 24/09 | 🟡 |
-| 11.1.1 | Modelo de notificación | 2.35 | 6.12 | Rudolph | 17/09 | 24/09 | ⬜ |
+| 11.1.1 | Modelo de notificación | 2.35 | 6.12 | Rudolph | 17/09 | 24/09 | ✅ |
 | 11.1.2 | Selección de proveedor de push y email | 1.63 | 6.84 | Siaba | 17/09 | 24/09 | ⬜ |
 | 11.1.3 | Servicio de envío de notificaciones | 4.75 | -0.00 | Rudolph | 24/09 | 01/10 | ⬜ |
 | 11.2.1 | Centro de notificaciones | 3.90 | 12.24 | Pache | 24/09 | 01/10 | ⬜ |
@@ -336,19 +336,19 @@ funcionando con integración continua desde el S1.
 | 5.1.5 | Estadísticas de actividad del perfil | 2.00 | 26.45 | 28.45 | 38.00 | 40.00 | 11.55 |  | S1 | ✅ |
 | 5.2.1 | Vista de perfil | 2.23 | 28.67 | 30.90 | 36.77 | 39.00 | 8.10 |  | S1 | ✅ |
 | 5.2.2 | Edición de perfil | 2.22 | 28.67 | 30.89 | 39.78 | 42.00 | 11.11 |  | S2 | ⬜ |
-| 5.2.3 | Vista de historial | 1.50 | 26.45 | 27.95 | 40.50 | 42.00 | 14.05 |  | S2 | 🟡 |
+| 5.2.3 | Vista de historial | 1.50 | 26.45 | 27.95 | 40.50 | 42.00 | 14.05 |  | S2 | ✅ |
 | 5.2.4 | Visualización de rating | 1.63 | 29.46 | 31.09 | 40.37 | 42.00 | 10.91 |  | S1 | ✅ |
 | 5.2.5 | Perfil público de otro jugador | 2.00 | 30.90 | 32.90 | 40.00 | 42.00 | 9.10 |  | S1 | ✅ |
 | 6.1.1 | Modelo de partido | 1.50 | 0.00 | 1.50 | 17.63 | 19.13 | 17.63 |  | S1 | ✅ |
 | 6.1.2 | CRUD de partidos | 3.00 | 1.50 | 4.50 | 19.13 | 22.13 | 17.63 |  | S1 | ✅ |
 | 6.1.3 | Endpoint de listado de partidos disponibles | 2.35 | 1.50 | 3.85 | 19.78 | 22.13 | 18.28 |  | S1 | ✅ |
-| 6.1.4 | Cancelación de partido con motivo | 2.35 | 4.50 | 6.85 | 38.02 | 40.37 | 33.52 |  | S2 | ⬜ |
+| 6.1.4 | Cancelación de partido con motivo | 2.35 | 4.50 | 6.85 | 38.02 | 40.37 | 33.52 |  | S2 | ✅ |
 | 6.1.5 | Catálogo de deportes | 2.00 | 1.50 | 3.50 | 40.00 | 42.00 | 38.50 |  | S1 | ✅ |
 | 6.2.1 | Formulario de creación de partido | 3.90 | 4.50 | 8.40 | 38.10 | 42.00 | 33.60 |  | S1 | ✅ |
 | 6.2.2 | Formulario de edición de partido | 3.00 | 4.50 | 7.50 | 39.00 | 42.00 | 34.50 |  | S1 | ✅ |
 | 6.2.3 | Detalle de partido | 2.10 | 4.50 | 6.60 | 22.13 | 24.23 | 17.63 |  | S1 | ✅ |
 | 6.2.4 | Vista "Mis partidos" | 2.50 | 32.82 | 35.32 | 39.50 | 42.00 | 6.68 |  | S1 | ✅ |
-| 6.2.5 | Interfaz de cancelación | 1.63 | 6.85 | 8.48 | 40.37 | 42.00 | 33.52 |  | S2 | ⬜ |
+| 6.2.5 | Interfaz de cancelación | 1.63 | 6.85 | 8.48 | 40.37 | 42.00 | 33.52 |  | S2 | 🟡 |
 | 6.2.6 | Notificación de cancelación a participantes | 1.50 | 35.10 | 36.60 | 40.50 | 42.00 | 5.40 |  | S2 | ⬜ |
 | 6.3.1 | Modelo de solicitud | 2.35 | 21.88 | 24.23 | 21.88 | 24.23 | -0.00 | ★ | S1 | ✅ |
 | 6.3.2 | Envío de solicitud para unirse a partido | 3.90 | 24.23 | 28.13 | 24.23 | 28.13 | -0.00 | ★ | S1 | ✅ |
@@ -377,7 +377,7 @@ funcionando con integración continua desde el S1.
 | 10.1.2 | Entrega final de diseño UX/UI | 3.17 | 0.00 | 3.17 | 38.83 | 42.00 | 38.83 |  | S2 | 🟡 |
 | 10.2.1 | README del proyecto | 1.50 | 9.36 | 10.86 | 40.50 | 42.00 | 31.14 |  | S1 | ✅ |
 | 10.2.2 | Documentación de APIs | 1.50 | 35.10 | 36.60 | 40.50 | 42.00 | 5.40 |  | S3 | ⬜ |
-| 11.1.1 | Modelo de notificación | 2.35 | 21.88 | 24.23 | 28.00 | 30.35 | 6.12 |  | S2 | ⬜ |
+| 11.1.1 | Modelo de notificación | 2.35 | 21.88 | 24.23 | 28.00 | 30.35 | 6.12 |  | S2 | ✅ |
 | 11.1.2 | Selección de proveedor de push y email | 1.63 | 21.88 | 23.51 | 28.72 | 30.35 | 6.84 |  | S2 | ⬜ |
 | 11.1.3 | Servicio de envío de notificaciones | 4.75 | 30.35 | 35.10 | 30.35 | 35.10 | -0.00 | ★ | S2 | ⬜ |
 | 11.1.4 | Job de recordatorio pre-partido | 3.12 | 35.10 | 38.22 | 38.88 | 42.00 | 3.78 |  | S3 | ⬜ |
@@ -416,3 +416,72 @@ El orden día por día dentro de la semana lo fija el plan de sprint, como hasta
 | 13 | 29/10 → 05/11 | S3 | 12.1.3 Interfaz de reporte | 12.2.2 Suspensión de usuario | 12.2.3 Historial de moderación | 10.2 / 18 h |
 | 14 | 05/11 → 12/11 | reserva | — | — | — | 0.0 / 18 h |
 <!-- v4:semanas:end -->
+
+---
+
+## 10. Estado al 24/09 (cierre de la semana 7)
+
+**Las fechas de §4, §8 y §9 son la línea base del plan y no se modifican.** Sirven para medir cuánto se adelanta
+el equipo respecto de lo planificado. Esta sección registra el estado real; en §4 y §8 se actualizan los
+marcadores de estado, pero no las fechas.
+
+### Cambios de rol en el S2
+
+Desde el 24/09 las lanes se invierten para que cada dev pase por otro rol: **Pacheco → Back**,
+**Rudolph → Front**, **Siaba → Back y Front**. La columna "Dev" de §4 y §9 conserva la asignación original
+de la línea base.
+
+### Cerrado en la semana 7
+
+| ID | Paquete | Ticket | Estado |
+|---|---|---|:---:|
+| 6.1.4 | Cancelación de partido con motivo | SPO-222 | ✅ |
+| 11.1.1 | Modelo de notificación | SPO-221 | ✅ |
+| 5.2.3 | Vista de historial | SPO-209 (completa el parcial del S1) | ✅ |
+| 6.2.5 | Interfaz de cancelación | SPO-224 (en review, PR #90) | 🟡 |
+
+La semana 7 también cerró el refactor de idioma (SPO-201 y SPO-204) y tres bugs de QA (SPO-220 y SPO-223).
+Nada de eso es un paquete de la WBS: son retrabajo y arreglos, como aclara la WBS v4.
+
+### En curso: tickets de la semana 8 (`dueDate` 01/10)
+
+| ID | Paquete | Tickets | Semana en la línea base |
+|---|---|---|---|
+| 11.1.3 | Servicio de envío de notificaciones | SPO-226 | 8 |
+| 6.2.6 | Notificación de cancelación a participantes | SPO-226 | 10 · **adelantado** |
+| 6.4.3 | Regla de penalización por no-show | SPO-228 · SPO-231 | 7 · atrasado una semana |
+| 5.1.4 | Servicio de cálculo de rating | SPO-234 | 9 · **adelantado** |
+| 11.2.1 | Centro de notificaciones | SPO-230 · SPO-233 | 8 |
+| 7.3.1 | Integración con proveedor de mapa | SPO-227 · SPO-229 | 8 |
+| 7.3.2 | Visualización de partidos en mapa | SPO-235 · SPO-237 | 9 · **adelantado** |
+| 7.3.3 | Detalle de partido desde mapa | SPO-235 | 9 · **adelantado** |
+| 7.1.1 | Búsqueda de partidos | SPO-232 | 7 · atrasado una semana |
+
+### Cargados para la semana 9 (`dueDate` 08/10)
+
+| ID | Paquete | Tickets |
+|---|---|---|
+| 5.1.4 | Servicio de cálculo de rating (suspensión) | SPO-236 |
+| 7.1.3 | Ordenamiento por rating y compatibilidad | SPO-238 |
+| 7.1.2 | Filtros (deporte, nivel, fecha) | SPO-239 · SPO-240 |
+| 6.4.3 · 5.2.4 | No-show en la app | SPO-241 |
+
+### En el backlog, sin assignee (semana 10 de la línea base)
+
+| ID | Paquete | Tickets |
+|---|---|---|
+| 5.1.1 · 5.2.2 | Modelo de perfil y edición de perfil | SPO-242 · SPO-244 · SPO-245 |
+| 11.2.2 | Recepción de push en cliente (PWA) | SPO-243 · SPO-246 |
+
+### Cambios de alcance decididos el 24/09
+
+Detalle en `docs/reglas-de-negocio.md` y en la WBS v4.
+
+- **11.1.2** resuelto por decisión del PO: push con el estándar Web Push (`web-push`), sin FCM. **Mail fuera
+  de alcance** por ahora.
+- **11.2.2** se mantiene, ahora como push de una PWA (manifest, service worker y suscripción Web Push).
+- **11.2.3 Preferencias de notificación: fuera de alcance.** Sus 1,63 h quedan en la línea base, marcadas
+  como no ejecutadas.
+- **El mapa (7.3.x) se adelanta** y pasa a ser la pantalla de inicio, con Leaflet + OpenStreetMap. El riesgo
+  **R3** (sin coordenadas) se resuelve en SPO-227.
+- **Filtros (7.1.2) solo en el mapa**, no en el swipe.

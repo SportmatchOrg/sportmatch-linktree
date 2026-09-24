@@ -64,9 +64,9 @@ La propuesta de extensión dejaba seis puntos abiertos. Quedaron resueltos así:
 
 | # | Decisión | Resolución | Impacto |
 |---|---|---|---|
-| 1 | Proveedor de push y de email (11.1.2) | **FCM** para push, aprovechando que Firebase ya está integrado por autenticación, y un proveedor transaccional para email | Costo cero en push; queda verificar los límites del plan gratuito de email |
+| 1 | Proveedor de push y de email (11.1.2) | *Revisado el 24/09:* **Web Push estándar con la librería `web-push`** (claves VAPID), sin FCM. **Mail fuera de alcance** por ahora | Costo cero; una sola librería en el backend |
 | 2 | Ventana del recordatorio pre-partido (11.1.4) | **24 horas antes**, un único envío, sin configuración por usuario | Simplifica el job: no hay ventanas múltiples ni reintentos programados |
-| 3 | Preferencias de notificación (11.2.3) | **Incluidas en el alcance.** El usuario puede activar y desactivar push y email por separado | +2,17 h |
+| 3 | Preferencias de notificación (11.2.3) | *Revisado el 24/09:* **fuera de alcance.** Sin mail no hay canales entre los que elegir | Las 1,63 h quedan en la línea base, sin ejecutar |
 | 4 | Esquema de deep-linking (6.5.1) | **URL pública simple** `/partidos/:id` en modo lectura. No hay app nativa, así que no se requieren app links | Evita el trabajo de universal links; queda definir qué datos se exponen sin sesión |
 | 5 | Invitación directa y aprobación (6.5.3) | La invitación **reutiliza el modelo de solicitud** (6.3.1) con origen `invitacion`. El invitado acepta y queda anotado sin aprobación adicional del organizador, porque fue él quien invitó | Evita un modelo paralelo. Si la decisión se revierte, 6.5.3 pasa de 4 h a unas 8 h |
 | 6 | Panel de moderación (12.2) | **Panel completo con acciones**: listado con filtros, suspensión de usuario e historial de moderación | +17,83 h. Convierte a Moderación en un módulo real y **obliga a introducir un rol de administrador**, que hoy no existe en el modelo de usuario |
@@ -268,7 +268,7 @@ conviene resolverla al inicio del módulo, no al final.
 **5.1.3** — API de historial de partidos: partidos creados, solicitados o jugados por el usuario.
 <br>*Dependencias:* 6.1.1, 6.3.1 · *Estimación:* 2.22 h (DO 1.5 / DM 2.2 / DP 3)
 
-**5.1.4** — Servicio de cálculo de rating: rating visible a partir de calificaciones y penalizaciones por no-show.
+**5.1.4** — Servicio de cálculo de rating: rating visible a partir de calificaciones y penalizaciones por no-show. Cada falta cuenta como 1 ★ y cada baja tarde (menos de 2 h antes) como 2 ★; 3 faltas en 90 días suspenden 7 días, y 6 meses si reincide (ver `docs/reglas-de-negocio.md`).
 <br>*Dependencias:* 6.4.1, 6.4.2, 6.4.3 · *Estimación:* 3 h (DO 1.5 / DM 3 / DP 4.5)
 
 **5.1.5** ✳️ — Estadísticas de actividad del perfil: partidos jugados y semanas activas calculadas en el backend, disponibles tanto para el perfil propio como para el de cualquier usuario.
@@ -356,7 +356,7 @@ conviene resolverla al inicio del módulo, no al final.
 **6.4.2** — Interfaz de calificación: pantalla para calificar participantes luego del partido.
 <br>*Dependencias:* 2.2.2, 6.4.1 · *Estimación:* 1.63 h (DO 0.8 / DM 1.5 / DP 3)
 
-**6.4.3** — Regla de penalización por no-show: definición e implementación de una regla simple para penalizar el rating de usuarios que no se presentan.
+**6.4.3** — Regla de penalización por no-show: definición e implementación de una regla simple para penalizar el rating de usuarios que no se presentan. La falta la marcan el organizador o al menos 2 jugadores al calificar, dentro de las 48 h posteriores al partido (ver `docs/reglas-de-negocio.md`).
 <br>*Dependencias:* 6.4.1 · *Estimación:* 2.35 h (DO 1.5 / DM 2.2 / DP 3.8)
 
 ### 6.5 Invitación a partido — **NUEVO**
@@ -378,7 +378,7 @@ conviene resolverla al inicio del módulo, no al final.
 **7.1.1** — Búsqueda de partidos: consulta por deporte, ubicación, fecha, nivel y cupo.
 <br>*Dependencias:* 6.1.3 · *Estimación:* 4.62 h (DO 2.2 / DM 4.5 / DP 7.5)
 
-**7.1.2** — Filtros (deporte, nivel, fecha): aplicación de filtros del usuario sobre los resultados de búsqueda; expuestos en swipe y mapa.
+**7.1.2** — Filtros (deporte, nivel, fecha): aplicación de filtros del usuario sobre los resultados de búsqueda; expuestos en el mapa (el swipe no se filtra, decisión del 24/09).
 <br>*Dependencias:* 7.1.1 · *Estimación:* 3.12 h (DO 1.5 / DM 3 / DP 5.2)
 
 **7.1.3** — Ordenamiento por rating y compatibilidad: ordena partidos sugeridos según rating del organizador y compatibilidad de nivel con el usuario.
@@ -394,7 +394,7 @@ conviene resolverla al inicio del módulo, no al final.
 
 ### 7.3 Vista Mapa Interactivo
 
-**7.3.1** — Integración con proveedor de mapa: configuración del mapa interactivo y credenciales.
+**7.3.1** — Integración con proveedor de mapa: configuración del mapa interactivo y credenciales. Proveedor: Leaflet + OpenStreetMap, sin credenciales; el mapa es la pantalla de inicio (decisión del 24/09).
 <br>*Dependencias:* 3.2.1, 3.2.3 · *Estimación:* 4.28 h (DO 3 / DM 3.8 / DP 7.5)
 
 **7.3.2** — Visualización de partidos en mapa: marcadores de partidos disponibles según ubicación.
@@ -504,7 +504,7 @@ conviene resolverla al inicio del módulo, no al final.
 **11.1.1** 🆕 — Modelo de notificación: tipo, destinatario, estado leída/no leída, canal y payload asociado.
 <br>*Dependencias:* 4.1.1 · *Estimación:* 2.35 h (DO 1.5 / DM 2.2 / DP 3.8)
 
-**11.1.2** 🆕 — Selección de proveedor de push y email: FCM para push y proveedor transaccional para email, con verificación de límites del plan gratuito.
+**11.1.2** 🆕 — Selección de proveedor de push y email: Web Push estándar con `web-push`, sin FCM; email fuera de alcance por ahora (decisión del 24/09).
 <br>*Dependencias:* 4.1.1 · *Estimación:* 1.63 h (DO 0.8 / DM 1.5 / DP 3)
 
 **11.1.3** 🆕 — Servicio de envío de notificaciones: disparo ante solicitud creada, aceptada o rechazada y ante cancelación de partido.
@@ -518,10 +518,10 @@ conviene resolverla al inicio del módulo, no al final.
 **11.2.1** 🆕 — Centro de notificaciones: pantalla con el listado de notificaciones e indicador de no leídas.
 <br>*Dependencias:* 11.1.1, 2.2.7 · *Estimación:* 3.9 h (DO 2.2 / DM 3.8 / DP 6)
 
-**11.2.2** 🆕 — Recepción de push en cliente: registro del token de dispositivo y manejo de la recepción.
+**11.2.2** 🆕 — Recepción de push en cliente: registro del token de dispositivo y manejo de la recepción. Como la app es web, se resuelve como PWA: manifest, service worker y suscripción Web Push.
 <br>*Dependencias:* 11.1.2 · *Estimación:* 4.03 h (DO 2.2 / DM 3.8 / DP 6.8)
 
-**11.2.3** 🆕 — Preferencias de notificación: activación y desactivación de push y email por parte del usuario.
+**11.2.3** 🆕 — Preferencias de notificación: activación y desactivación de push y email por parte del usuario. **Fuera de alcance desde el 24/09** (sin mail no hay canales entre los que elegir); se conserva en la línea base.
 <br>*Dependencias:* 11.2.1 · *Estimación:* 1.63 h (DO 0.8 / DM 1.5 / DP 3)
 
 
