@@ -4,14 +4,14 @@
 
 const TIMEOUT_MS = 10_000;
 
-// `expect` es el status HTTP sano de cada target, y no siempre es 200:
-// `/users` del backend contesta 401 "Missing bearer token" porque mandamos el
-// request sin token a propósito. Ese 401 ya prueba que Azure sirve, que el
-// proceso Node vive, que Nest booteó y que el guard corrió.
+// `expect` es el status HTTP sano de cada target, y no siempre es 200.
+// `GET /health` del backend hace un `select 1`: 200 `{ok:true}` con la base
+// arriba, 503 `{ok:false}` si no. Prueba toda la cadena hasta Postgres.
 //
-// No prueba que la base esté arriba: el guard rechaza antes de tocarla. Cuando
-// exista `GET /health` en el backend (ver issue-backend-health.md), acá se
-// cambian `url` y `expect` y no hace falta tocar nada más.
+// Prod todavía no tiene `/health` desplegado (devuelve 404), así que sigue
+// mirando `/users`, que contesta 401 "Missing bearer token" sin tocar la base:
+// prueba que Nest booteó, no que la base esté arriba. Cuando `/health` llegue a
+// prod, se cambian `url`, `expect` y `detail` igual que en dev.
 const TARGETS = Object.freeze([
   {
     id: 'prod',
@@ -23,9 +23,9 @@ const TARGETS = Object.freeze([
   {
     id: 'dev',
     name: 'Backend · Dev',
-    url: 'https://sportmatch-dev-aqhcazaacaf7e6g0.brazilsouth-01.azurewebsites.net/users',
-    expect: 401,
-    detail: 'API de desarrollo, mismo stack que prod.',
+    url: 'https://sportmatch-dev-aqhcazaacaf7e6g0.brazilsouth-01.azurewebsites.net/health',
+    expect: 200,
+    detail: 'API de desarrollo y su base de datos.',
   },
   {
     id: 'web',
