@@ -40,7 +40,21 @@ Check local HTML references after moving files:
 node scripts/check-static-links.mjs
 ```
 
+## Sync with Linear
 
+The Gantt shows the Linear issues of each epic, package and deliverable. Refresh
+that data by hand whenever it matters (there is no automatic sync):
+
+```sh
+node --env-file=.env.local scripts/sync-linear.mjs          # report + refresh the repo
+node --env-file=.env.local scripts/sync-linear.mjs --push    # also write milestones to Linear
+```
+
+Issues map to WBS packages in `docs/planning/linear-wbs-map.csv`, one row per
+issue-package pair; the first row of an issue is its main package and decides its
+milestone. New issues arrive with an empty `wbs_id` and `npm run check` fails until
+they are filled in. Pick the milestone when creating an issue in Linear: the epic
+comes from there. See `docs/planning/plan-linear.md`.
 
 ## Database migrations
 

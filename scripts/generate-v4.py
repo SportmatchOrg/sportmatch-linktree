@@ -5,7 +5,8 @@ del calendario semana a semana del Cronograma v4.
 
 Entradas
   docs/planning/WBS-SportMatch-v4.md        116 paquetes: título, dependencias, horas PERT
-  docs/planning/Export Thu Sep 17 2026.csv  export de Linear: estado y fechas reales por ticket
+  docs/planning/linear-wbs-map.csv          issue de Linear -> paquete de la WBS (a mano)
+  docs/planning/linear-issues.csv           estado y fechas reales por ticket (lo refresca sync-linear.mjs)
 
 Salidas (intermedias; se pegan a mano en los HTML y en el doc, no se commitean)
   scripts/_v4_wbs.js          bloque V4_ADD para leadership/wbs.html
@@ -23,7 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WBS = ROOT / 'docs' / 'planning' / 'WBS-SportMatch-v4.md'
-EXPORT = ROOT / 'docs' / 'planning' / 'Export Thu Sep 17 2026.csv'
+MAP = ROOT / 'docs' / 'planning' / 'linear-wbs-map.csv'
+ISSUES = ROOT / 'docs' / 'planning' / 'linear-issues.csv'
 OUT = ROOT / 'scripts'
 
 # ───────────────────────── calendario ─────────────────────────
@@ -107,37 +109,23 @@ crit_dev  = sorted([n for n in DEVCPM if abs(DEVCPM[n]['H']) < 1e-6], key=lambda
 
 # ───────────────────────── Linear ─────────────────────────
 DONE_STATUSES = {'Done', 'Todo', 'In Progress', 'In Review'}   # cierran antes del steering del 17/09
-ASSIGNEE_DEV = {'ipacheco@mail.austral.edu.ar': 1, 'jrudolph@mail.austral.edu.ar': 2, 'jfsiaba@mail.austral.edu.ar': 3}
+ASSIGNEE_DEV = {'ipacheco': 1, 'jrudolph': 2, 'jfsiaba': 3}
 TICKETS = {}
-with io.open(EXPORT, encoding='utf-8') as f:
+with io.open(ISSUES, encoding='utf-8') as f:
     for r in csv.DictReader(f):
-        n = int(r['ID'].split('-')[1])
+        n = int(r['issue'].split('-')[1])
         P = lambda s: datetime.strptime(s[:19], '%Y-%m-%dT%H:%M:%S') if s else None
-        TICKETS[n] = {'status': r['Status'], 'started': P(r['Started']), 'completed': P(r['Completed']),
-                      'dev': ASSIGNEE_DEV.get(r['Assignee']), 'title': r['Title']}
+        TICKETS[n] = {'status': r['status'], 'started': P(r['started']), 'completed': P(r['completed']),
+                      'dev': ASSIGNEE_DEV.get(r['assignee'])}
 
-# Paquete -> tickets que lo cerraron. Fuente: columna "Qué se hizo" de Estado-real-WBS-15-09.md
-# y tabla "Entregables incorporados" de WBS-SportMatch-v4.md. Quedan fuera los hotfix y los
-# arreglos de UI (SPO-184, 194, 214) y las reglas de autorización (SPO-185 va sólo a 5.1.2):
-# no son alcance del paquete y estiraban su ventana hasta septiembre.
-PKG_TICKETS = {
- '3.1.2': [113,114,115,116,118,119,120,122,124,125,126],
- '3.2.1': [143,144,145],          '3.2.2': [146,163],          '3.2.3': [147,148,174],
- '4.1.1': [149,155],              '4.1.2': [157],              '4.1.3': [152],
- '4.1.4': [151,153,154],          '4.2.1': [158],              '4.2.2': [159],
- '4.2.3': [158],                  '4.2.4': [192],              '4.2.5': [165,177],
- '5.1.1': [149],                  '5.1.2': [155,157,185],      '5.1.3': [172,187,213],
- '5.1.4': [212],                  '5.1.5': [212],              '5.2.1': [142,191],
- '5.2.3': [191],                  '5.2.4': [191,212,218],      '5.2.5': [216],
- '6.1.1': [163],                  '6.1.2': [164,182],          '6.1.3': [170,186],
- '6.1.5': [169,183],              '6.2.1': [166,189],          '6.2.2': [219],
- '6.2.3': [179],                  '6.2.4': [180],              '6.3.1': [196],
- '6.3.2': [196],                  '6.3.3': [197,199],          '6.3.4': [198,213,217],
- '6.3.5': [168,171],              '6.4.1': [207,211],          '6.4.2': [208,215,218],
- '7.1.1': [186],                  '7.2.1': [178],              '7.2.2': [178,179,198],
- '9.1.1': [173],                  '9.1.2': [175,176],          '9.1.3': [176],
- '9.1.4': [161,167],
-}
+# Paquete -> tickets que fijan su ventana de fechas, desde docs/planning/linear-wbs-map.csv.
+# Sólo las filas con fechas='si': los hotfix y los arreglos posteriores al cierre del paquete van
+# con 'no' porque no son alcance del paquete y estiraban su ventana. Ver docs/planning/plan-linear.md.
+PKG_TICKETS = defaultdict(list)
+with io.open(MAP, encoding='utf-8') as f:
+    for r in csv.DictReader(f):
+        if r['fechas'] == 'si':
+            PKG_TICKETS[r['wbs_id']].append(int(r['issue'].split('-')[1]))
 # Paquetes hechos sin ticket propio: semana (inicio, fin) fijada a mano.
 MANUAL_WEEK = {
  '3.1.1': (1, 1, 3),   # stack definido en el kick-off (Infra)
@@ -172,12 +160,12 @@ for k in SPRINT_OF:
 # ───────────────────────── fechas de lo hecho ─────────────────────────
 sched = {}   # id -> {'sw','ew','dev','status'}
 for k in DEV:
-    if k in PKG_TICKETS:
-        ts = [TICKETS[n] for n in PKG_TICKETS[k]]
-        bad = [n for n, t in zip(PKG_TICKETS[k], ts) if t['status'] not in DONE_STATUSES]
-        assert not bad or k in WIP, (k, bad)
-        starts = [week_of(t['started']) if t['started'] else 6 for t in ts if t['status'] in DONE_STATUSES]
-        ends = [week_of(t['completed']) if t['completed'] else 6 for t in ts if t['status'] in DONE_STATUSES]
+    # Sólo los tickets ya cerrados fijan la ventana. Si al paquete no le cerró ninguno todavía,
+    # queda para el planificador de más abajo.
+    ts = [TICKETS[n] for n in PKG_TICKETS.get(k, []) if TICKETS[n]['status'] in DONE_STATUSES]
+    if ts:
+        starts = [week_of(t['started']) if t['started'] else 6 for t in ts]
+        ends = [week_of(t['completed']) if t['completed'] else 6 for t in ts]
         devs = [t['dev'] for t in ts if t['dev']]
         dev = max(set(devs), key=devs.count) if devs else 3
         sched[k] = {'sw': min(starts), 'ew': max(ends), 'dev': dev}
@@ -317,6 +305,14 @@ lines += ['    ],', '    devs: {1:"Pache", 2:"Rudolph", 3:"Siaba"},', f'    crit
           f"    newIds: {json.dumps(sorted([k for k in DEV if k not in V2_IDS], key=key))},",
           f'    knownDepViolations: {json.dumps(viol)},']
 (OUT / '_v4_gantt.js').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+# Y lo mismo, pegado en la página: es lo único que cambia cada vez que se sincroniza Linear,
+# así que dejarlo a mano garantiza que tarde o temprano el Gantt muestre fechas viejas.
+gantt_html = ROOT / 'leadership' / 'gantt.html'
+html = gantt_html.read_text(encoding='utf-8')
+a, b = html.index('    // gen-begin'), html.index('    // gen-end')
+head = html[a:html.index('\n', a) + 1]
+gantt_html.write_text(html[:a] + head + '\n'.join(lines) + '\n' + html[b:], encoding='utf-8')
 
 # ───────────────────────── salidas markdown ─────────────────────────
 ST = {'done': '✅', 'wip': '🟡', 'todo': '⬜'}

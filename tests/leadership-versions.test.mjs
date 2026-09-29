@@ -175,7 +175,10 @@ const KNOWN_DEP_VIOLATIONS = {
   v2: ["4.1.3<4.1.2", "4.2.1<4.1.2", "5.2.1<5.1.2", "6.3.2<6.2.3", "7.2.1<7.1.1"],
   v4: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1",
        "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4",
-       "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3"],
+       "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3",
+       // Ejecución real, no plan: SPO-235 cubre 7.3.2 y 7.3.3 a la vez, así que el detalle
+       // arrancó en la misma semana que el mapa del que depende.
+       "7.3.3<7.3.2"],
 };
 
 test("Gantt: no new dependency violations creep into the schedule", () => {
@@ -195,10 +198,16 @@ test("Gantt: no new dependency violations creep into the schedule", () => {
     assert.deepEqual(found.sort(), [...KNOWN_DEP_VIOLATIONS[ver]].sort(), `${ver}: dependency violations changed`);
     if (ver === "v4") {
       // Lo pendiente se planificó respetando el grafo: toda violación involucra fechas reales de
-      // Linear, o sea un sucesor hecho o parcial, o una dependencia hecha.
+      // Linear — un sucesor hecho o parcial, una dependencia hecha, o un paquete que todavía figura
+      // como pendiente pero cuyo ticket ya arrancó (de ahí le viene la fecha de inicio).
+      const LINEAR = constant(read("leadership/gantt.html"), "LINEAR");
+      const arrancado = (id) => (LINEAR.byPkg[id] || []).some((k) => ["started", "completed"].includes(LINEAR.issues[k]?.k));
       for (const v of found) {
         const [succ, pred] = v.split("<");
-        assert.ok(by[succ].status !== "todo" || by[pred].status === "done", `${ver}: ${v} is a violation between two unfinished tasks`);
+        assert.ok(
+          by[succ].status !== "todo" || by[pred].status === "done" || arrancado(succ),
+          `${ver}: ${v} is a violation between two unfinished tasks`,
+        );
       }
     }
   }
@@ -272,7 +281,7 @@ function stubEl() {
     classList: { toggle() {}, add() {}, remove() {} },
     appendChild(c) { this.children.push(c); return c; },
     setAttribute() {}, getAttribute() { return "1"; }, removeAttribute() {},
-    addEventListener() {}, remove() {}, querySelectorAll() { return []; },
+    addEventListener(type, fn) { (this.on ??= {})[type] = fn; }, remove() {}, querySelectorAll() { return []; },
     getBoundingClientRect() { return { width: 0, height: 0 }; },
     getContext() { return { measureText: () => ({ width: 10 }) }; },
   };
@@ -420,4 +429,107 @@ test("Steering v1: earned hours and progress match the Cronograma v4", () => {
   assert.equal(dn, done.length);
   assert.equal(dn + wn + tn, 76);
   assert.ok(Math.abs(dh + wh + th - s1.devEffort) < 0.005, "el avance suma el esfuerzo de desarrollo");
+});
+
+// ── Linear ───────────────────────────────────────────────────────────────────
+/** Filas de un CSV del repo. Ninguna de las dos tablas guarda texto libre: no hay comas que escapar. */
+function csv(path) {
+  const [head, ...lines] = read(path).trim().split("\n");
+  const cols = head.split(",");
+  return lines.filter(Boolean).map((l) => Object.fromEntries(l.split(",").map((v, i) => [cols[i], v])));
+}
+
+test("Linear: el mapa cubre todos los issues y apunta a paquetes que existen", () => {
+  const map = csv("docs/planning/linear-wbs-map.csv");
+  const issues = csv("docs/planning/linear-issues.csv");
+  const wbs = new Set(wbsV4DocIds());
+
+  const pares = new Set();
+  for (const r of map) {
+    assert.ok(r.wbs_id, `${r.issue}: fila sin paquete — completá el CSV o corré sync-linear.mjs`);
+    assert.ok(wbs.has(r.wbs_id), `${r.issue}: ${r.wbs_id} no existe en la WBS v4`);
+    assert.ok(["si", "no"].includes(r.fechas), `${r.issue} → ${r.wbs_id}: fechas debe ser si o no`);
+    const par = `${r.issue} ${r.wbs_id}`;
+    assert.ok(!pares.has(par), `fila duplicada: ${par}`);
+    pares.add(par);
+  }
+
+  // Lo que evita volver a juntar issues sin mapear: cada issue de Linear tiene paquete.
+  const conPaquete = new Set(map.map((r) => r.issue));
+  const sinMapear = issues.map((i) => i.issue).filter((id) => !conPaquete.has(id));
+  assert.deepEqual(sinMapear, [], `issues sin paquete: ${sinMapear.join(", ")}`);
+
+  const enLinear = new Set(issues.map((i) => i.issue));
+  for (const id of conPaquete) assert.ok(enLinear.has(id), `${id} está en el mapa pero ya no en Linear`);
+});
+
+test("Gantt: el bloque LINEAR coincide con el mapa y con los paquetes de la v4", () => {
+  const html = read("leadership/gantt.html");
+  const LINEAR = constant(html, "LINEAR");
+  const DATA = constant(html, "DATA");
+  const map = csv("docs/planning/linear-wbs-map.csv");
+  const cancelados = new Set(
+    csv("docs/planning/linear-issues.csv").filter((i) => i.type === "canceled").map((i) => i.issue),
+  );
+
+  assert.ok(LINEAR.syncedAt, "el bloque nunca se sincronizó: corré scripts/sync-linear.mjs");
+  const wbs = new Set(wbsV4DocIds());
+  for (const [pkg, ids] of Object.entries(LINEAR.byPkg)) {
+    assert.ok(wbs.has(pkg), `byPkg trae un paquete que no existe en la WBS v4: ${pkg}`);
+    for (const id of ids) assert.ok(LINEAR.issues[id], `${pkg}: ${id} no está en issues`);
+  }
+  // Los cancelados no se muestran (decisión del plan), el resto del mapa sí.
+  const esperado = new Set(map.filter((r) => !cancelados.has(r.issue)).map((r) => r.issue));
+  assert.deepEqual(new Set(Object.keys(LINEAR.issues)), esperado);
+  for (const id of Object.keys(LINEAR.issues)) assert.ok(!cancelados.has(id), `${id} está cancelado y no debería mostrarse`);
+
+  // El panel de una épica junta los paquetes por prefijo: los del Gantt tienen que resolver.
+  const v4 = new Set(DATA.v4.tasks.map((t) => t.id));
+  const conBarra = Object.keys(LINEAR.byPkg).filter((p) => v4.has(p));
+  assert.ok(conBarra.length > 40, `sólo ${conBarra.length} paquetes del Gantt tienen issues`);
+});
+
+test("Gantt runtime: el panel de issues abre por épica, paquete y entregable", () => {
+  const evalIn = runPage("leadership/gantt.html");
+  evalIn('loadVersion("v4")');
+
+  // La épica junta los issues de sus paquetes, sin repetir los que cubren más de uno.
+  const epica = evalIn('issuesOf("6").map(i => i.key)');
+  const paquete = evalIn('issuesOf("6.2").map(i => i.key)');
+  const entregable = evalIn('issuesOf("6.2.3").map(i => i.key)');
+  assert.equal(new Set(epica).size, epica.length, "la épica no repite issues");
+  assert.ok(epica.length > paquete.length && paquete.length >= entregable.length);
+  for (const id of entregable) assert.ok(paquete.includes(id) && epica.includes(id));
+
+  // Abrir, y cerrar con el segundo clic sobre lo mismo.
+  const estado = 'openPkg + " · oculto=" + panelEl.hidden';
+  assert.equal(evalIn(`openIssues("6.2"); ${estado}`), "6.2 · oculto=false");
+  assert.ok(evalIn("panelEl.innerHTML").includes("pts"), "el encabezado muestra los puntos");
+  assert.equal(evalIn(`openIssues("6.2"); ${estado}`), "null · oculto=true");
+
+  // Un paquete que el Gantt da por hecho y en Linear tiene tickets abiertos se avisa.
+  const aviso = evalIn(`
+    (() => {
+      const id = Object.keys(LINEAR.byPkg).find(p => {
+        const tasks = RAW.filter(t => t.id === p);
+        return tasks.length && tasks.every(t => t.status === "done")
+          && issuesOf(p).some(i => i.k !== "completed");
+      });
+      return id ? divergence(id, issuesOf(id)) : "";
+    })()`);
+  if (aviso) assert.match(aviso, /el Gantt lo da por hecho/);
+
+  // La barra de una épica colapsada abre el panel de la épica, igual que su contador.
+  const barra = evalIn(`
+    (() => {
+      loadVersion("v4");
+      const parent = { appendChild: (c) => (parent.last = c) };
+      drawEnvelope(parent, "2026-08-06", "2026-10-29", "#10b981", 0, 0.35, "6");
+      parent.last.on.click();
+      return openPkg + " · " + panelEl.innerHTML.includes("6.0 Gestión de Partidos");
+    })()`);
+  assert.equal(barra, "6 · true", "la barra colapsada abre los issues de la épica");
+
+  // v1 y v2 tienen otra numeración: ahí el panel no abre.
+  assert.equal(evalIn('loadVersion("v1"); openIssues("6.2"); openPkg + " · oculto=" + panelEl.hidden'), "null · oculto=true");
 });
