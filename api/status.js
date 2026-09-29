@@ -30,7 +30,7 @@ const TARGETS = Object.freeze([
   {
     id: 'web',
     name: 'Frontend · CDN',
-    url: 'https://sportmatch-nine.vercel.app/',
+    url: 'https://sportmatch-mu.vercel.app/',
     expect: 200,
     // Deliberadamente no se llama "SportMatch": esta URL se sirve desde la
     // caché de borde de Vercel y sigue en 200 aunque el backend esté caído.
