@@ -159,7 +159,7 @@
       <span class="nav-label">WBS</span>
     </button>
 
-    <button class="nav-btn active" data-src="leadership/pert.html" data-label="PERT">
+    <button class="nav-btn" data-src="leadership/pert.html" data-label="PERT">
       <!-- network/dag icon -->
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="1" y="7.5" width="4.5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/>
@@ -174,7 +174,7 @@
       <span class="nav-label">PERT</span>
     </button>
 
-    <button class="nav-btn" data-src="leadership/gantt.html" data-label="Gantt">
+    <button class="nav-btn active" data-src="leadership/gantt.html" data-label="Gantt">
       <!-- bar chart icon -->
       <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="3.5" width="8" height="3" rx="1.2" fill="currentColor"/>
@@ -193,6 +193,15 @@
       </svg>
       <span class="nav-label">Steering</span>
     </button>
+
+    <a class="nav-btn branch-link" href="https://docs.google.com/spreadsheets/d/1tA2CFxUesISCr39-MmhhdxwmitZKZBhTdOjfpSGjCec/edit?gid=1556534482#gid=1556534482" target="_blank" rel="noopener" data-label="Tablero">
+      <!-- grid / spreadsheet icon -->
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2.5" y="2.5" width="15" height="15" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M2.5 7.5h15M2.5 12.5h15M7.5 2.5v15" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <span class="nav-label">Tablero</span>
+    </a>
 
     <div class="nav-sep" style="height:1px;background:currentColor;opacity:.14;margin:10px 12px;"></div>
 
@@ -239,7 +248,7 @@
 </div>
 
 <div id="frame-wrapper">
-  <iframe id="main-frame" src="leadership/pert.html" title="Vista actual"></iframe>
+  <iframe id="main-frame" src="leadership/gantt.html" title="Vista actual"></iframe>
 </div>
 
 <script>
