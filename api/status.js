@@ -7,18 +7,13 @@ const TIMEOUT_MS = 10_000;
 // `expect` es el status HTTP sano de cada target, y no siempre es 200.
 // `GET /health` del backend hace un `select 1`: 200 `{ok:true}` con la base
 // arriba, 503 `{ok:false}` si no. Prueba toda la cadena hasta Postgres.
-//
-// Prod todavía no tiene `/health` desplegado (devuelve 404), así que sigue
-// mirando `/users`, que contesta 401 "Missing bearer token" sin tocar la base:
-// prueba que Nest booteó, no que la base esté arriba. Cuando `/health` llegue a
-// prod, se cambian `url`, `expect` y `detail` igual que en dev.
 const TARGETS = Object.freeze([
   {
     id: 'prod',
     name: 'Backend · Prod',
-    url: 'https://sportmatch-prod-akbwbvf4fbewf3ax.brazilsouth-01.azurewebsites.net/users',
-    expect: 401,
-    detail: 'API NestJS en Azure (Brazil South).',
+    url: 'https://sportmatch-prod-akbwbvf4fbewf3ax.brazilsouth-01.azurewebsites.net/health',
+    expect: 200,
+    detail: 'API de producción y su base de datos.',
   },
   {
     id: 'dev',

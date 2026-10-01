@@ -19,12 +19,16 @@ introduction and team platform links.
 
 ## Run locally
 
-Serve the repository root over HTTP so root-relative asset paths and iframes
-resolve exactly as they do in production:
+Serve the repository with the Vercel CLI so root-relative asset paths, iframes,
+`vercel.json` routes and the `api/` functions (Status, Bugs, Resources) behave
+exactly as they do in production:
 
 ```sh
-python3 -m http.server 8000
+vercel dev --listen 8000
 ```
+
+`python3 -m http.server 8000` still serves the static pages, but every `/api/*`
+call answers 404, so Status shows "No se pudo consultar el estado: HTTP 404".
 
 Then open:
 
