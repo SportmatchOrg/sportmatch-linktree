@@ -20,12 +20,16 @@ introduction and team platform links.
 
 ## Run locally
 
-Serve the repository root over HTTP so root-relative asset paths and iframes
-resolve exactly as they do in production:
+Serve the repository with the Vercel CLI so root-relative asset paths, iframes,
+`vercel.json` routes and the `api/` functions (Status, Bugs, Resources) behave
+exactly as they do in production:
 
 ```sh
-python3 -m http.server 8000
+vercel dev --listen 8000
 ```
+
+`python3 -m http.server 8000` still serves the static pages, but every `/api/*`
+call answers 404, so Status shows "No se pudo consultar el estado: HTTP 404".
 
 Then open:
 
@@ -61,6 +65,19 @@ comes from there. See `docs/planning/plan-linear.md`.
 Apply the SQL files in `db/migrations/` in numeric order to the Neon database.
 `002_dev_resources.sql` creates the dynamic developer-resource directory and
 idempotently seeds the 75 resources that were previously embedded in the page.
+
+## Status history
+
+`/status` charts uptime by day, week, month and year from the `status_checks`
+table (`005_status_checks.sql`). A cron-job.org job records one row per service
+every 5 minutes:
+
+- URL: `https://<deployment>/api/status-history`, method `POST`
+- Header: `Authorization: Bearer <STATUS_CRON_SECRET>`
+- Schedule: every 5 minutes
+
+`STATUS_CRON_SECRET` must be set in the Vercel project; without it the endpoint
+answers 503 and records nothing.
 
 ## Source-of-truth rules
 

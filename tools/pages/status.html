@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch - Status</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --panel: #ffffff;
+    --ink: #172033;
+    --muted: #667085;
+    --line: #d8e0ec;
+    --brand: #0270c2;
+    --shadow: 0 16px 36px rgba(22, 37, 67, 0.10);
+    --good: #0ca30c;
+    --critical: #d03b3b;
+    --warning: #fab219;
+    --empty: #e4e9f1;
+    --unknown: #98a2b3;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      linear-gradient(180deg, #eef6ff 0, rgba(238, 246, 255, 0) 270px),
+      var(--bg);
+    color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .page {
+    width: min(940px, calc(100% - 36px));
+    margin: 0 auto;
+    padding: 34px 0 46px;
+  }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 { margin: 0; font-size: clamp(24px, 5.4vw, 32px); line-height: 1.08; }
+
+  .summary {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  h2 {
+    margin: 34px 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .refresh {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .14s, background .14s;
+  }
+  .refresh:hover { border-color: #a9c6e6; background: #f3f8ff; }
+  .refresh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .refresh[disabled] { opacity: .55; cursor: default; }
+
+  .cards { display: grid; gap: 14px; }
+
+  .card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--unknown);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+  .card[data-state="ok"] { border-left-color: var(--good); }
+  .card[data-state="down"] { border-left-color: var(--critical); }
+
+  .card-name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .card-detail {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* El estado nunca se apoya solo en el color: el punto viene siempre
+     acompañado del texto ("Operativo", "Sin respuesta", ...). */
+  .state {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--unknown);
+    flex-shrink: 0;
+  }
+  .card[data-state="ok"] .dot { background: var(--good); }
+  .card[data-state="down"] .dot { background: var(--critical); }
+  .card[data-state="ok"] .state { color: #087a08; }
+  .card[data-state="down"] .state { color: #b32f2f; }
+
+  .numbers {
+    grid-column: 2;
+    text-align: right;
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    margin: 4px 0 0;
+  }
+
+  .shortcuts { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color .14s, background .14s;
+  }
+  .chip:hover { border-color: #a9c6e6; background: #f3f8ff; }
+  .chip:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  .note {
+    margin: 26px 0 0;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfdff;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .note strong { color: var(--ink); }
+
+  .error {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid #f0c2c2;
+    border-radius: 8px;
+    background: #fdf4f4;
+    color: #b32f2f;
+    font-size: 14px;
+  }
+
+  .history-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 34px 0 14px;
+  }
+  .history-head h2 { margin: 0; }
+
+  .ranges {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+  }
+  .ranges button {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ranges button[aria-pressed="true"] { background: #e8f2fc; color: var(--brand); }
+  .ranges button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+  .history {
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+  }
+  .history[aria-busy="true"] .strip { opacity: .5; }
+
+  .row + .row { margin-top: 18px; }
+  .row-head {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .row-name { font-weight: 700; }
+  .row-uptime { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* Una barra por intervalo, todas de la misma altura: lo que se codifica es el
+     estado del intervalo, no una magnitud. 2px de aire entre barras. */
+  .strip { display: flex; gap: 2px; height: 30px; }
+  .bar {
+    flex: 1;
+    min-width: 2px;
+    border-radius: 2px;
+    background: var(--empty);
+  }
+  .bar[data-state="ok"] { background: var(--good); }
+  .bar[data-state="partial"] { background: var(--warning); }
+  .bar[data-state="down"] { background: var(--critical); }
+  .bar:hover, .bar:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  .axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; background: var(--empty); }
+
+  .tooltip {
+    position: fixed;
+    z-index: 10;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 10px));
+  }
+
+  @media (max-width: 560px) {
+    .card { grid-template-columns: 1fr; }
+    .numbers { grid-column: 1; text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+  <p class="eyebrow">SportMatch</p>
+  <h1>Status</h1>
+  <p class="summary">
+    Estado de los servicios de SportMatch, verificado desde el server cada vez que
+    abrís esta página. Cada check es un request real al servicio: si el código HTTP
+    es el esperado, está operativo.
+  </p>
+
+  <div class="meta">
+    <span id="checked-at">Verificando…</span>
+    <button class="refresh" id="refresh" type="button">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M16.5 10a6.5 6.5 0 1 1-1.9-4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M16.6 3.2v3.1h-3.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  <div class="cards" id="cards" aria-live="polite" aria-busy="true"></div>
+
+  <div class="history-head">
+    <h2>Historial</h2>
+    <div class="ranges" role="group" aria-label="Rango del historial">
+      <button type="button" data-range="day" aria-pressed="true">Día</button>
+      <button type="button" data-range="week" aria-pressed="false">Semana</button>
+      <button type="button" data-range="month" aria-pressed="false">Mes</button>
+      <button type="button" data-range="year" aria-pressed="false">Año</button>
+    </div>
+  </div>
+  <div class="history" id="history" aria-live="polite" aria-busy="true"></div>
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <h2>Dónde mirar cuando algo está en rojo</h2>
+  <div class="shortcuts">
+    <a class="chip" href="https://portal.azure.com/#@alumniiaeedu.onmicrosoft.com/resource/subscriptions/203fa1a3-3768-4c26-9d00-91b8297003a5/resourceGroups/sportmatch/overview" target="_blank" rel="noopener noreferrer">
+      Azure · resource group
+    </a>
+    <a class="chip" href="https://vercel.com/sportmatch2/sportmatch/deployments" target="_blank" rel="noopener noreferrer">
+      Vercel · deployments
+    </a>
+    <a class="chip" href="https://console.neon.tech/app/projects/aged-fog-55208024" target="_blank" rel="noopener noreferrer">
+      Neon · base de datos
+    </a>
+  </div>
+</main>
+
+<script>
+  const API_URL = "/api/status";
+  const REFRESH_MS = 60_000;
+
+  const cards = document.getElementById("cards");
+  const checkedAt = document.getElementById("checked-at");
+  const refreshButton = document.getElementById("refresh");
+
+  function stateOf(target) {
+    if (target.ok) return { key: "ok", label: "Operativo" };
+    if (target.status === 0) {
+      return { key: "down", label: target.error === "timeout" ? "Sin respuesta (timeout)" : "Sin respuesta" };
+    }
+    return { key: "down", label: "Respuesta inesperada" };
+  }
+
+  function buildCard(target) {
+    const state = stateOf(target);
+
+    const card = document.createElement("article");
+    card.className = "card";
+    card.dataset.state = state.key;
+
+    const text = document.createElement("div");
+    const name = document.createElement("p");
+    name.className = "card-name";
+    name.textContent = target.name;
+    const detail = document.createElement("p");
+    detail.className = "card-detail";
+    detail.textContent = target.detail;
+    text.append(name, detail);
+
+    const status = document.createElement("span");
+    status.className = "state";
+    const dot = document.createElement("span");
+    dot.className = "dot";
+    status.append(dot, document.createTextNode(state.label));
+
+    const numbers = document.createElement("p");
+    numbers.className = "numbers";
+    numbers.textContent = target.status === 0
+      ? `sin respuesta · ${target.ms} ms`
+      : `HTTP ${target.status} (esperado ${target.expect}) · ${target.ms} ms`;
+
+    card.append(text, status, numbers);
+    return card;
+  }
+
+  function render(payload) {
+    cards.replaceChildren(...payload.targets.map(buildCard));
+    const time = new Date(payload.checkedAt);
+    checkedAt.textContent = `Última verificación: ${time.toLocaleTimeString("es-AR")} · se actualiza sola cada 60 s`;
+  }
+
+  function renderError(message) {
+    const box = document.createElement("p");
+    box.className = "error";
+    box.textContent = `No se pudo consultar el estado: ${message}`;
+    cards.replaceChildren(box);
+    checkedAt.textContent = "La verificación falló";
+  }
+
+  async function check() {
+    refreshButton.disabled = true;
+    cards.setAttribute("aria-busy", "true");
+    try {
+      const response = await fetch(API_URL, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      render(await response.json());
+    } catch (error) {
+      renderError(error.message);
+    } finally {
+      refreshButton.disabled = false;
+      cards.setAttribute("aria-busy", "false");
+    }
+  }
+
+  // ---- Historial ----
+  const HISTORY_URL = "/api/status-history";
+  const historyBox = document.getElementById("history");
+  const tooltip = document.getElementById("tooltip");
+  const rangeButtons = document.querySelectorAll(".ranges button");
+
+  // Cómo se rotula cada barra según el rango: horas para el día, fecha para el resto.
+  const BUCKET_LABEL = {
+    day: { hour: "2-digit", minute: "2-digit" },
+    week: { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" },
+    month: { weekday: "short", day: "2-digit", month: "2-digit" },
+    year: { day: "2-digit", month: "short", year: "numeric" },
+  };
+  const LEGEND = [
+    ["Operativo", "--good"],
+    ["Con fallas", "--warning"],
+    ["Caído", "--critical"],
+    ["Sin datos", "--empty"],
+  ];
+
+  function bucketState(bucket) {
+    if (bucket.samples === 0) return "empty";
+    if (bucket.up === bucket.samples) return "ok";
+    return bucket.up === 0 ? "down" : "partial";
+  }
+
+  function percent(up, samples) {
+    return `${(up / samples * 100).toLocaleString("es-AR", { maximumFractionDigits: 2 })} %`;
+  }
+
+  function describe(bucket, range) {
+    const when = new Date(bucket.start).toLocaleString("es-AR", BUCKET_LABEL[range]);
+    if (bucket.samples === 0) return `${when} · sin datos`;
+    return `${when} · ${bucket.up}/${bucket.samples} OK (${percent(bucket.up, bucket.samples)}) · ${bucket.avgMs} ms prom.`;
+  }
+
+  function buildRow(target, range) {
+    const samples = target.buckets.reduce((sum, b) => sum + b.samples, 0);
+    const up = target.buckets.reduce((sum, b) => sum + b.up, 0);
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const head = document.createElement("div");
+    head.className = "row-head";
+    const name = document.createElement("span");
+    name.className = "row-name";
+    name.textContent = target.name;
+    const uptime = document.createElement("span");
+    uptime.className = "row-uptime";
+    uptime.textContent = samples ? `${percent(up, samples)} operativo · ${samples} checks` : "Sin datos todavía";
+    head.append(name, uptime);
+
+    const strip = document.createElement("div");
+    strip.className = "strip";
+    for (const bucket of target.buckets) {
+      const bar = document.createElement("span");
+      bar.className = "bar";
+      bar.dataset.state = bucketState(bucket);
+      bar.tabIndex = 0;
+      bar.setAttribute("aria-label", describe(bucket, range));
+      strip.append(bar);
+    }
+
+    const axis = document.createElement("div");
+    axis.className = "axis";
+    const first = target.buckets[0];
+    const from = document.createElement("span");
+    from.textContent = first ? new Date(first.start).toLocaleString("es-AR", BUCKET_LABEL[range]) : "";
+    const to = document.createElement("span");
+    to.textContent = "Ahora";
+    axis.append(from, to);
+
+    row.append(head, strip, axis);
+    return row;
+  }
+
+  function buildLegend() {
+    const legend = document.createElement("div");
+    legend.className = "legend";
+    for (const [label, color] of LEGEND) {
+      const item = document.createElement("span");
+      const swatch = document.createElement("span");
+      swatch.className = "swatch";
+      swatch.style.background = `var(${color})`;
+      item.append(swatch, document.createTextNode(label));
+      legend.append(item);
+    }
+    return legend;
+  }
+
+  function showTooltip(event) {
+    const bar = event.target.closest(".bar");
+    if (!bar) return;
+    const box = bar.getBoundingClientRect();
+    tooltip.textContent = bar.getAttribute("aria-label");
+    tooltip.style.left = `${Math.min(Math.max(box.left + box.width / 2, 120), window.innerWidth - 120)}px`;
+    tooltip.style.top = `${box.top}px`;
+    tooltip.hidden = false;
+  }
+
+  function hideTooltip() {
+    tooltip.hidden = true;
+  }
+
+  async function loadHistory(range) {
+    rangeButtons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.range === range)));
+    historyBox.setAttribute("aria-busy", "true");
+    try {
+      const response = await fetch(`${HISTORY_URL}?range=${range}`, { cache: "no-store" });
+      if (response.status === 503) throw new Error("el historial todavía no está configurado");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      historyBox.replaceChildren(...payload.targets.map(target => buildRow(target, range)), buildLegend());
+    } catch (error) {
+      const box = document.createElement("p");
+      box.className = "error";
+      box.textContent = `No se pudo cargar el historial: ${error.message}`;
+      historyBox.replaceChildren(box);
+    } finally {
+      historyBox.setAttribute("aria-busy", "false");
+    }
+  }
+
+  rangeButtons.forEach(button => button.addEventListener("click", () => loadHistory(button.dataset.range)));
+  historyBox.addEventListener("mouseover", showTooltip);
+  historyBox.addEventListener("focusin", showTooltip);
+  historyBox.addEventListener("mouseout", hideTooltip);
+  historyBox.addEventListener("focusout", hideTooltip);
+  loadHistory("day");
+
+  refreshButton.addEventListener("click", check);
+  check();
+  setInterval(check, REFRESH_MS);
+</script>
+
+</body>
+</html>
