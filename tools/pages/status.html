@@ -94,13 +94,12 @@
   .refresh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
   .refresh[disabled] { opacity: .55; cursor: default; }
 
-  .cards { display: grid; gap: 14px; }
+  /* Una fila de tres en desktop; se apilan cuando no entran. */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
 
   .card {
     display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px 16px;
+    gap: 8px;
     padding: 16px 18px;
     border: 1px solid var(--line);
     border-left: 4px solid var(--unknown);
@@ -116,13 +115,6 @@
     font-size: 16px;
     font-weight: 700;
     line-height: 1.2;
-  }
-
-  .card-detail {
-    margin: 4px 0 0;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.45;
   }
 
   /* El estado nunca se apoya solo en el color: el punto viene siempre
@@ -148,12 +140,10 @@
   .card[data-state="down"] .state { color: #b32f2f; }
 
   .numbers {
-    grid-column: 2;
-    text-align: right;
     color: var(--muted);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-    margin: 4px 0 0;
+    margin: 0;
   }
 
   .shortcuts { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -296,10 +286,6 @@
     transform: translate(-50%, calc(-100% - 10px));
   }
 
-  @media (max-width: 560px) {
-    .card { grid-template-columns: 1fr; }
-    .numbers { grid-column: 1; text-align: left; }
-  }
 </style>
 </head>
 <body>
@@ -375,14 +361,9 @@
     card.className = "card";
     card.dataset.state = state.key;
 
-    const text = document.createElement("div");
     const name = document.createElement("p");
     name.className = "card-name";
     name.textContent = target.name;
-    const detail = document.createElement("p");
-    detail.className = "card-detail";
-    detail.textContent = target.detail;
-    text.append(name, detail);
 
     const status = document.createElement("span");
     status.className = "state";
@@ -396,7 +377,7 @@
       ? `sin respuesta · ${target.ms} ms`
       : `HTTP ${target.status} (esperado ${target.expect}) · ${target.ms} ms`;
 
-    card.append(text, status, numbers);
+    card.append(name, status, numbers);
     return card;
   }
 
