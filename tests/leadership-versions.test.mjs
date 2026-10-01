@@ -547,6 +547,10 @@ test("steering: actividades clave consistentes en cada snapshot", () => {
       assert.ok(r.avance >= 0 && r.avance <= 100, id);
       if (r.estado === "Finaliz.") assert.equal(r.desvio, (d(r.base) - d(r.real)) / 864e5, `${id}: desvío = base − real`);
       else assert.equal(r.real, "", `${id}: sin fecha real si no terminó`);
+      if (r.detalle) {
+        const pts = (is) => is.reduce((t, i) => t + i[4], 0), tot = pts(r.detalle);
+        assert.equal(tot ? Math.round((100 * pts(r.detalle.filter((i) => i[3] === "completed"))) / tot) : 0, r.calc, `${id}: el desglose da el avance calculado`);
+      }
     }
   }
   assert.equal(Object.values(hist).at(-1).length, csv, "el último snapshot tiene todas las actividades del CSV");

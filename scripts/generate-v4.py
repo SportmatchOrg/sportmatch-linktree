@@ -344,8 +344,9 @@ print('->', ', '.join(p.name for p in (OUT / '_v4_wbs.js', OUT / '_v4_pert.js', 
 # ───────────────────────── actividades clave (tablero semanal del steering) ─────────────────────────
 # docs/planning/actividades-clave.csv (a mano): actividad -> prefijos de la WBS, fin de línea base, comentario
 # y, si el número calculado no refleja la realidad, avance y estado pisados a mano.
-# Avance: horas de la WBS de la actividad ponderadas por los puntos cerrados de cada paquete (sólo tickets
-# con fechas='si', sin cancelados). Un paquete sin tickets cuenta 100 % si está en DONE y 0 % si no.
+# Avance: puntos de los issues en Done sobre los puntos de todos los issues de la actividad (cada issue una
+# sola vez, sólo filas con fechas='si', sin cancelados). Sin issues, 0 %.
+# Cada fila lleva su lista de issues para que el steering muestre cómo sale el número.
 # Cada corrida guarda un snapshot en leadership/steering.html bajo el jueves del corte; correrla dos veces en la
 # misma semana pisa el snapshot.
 ACT_CSV = ROOT / 'docs' / 'planning' / 'actividades-clave.csv'
@@ -354,20 +355,22 @@ F = lambda d: f'{d:%d/%m/%y}' if d else ''
 art = lambda ts: (ts - timedelta(hours=3)).date()
 this_week = week_of(datetime.utcnow())
 cut = date.today() - timedelta(days=(date.today().weekday() - 3) % 7)   # jueves del corte: el de hoy o el último
+# Títulos de los issues: los trae sync-linear.mjs al bloque LINEAR del Gantt (linear-issues.csv no guarda texto).
+_lin = (ROOT / 'leadership' / 'gantt.html').read_text(encoding='utf-8')
+_i = _lin.index('\n  issues: ', _lin.index('// linear-begin')) + len('\n  issues: ')
+TITLE = {k: v['t'] for k, v in json.loads(_lin[_i:_lin.index('\n', _i)].rstrip(',')).items()}
 rows = []
 with io.open(ACT_CSV, encoding='utf-8') as f:
     for r in csv.DictReader(f):
         pre = r['wbs'].split()
         pkgs = [k for k in TASKS if any(k == p or k.startswith(p + '.') for p in pre)]
         assert pkgs, f'actividad sin paquetes: {r["actividad"]} ({r["wbs"]})'
-        hours = done_h = 0.0
-        ts = []
-        for k in pkgs:
-            t = [TICKETS[n] for n in PKG_TICKETS.get(k, []) if TICKETS[n]['type'] != 'canceled']
-            tot = sum(x['pts'] for x in t)
-            frac = sum(x['pts'] for x in t if x['type'] == 'completed') / tot if tot else float(k in DONE)
-            hours += TASKS[k]['dur']; done_h += TASKS[k]['dur'] * frac; ts += t
-        avance = int(r['avance']) if r['avance'] else round(100 * done_h / hours)
+        ns = sorted({n for k in pkgs for n in PKG_TICKETS.get(k, []) if TICKETS[n]['type'] != 'canceled'})
+        ts = [TICKETS[n] for n in ns]
+        tot, hechos = sum(x['pts'] for x in ts), sum(x['pts'] for x in ts if x['type'] == 'completed')
+        calc = round(100 * hechos / tot) if tot else 0
+        detalle = [[f'SPO-{n}', TITLE.get(f'SPO-{n}', ''), TICKETS[n]['status'], TICKETS[n]['type'], TICKETS[n]['pts']] for n in ns]
+        avance = int(r['avance']) if r['avance'] else calc
         estado = r['estado'] or ('Finaliz.' if avance == 100 else 'En curso' if avance or any(x['started'] for x in ts) else 'Pend.')
         base = D(r['fin_base'])
         real = None
@@ -378,7 +381,8 @@ with io.open(ACT_CSV, encoding='utf-8') as f:
         planned = [wend(sched[k]['ew']) for k in pkgs if k in sched]
         est = real or (max(planned + [wend(this_week)]) if planned else base)
         rows.append({'actividad': r['actividad'], 'wbs': r['wbs'], 'estado': estado, 'avance': avance, 'base': F(base),
-                     'estimado': F(est), 'real': F(real), 'desvio': (base - real).days if real else None, 'comentario': r['comentario']})
+                     'estimado': F(est), 'real': F(real), 'desvio': (base - real).days if real else None, 'comentario': r['comentario'],
+                     'calc': calc, 'detalle': detalle})
 
 steer = ROOT / 'leadership' / 'steering.html'
 html = steer.read_text(encoding='utf-8')

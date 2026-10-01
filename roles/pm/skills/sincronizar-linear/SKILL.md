@@ -108,12 +108,13 @@ otros tres archivos que deja en `scripts/_v4_*` van a mano y **solo si cambiaron
 El mismo `generate-v4.py` del paso 4 escribe el tablero en la card "Actividades clave" de
 `leadership/steering.html`, bajo el jueves del corte. Correrlo dos veces en la misma semana pisa el snapshot
 de esa semana; los anteriores quedan como historial y se eligen con el selector de la card.
+Cada fila se abre con un clic y muestra de dónde sale su avance: sus issues, su estado y sus puntos.
 
 Qué sale solo y de dónde:
 
 | Columna | Cálculo |
 |---|---|
-| Avance | Horas de la WBS de la actividad, ponderadas por los puntos cerrados de cada paquete. Solo cuentan los tickets con `fechas=si` y no cancelados. Un paquete sin tickets cuenta 100 % si está cerrado en el Cronograma y 0 % si no |
+| Avance | Puntos de los issues en Done / puntos de todos los issues de la actividad. Cada issue cuenta una vez; solo filas con `fechas=si` y no cancelados. Sin issues, 0 % |
 | Estado | `Finaliz.` al 100 %, `En curso` si hay avance o algún ticket arrancado, `Pend.` si no hay ninguna de las dos |
 | F. fin estimado | El fin más tardío de sus paquetes en el Gantt, nunca antes del corte. Si la actividad no tiene paquetes de desarrollo (8.2), queda la línea base |
 | F. fin real / Desvío | Último ticket cerrado. Desvío = base − real: positivo es antes de lo planeado |
