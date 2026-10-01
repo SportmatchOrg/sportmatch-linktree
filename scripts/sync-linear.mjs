@@ -114,7 +114,7 @@ function readCsv(url) {
   } catch {
     return [];
   }
-  const [head, ...lines] = text.trim().split('\n');
+  const [head, ...lines] = text.trim().split(/\r?\n/);
   const cols = head.split(',');
   return lines.filter(Boolean).map((l) => Object.fromEntries(l.split(',').map((v, i) => [cols[i], v])));
 }

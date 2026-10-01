@@ -1,6 +1,6 @@
 ---
 name: sincronizar-linear
-description: Resincroniza el estado de Linear con el Gantt y las vistas de leadership después de que el PO agregó o movió issues. Corre sync-linear.mjs, asigna los issues nuevos a su paquete de la WBS v4, regenera el cronograma y deja el repo verde. Usar cuando el PO cargó tickets nuevos, antes de un steering, cuando el Gantt muestra fechas viejas, o cuando alguien pida "resincronizá Linear", "actualizá el Gantt", "el panel no muestra los issues nuevos".
+description: Resincroniza el estado de Linear con el Gantt y las vistas de leadership después de que el PO agregó o movió issues. Corre sync-linear.mjs, asigna los issues nuevos a su paquete de la WBS v4, regenera el cronograma, actualiza el tablero semanal de actividades clave del steering y deja el repo verde. Usar cuando el PO cargó tickets nuevos, antes de un steering, cuando el Gantt muestra fechas viejas, cuando toca el tablero semanal de actividades clave, o cuando alguien pida "resincronizá Linear", "actualizá el Gantt", "actualizá el tablero", "el panel no muestra los issues nuevos".
 ---
 
 # /sincronizar-linear — poner el Gantt al día con Linear
@@ -16,7 +16,9 @@ El plan completo y por qué cada pieza es así: `docs/planning/plan-linear.md`.
 |---|---|---|
 | `docs/planning/linear-wbs-map.csv` | issue → paquete de la WBS. Una fila por par | **A mano** (este skill) |
 | `docs/planning/linear-issues.csv` | estado, puntos y fechas reales | Generado, no tocar |
+| `docs/planning/actividades-clave.csv` | actividad clave → paquetes de la WBS, línea base, comentarios | **A mano** (paso 5) |
 | `leadership/gantt.html` | bloques `linear-begin` y `gen-begin` | Generado, no tocar |
+| `leadership/steering.html` | bloque `actividades-begin`: un snapshot por semana | Generado, no tocar |
 | `scripts/sync-linear.mjs` | trae Linear, reporta y escribe el repo | — |
 | `scripts/generate-v4.py` | recalcula el cronograma con las fechas reales | — |
 
@@ -101,7 +103,34 @@ otros tres archivos que deja en `scripts/_v4_*` van a mano y **solo si cambiaron
 - `_v4_pert.js` → `leadership/pert.html` (ídem)
 - `_v4_calendario.md` → `docs/planning/Cronograma-y-PERT-v4.md`, §4 y §9
 
-## Paso 5 — Verificar
+## Paso 5 — Tablero de actividades clave (todas las semanas)
+
+El mismo `generate-v4.py` del paso 4 escribe el tablero en la card "Actividades clave" de
+`leadership/steering.html`, bajo el jueves del corte. Correrlo dos veces en la misma semana pisa el snapshot
+de esa semana; los anteriores quedan como historial y se eligen con el selector de la card.
+
+Qué sale solo y de dónde:
+
+| Columna | Cálculo |
+|---|---|
+| Avance | Horas de la WBS de la actividad, ponderadas por los puntos cerrados de cada paquete. Solo cuentan los tickets con `fechas=si` y no cancelados. Un paquete sin tickets cuenta 100 % si está cerrado en el Cronograma y 0 % si no |
+| Estado | `Finaliz.` al 100 %, `En curso` si hay avance o algún ticket arrancado, `Pend.` si no hay ninguna de las dos |
+| F. fin estimado | El fin más tardío de sus paquetes en el Gantt, nunca antes del corte. Si la actividad no tiene paquetes de desarrollo (8.2), queda la línea base |
+| F. fin real / Desvío | Último ticket cerrado. Desvío = base − real: positivo es antes de lo planeado |
+
+Lo que se edita en `actividades-clave.csv` **antes** de correr el paso 4:
+
+- **`comentario`**: el de esta semana. Se guarda en el snapshot, así que el de la semana pasada no se pierde.
+- **`avance` / `estado`**: vacíos = automático. Se cargan solo cuando el número no refleja la realidad (por
+  ejemplo, trabajo hecho sin ticket). Dejarlo dicho en el comentario y **vaciarlos** cuando Linear se ponga al día.
+- **`wbs`**: prefijos separados por espacio (`5.1 5.2`, `6.1.4`). Un prefijo que no existe en la WBS corta el script.
+- **`fin_base`**: es la línea base, así que no se toca salvo que se rebaselinee el plan.
+
+Antes del steering, comparar con la semana anterior: si una actividad retrocede (por ejemplo, de `Finaliz.`
+vuelve a `En curso`), casi siempre es un ticket nuevo con `fechas=si` sobre un paquete cerrado que debería ir
+con `no` (paso 2).
+
+## Paso 6 — Verificar
 
 ```sh
 npm run check
@@ -122,14 +151,16 @@ que listar los issues con su estado y el avance en puntos.
 python3 -m http.server 8000   # http://localhost:8000/leadership/gantt.html
 ```
 
-## Paso 6 — Dejarlo registrado
+## Paso 7 — Dejarlo registrado
 
-Los cuatro archivos que cambian y se commitean juntos:
+Los archivos que cambian y se commitean juntos:
 
 ```
 docs/planning/linear-wbs-map.csv      # las filas nuevas
 docs/planning/linear-issues.csv       # el snapshot de Linear
+docs/planning/actividades-clave.csv   # comentarios de la semana
 leadership/gantt.html                 # bloques linear-begin y gen-begin
+leadership/steering.html              # snapshot semanal de actividades clave
 docs/planning/Cronograma-y-PERT-v4.md # solo si cambió el calendario
 ```
 

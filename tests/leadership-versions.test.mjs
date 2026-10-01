@@ -533,3 +533,21 @@ test("Gantt runtime: el panel de issues abre por épica, paquete y entregable", 
   // v1 y v2 tienen otra numeración: ahí el panel no abre.
   assert.equal(evalIn('loadVersion("v1"); openIssues("6.2"); openPkg + " · oculto=" + panelEl.hidden'), "null · oculto=true");
 });
+
+// El tablero de actividades clave lo escribe generate-v4.py: un snapshot por jueves de corte.
+test("steering: actividades clave consistentes en cada snapshot", () => {
+  const hist = constant(read("leadership/steering.html"), "ACTIVIDADES");
+  const csv = read("docs/planning/actividades-clave.csv").trim().split(/\r?\n/).length - 1;
+  const d = (s) => { const [dd, mm, yy] = s.split("/"); return Date.UTC(2000 + +yy, mm - 1, +dd); };
+  for (const [week, rows] of Object.entries(hist)) {
+    assert.equal(new Date(week).getUTCDay(), 4, `${week} no es jueves`);
+    for (const r of rows) {
+      const id = `${week} · ${r.actividad}`;
+      assert.ok(["Finaliz.", "En curso", "Pend."].includes(r.estado), id);
+      assert.ok(r.avance >= 0 && r.avance <= 100, id);
+      if (r.estado === "Finaliz.") assert.equal(r.desvio, (d(r.base) - d(r.real)) / 864e5, `${id}: desvío = base − real`);
+      else assert.equal(r.real, "", `${id}: sin fecha real si no terminó`);
+    }
+  }
+  assert.equal(Object.values(hist).at(-1).length, csv, "el último snapshot tiene todas las actividades del CSV");
+});

@@ -23,4 +23,5 @@
 Las skills específicas del rol se guardan en `skills/<nombre-de-la-skill>/SKILL.md`.
 
 - [`sincronizar-linear`](skills/sincronizar-linear/SKILL.md) — pone el Gantt y las vistas de
-leadership al día con Linear después de que el PO agrega issues. Es el flujo recurrente del rol.
+leadership al día con Linear después de que el PO agrega issues, y actualiza el tablero semanal de
+actividades clave del steering. Es el flujo recurrente del rol: correrlo todas las semanas.

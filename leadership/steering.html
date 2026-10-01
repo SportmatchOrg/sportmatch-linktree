@@ -119,6 +119,7 @@
 
 <nav class="bar">
   <a href="#avance">Avance</a>
+  <a href="#actividades">Actividades clave</a>
   <a href="#presupuesto">Presupuesto</a>
   <a href="#valor-ganado">Valor ganado</a>
   <a href="#hitos">Hitos</a>
@@ -131,6 +132,16 @@
   <div class="kpis" id="avance-kpis"></div>
   <div class="export"><button class="btn" type="button" data-export="avance-table" data-name="avance">Descargar SVG</button></div>
   <div class="table-scroll"><table id="avance-table"></table></div>
+</div>
+
+<div class="card" id="actividades">
+  <div class="chart-head" style="margin:0 0 4px">
+    <h2 style="margin:0">Actividades clave</h2>
+    <select class="btn" id="act-select" aria-label="Semana del tablero"></select>
+  </div>
+  <p class="lead" id="act-lead"></p>
+  <div class="export"><button class="btn" type="button" data-export="act-table" data-name="actividades-clave">Descargar SVG</button></div>
+  <div class="table-scroll"><table id="act-table"></table></div>
 </div>
 
 <div class="card" id="presupuesto">
@@ -232,6 +243,33 @@ const STEERINGS = {
     ],
   },
 };
+
+/* ---- Actividades clave: un snapshot por semana ---------------------------
+   Lo escribe scripts/generate-v4.py desde docs/planning/actividades-clave.csv. No editar a mano. */
+// actividades-begin
+const ACTIVIDADES = {
+"2026-10-01": [
+ {"actividad": "Capacitación", "wbs": "3.1", "estado": "Finaliz.", "avance": 100, "base": "13/08/26", "estimado": "16/08/26", "real": "16/08/26", "desvio": -3, "comentario": "Desvío negativo debido a comienzo tardío en la primera semana."},
+ {"actividad": "Setup de repositorios", "wbs": "3.2", "estado": "Finaliz.", "avance": 100, "base": "17/08/26", "estimado": "29/08/26", "real": "29/08/26", "desvio": -12, "comentario": ""},
+ {"actividad": "Módulo de Autenticación", "wbs": "4.1 4.2", "estado": "Finaliz.", "avance": 100, "base": "20/08/26", "estimado": "15/09/26", "real": "15/09/26", "desvio": -26, "comentario": ""},
+ {"actividad": "Backend de partidos", "wbs": "6.1.1 6.1.2 6.1.3 6.1.5", "estado": "Finaliz.", "avance": 100, "base": "26/08/26", "estimado": "07/09/26", "real": "07/09/26", "desvio": -12, "comentario": ""},
+ {"actividad": "CI/CD y Deploy", "wbs": "9.1 8.3", "estado": "Finaliz.", "avance": 100, "base": "15/10/26", "estimado": "06/09/26", "real": "06/09/26", "desvio": 39, "comentario": "Deployment en dev avanzado y en producción."},
+ {"actividad": "Perfil de usuario", "wbs": "5.1 5.2", "estado": "En curso", "avance": 78, "base": "01/10/26", "estimado": "15/10/26", "real": "", "desvio": null, "comentario": ""},
+ {"actividad": "Frontend de partidos", "wbs": "6.2.1 6.2.2 6.2.3 6.2.4", "estado": "Finaliz.", "avance": 100, "base": "05/11/26", "estimado": "12/09/26", "real": "12/09/26", "desvio": 54, "comentario": "Pendiente modificaciones en UI, funcionalidad ya implementada."},
+ {"actividad": "Experiencia swipe", "wbs": "7.2", "estado": "Finaliz.", "avance": 100, "base": "03/09/26", "estimado": "10/09/26", "real": "10/09/26", "desvio": -7, "comentario": "Ritmo de trabajo más rápido del estimado, nos permitió avanzar con una de las funcionalidades principales del primer sprint de manera prematura."},
+ {"actividad": "Solicitudes de unión a partidos", "wbs": "6.3", "estado": "Finaliz.", "avance": 100, "base": "24/09/26", "estimado": "16/09/26", "real": "16/09/26", "desvio": 8, "comentario": ""},
+ {"actividad": "Motor de búsqueda de partidos", "wbs": "7.1", "estado": "En curso", "avance": 49, "base": "29/10/26", "estimado": "15/10/26", "real": "", "desvio": null, "comentario": ""},
+ {"actividad": "Calificaciones sobre jugadores", "wbs": "6.4", "estado": "En curso", "avance": 78, "base": "29/09/26", "estimado": "08/10/26", "real": "", "desvio": null, "comentario": "Modelo y api entregados para la demo. Queda pendiente denuncio de no-show."},
+ {"actividad": "Visualización en mapa interactivo", "wbs": "7.3", "estado": "En curso", "avance": 89, "base": "05/11/26", "estimado": "08/10/26", "real": "", "desvio": null, "comentario": ""},
+ {"actividad": "Cancelación/invitación a partidos", "wbs": "6.5 6.1.4 6.2.5 6.2.6", "estado": "En curso", "avance": 37, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "comentario": "Lógica que es parte de la gestión del partido, la épica sigue en curso y falta para completarla, por eso se puede interpretar como inflado este adelanto."},
+ {"actividad": "Notificaciones", "wbs": "11.1 11.2", "estado": "En curso", "avance": 51, "base": "05/11/26", "estimado": "29/10/26", "real": "", "desvio": null, "comentario": ""},
+ {"actividad": "Reportes sobre jugadores", "wbs": "12.1", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "05/11/26", "real": "", "desvio": null, "comentario": ""},
+ {"actividad": "Moderación y métricas", "wbs": "12.2", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "05/11/26", "real": "", "desvio": null, "comentario": ""},
+ {"actividad": "Documentación final", "wbs": "10.1 10.2", "estado": "En curso", "avance": 12, "base": "05/11/26", "estimado": "29/10/26", "real": "", "desvio": null, "comentario": "README actualizado."},
+ {"actividad": "Validación con usuarios", "wbs": "8.2", "estado": "Pend.", "avance": 0, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "comentario": ""}
+]
+};
+// actividades-end
 
 /* ---- Cálculo ----------------------------------------------------------- */
 const sum = (a) => a.reduce((s, x) => s + x, 0);
@@ -492,6 +530,26 @@ verSelect.innerHTML = versions.map((v) => `<option value="${v}">${v}</option>`).
 verSelect.value = versions[versions.length - 1];
 verSelect.addEventListener("change", () => render(verSelect.value));
 render(verSelect.value);
+
+// Actividades clave: independiente de la versión del steering, se elige la semana.
+const ESTADO = { "Finaliz.": "✅ Finaliz.", "En curso": "🟡 En curso", "Pend.": "⬜ Pend." };
+const esc = (t) => String(t ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function renderActividades(week) {
+  const rows = ACTIVIDADES[week];
+  const done = rows.filter((r) => r.estado === "Finaliz.").length;
+  $("act-lead").textContent = `Semana que cierra el ${week.split("-").reverse().join("/")}: ${done} de ${rows.length} finalizadas. Desvío en días contra la línea base; positivo es antes de lo planeado.`;
+  $("act-table").innerHTML = head([["Actividad"], ["Estado"], ["Avance", "num"], ["F. fin base", "num"], ["F. fin estimado", "num"], ["F. fin real", "num"], ["Desvío", "num"]]) + "<tbody>" +
+    rows.map((r) => row([
+      td(`${esc(r.actividad)} <span class="ids">${esc(r.wbs)}</span>`), td(ESTADO[r.estado] || esc(r.estado)), td(r.avance + " %", "num"),
+      td(r.base, "num"), td(r.estimado, "num"), td(r.real, "num"),
+      td(r.desvio == null ? "" : `<span class="${r.desvio >= 0 ? "up" : "down"}">${r.desvio > 0 ? "+" : ""}${r.desvio}</span>`, "num"),
+    ])).join("") + "</tbody>";
+}
+const actSelect = $("act-select");
+const actWeeks = Object.keys(ACTIVIDADES).reverse();
+actSelect.innerHTML = actWeeks.map((w) => `<option value="${w}">${w.split("-").reverse().slice(0, 2).join("/")}</option>`).join("");
+actSelect.addEventListener("change", () => renderActividades(actSelect.value));
+renderActividades(actWeeks[0]);
 </script>
 </body>
 </html>

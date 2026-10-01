@@ -108,7 +108,7 @@ crit_full = sorted([n for n in FULL if abs(FULL[n]['H']) < 1e-6], key=lambda n: 
 crit_dev  = sorted([n for n in DEVCPM if abs(DEVCPM[n]['H']) < 1e-6], key=lambda n: DEVCPM[n]['ES'])
 
 # ───────────────────────── Linear ─────────────────────────
-DONE_STATUSES = {'Done', 'Todo', 'In Progress', 'In Review'}   # cierran antes del steering del 17/09
+DONE_STATUSES = {'Done'}
 ASSIGNEE_DEV = {'ipacheco': 1, 'jrudolph': 2, 'jfsiaba': 3}
 TICKETS = {}
 with io.open(ISSUES, encoding='utf-8') as f:
@@ -116,7 +116,7 @@ with io.open(ISSUES, encoding='utf-8') as f:
         n = int(r['issue'].split('-')[1])
         P = lambda s: datetime.strptime(s[:19], '%Y-%m-%dT%H:%M:%S') if s else None
         TICKETS[n] = {'status': r['status'], 'started': P(r['started']), 'completed': P(r['completed']),
-                      'dev': ASSIGNEE_DEV.get(r['assignee'])}
+                      'dev': ASSIGNEE_DEV.get(r['assignee']), 'type': r['type'], 'pts': float(r['estimate'] or 0)}
 
 # Paquete -> tickets que fijan su ventana de fechas, desde docs/planning/linear-wbs-map.csv.
 # Sólo las filas con fechas='si': los hotfix y los arreglos posteriores al cierre del paquete van
@@ -340,3 +340,56 @@ md += ['', '### PERT completo (116 paquetes)', '',
        f'Duración del camino crítico: {T_FULL:.2f} h · {len(crit_full)} paquetes: ' + ' → '.join(crit_full), '']
 (OUT / '_v4_calendario.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
 print('->', ', '.join(p.name for p in (OUT / '_v4_wbs.js', OUT / '_v4_pert.js', OUT / '_v4_gantt.js', OUT / '_v4_calendario.md')))
+
+# ───────────────────────── actividades clave (tablero semanal del steering) ─────────────────────────
+# docs/planning/actividades-clave.csv (a mano): actividad -> prefijos de la WBS, fin de línea base, comentario
+# y, si el número calculado no refleja la realidad, avance y estado pisados a mano.
+# Avance: horas de la WBS de la actividad ponderadas por los puntos cerrados de cada paquete (sólo tickets
+# con fechas='si', sin cancelados). Un paquete sin tickets cuenta 100 % si está en DONE y 0 % si no.
+# Cada corrida guarda un snapshot en leadership/steering.html bajo el jueves del corte; correrla dos veces en la
+# misma semana pisa el snapshot.
+ACT_CSV = ROOT / 'docs' / 'planning' / 'actividades-clave.csv'
+D = lambda s: datetime.strptime(s, '%d/%m/%y').date()
+F = lambda d: f'{d:%d/%m/%y}' if d else ''
+art = lambda ts: (ts - timedelta(hours=3)).date()
+this_week = week_of(datetime.utcnow())
+cut = date.today() - timedelta(days=(date.today().weekday() - 3) % 7)   # jueves del corte: el de hoy o el último
+rows = []
+with io.open(ACT_CSV, encoding='utf-8') as f:
+    for r in csv.DictReader(f):
+        pre = r['wbs'].split()
+        pkgs = [k for k in TASKS if any(k == p or k.startswith(p + '.') for p in pre)]
+        assert pkgs, f'actividad sin paquetes: {r["actividad"]} ({r["wbs"]})'
+        hours = done_h = 0.0
+        ts = []
+        for k in pkgs:
+            t = [TICKETS[n] for n in PKG_TICKETS.get(k, []) if TICKETS[n]['type'] != 'canceled']
+            tot = sum(x['pts'] for x in t)
+            frac = sum(x['pts'] for x in t if x['type'] == 'completed') / tot if tot else float(k in DONE)
+            hours += TASKS[k]['dur']; done_h += TASKS[k]['dur'] * frac; ts += t
+        avance = int(r['avance']) if r['avance'] else round(100 * done_h / hours)
+        estado = r['estado'] or ('Finaliz.' if avance == 100 else 'En curso' if avance or any(x['started'] for x in ts) else 'Pend.')
+        base = D(r['fin_base'])
+        real = None
+        if estado == 'Finaliz.':
+            real = max([art(x['completed']) for x in ts if x['completed']] or [wend(sched[k]['ew']) for k in pkgs if k in sched] or [None])
+        # Lo pendiente termina cuando lo ubica el planificador, nunca antes del cierre de esta semana.
+        # Sin paquetes de desarrollo (8.2, 8.3) no hay planificador: queda la línea base.
+        planned = [wend(sched[k]['ew']) for k in pkgs if k in sched]
+        est = real or (max(planned + [wend(this_week)]) if planned else base)
+        rows.append({'actividad': r['actividad'], 'wbs': r['wbs'], 'estado': estado, 'avance': avance, 'base': F(base),
+                     'estimado': F(est), 'real': F(real), 'desvio': (base - real).days if real else None, 'comentario': r['comentario']})
+
+steer = ROOT / 'leadership' / 'steering.html'
+html = steer.read_text(encoding='utf-8')
+a, b = html.index('// actividades-begin'), html.index('// actividades-end')
+a = html.index('\n', a) + 1
+old = html[a:b].strip()
+hist = json.loads(old[len('const ACTIVIDADES = '):-1]) if old else {}
+hist[f'{cut}'] = rows
+out = ['const ACTIVIDADES = {']
+for i, (k, rs) in enumerate(sorted(hist.items())):
+    out += [f'{J(k)}: [', ',\n'.join(' ' + J(x) for x in rs), ']' + (',' if i < len(hist) - 1 else '')]
+out.append('};')
+steer.write_text(html[:a] + '\n'.join(out) + '\n' + html[b:], encoding='utf-8')
+print(f'actividades clave: snapshot {cut:%d/%m} · ' + ' · '.join(f'{x["actividad"]} {x["avance"]} %' for x in rows))

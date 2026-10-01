@@ -97,16 +97,45 @@ SPO-230,Done,completed,2,2026-09-25T19:19:22,2026-09-26T14:57:17,jrudolph
 SPO-231,Done,completed,2,2026-09-25T11:37:42,2026-09-27T23:02:58,ipacheco
 SPO-232,Done,completed,1,2026-09-27T16:51:25,2026-09-27T20:21:30,jfsiaba
 SPO-233,Done,completed,1,2026-09-26T18:21:43,2026-09-28T13:43:14,jrudolph
-SPO-234,In Review,started,1,2026-09-27T23:32:46,,ipacheco
+SPO-234,Done,completed,1,2026-09-27T23:32:46,2026-09-30T13:30:39,ipacheco
 SPO-235,Done,completed,2,2026-09-28T14:03:06,2026-09-28T19:53:16,jrudolph
-SPO-236,Backlog,backlog,2,,,
-SPO-237,In Progress,started,1,2026-09-28T19:53:16,,jrudolph
-SPO-238,Backlog,backlog,2,,,
-SPO-239,Backlog,backlog,2,,,
-SPO-240,Backlog,backlog,2,,,
-SPO-241,Backlog,backlog,3,,,
-SPO-242,Backlog,backlog,1,,,
-SPO-243,Backlog,backlog,2,,,
-SPO-244,Backlog,backlog,2,,,
-SPO-245,Backlog,backlog,2,,,
-SPO-246,Backlog,backlog,3,,,
+SPO-236,In Review,started,2,2026-10-01T21:57:46,,ipacheco
+SPO-237,Done,completed,1,2026-09-28T19:53:16,2026-09-30T23:14:44,jrudolph
+SPO-238,Todo,unstarted,1,,,ipacheco
+SPO-239,Todo,unstarted,2,,,jrudolph
+SPO-240,Backlog,backlog,2,,,jrudolph
+SPO-241,Todo,unstarted,2,,,jfsiaba
+SPO-242,In Review,started,1,2026-10-01T21:41:33,,ipacheco
+SPO-243,Todo,unstarted,2,,,jfsiaba
+SPO-244,Todo,unstarted,1,,,jrudolph
+SPO-245,Todo,unstarted,2,,,jrudolph
+SPO-246,Backlog,backlog,2,,,jfsiaba
+SPO-247,Canceled,canceled,1,,,
+SPO-248,Canceled,canceled,1,,,
+SPO-249,Todo,unstarted,1,,,jrudolph
+SPO-250,Backlog,backlog,3,,,
+SPO-251,Todo,unstarted,2,,,jfsiaba
+SPO-252,Canceled,canceled,1,,,
+SPO-253,In Review,started,2,2026-10-01T21:33:09,,ipacheco
+SPO-254,Canceled,canceled,1,,,
+SPO-255,Canceled,canceled,1,,,
+SPO-256,Canceled,canceled,1,,,
+SPO-257,Backlog,backlog,1,,,
+SPO-258,Backlog,backlog,1,,,ipacheco
+SPO-259,Backlog,backlog,3,,,
+SPO-260,Canceled,canceled,1,,,
+SPO-261,Backlog,backlog,3,,,
+SPO-262,Backlog,backlog,2,,,
+SPO-263,Backlog,backlog,3,,,
+SPO-264,Backlog,backlog,2,,,
+SPO-265,Backlog,backlog,3,,,
+SPO-266,Backlog,backlog,1,,,
+SPO-267,Backlog,backlog,2,,,
+SPO-268,Backlog,backlog,2,,,
+SPO-269,Backlog,backlog,2,,,
+SPO-270,Backlog,backlog,3,,,
+SPO-271,Backlog,backlog,3,,,
+SPO-272,Backlog,backlog,1,,,
+SPO-273,Backlog,backlog,3,,,
+SPO-274,Backlog,backlog,2,,,
+SPO-275,Todo,unstarted,0,,,jfsiaba
