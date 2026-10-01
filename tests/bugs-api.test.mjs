@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 
 const apiSource = await readFile(new URL('../api/bugs.js', import.meta.url), 'utf8');
 const issueNumberMigration = await readFile(new URL('../db/migrations/003_bug_issue_numbers.sql', import.meta.url), 'utf8');
+const doneStatusMigration = await readFile(new URL('../db/migrations/004_bug_done_status.sql', import.meta.url), 'utf8');
 
 test('cleanText trims valid content and enforces required values', () => {
   assert.equal(testing.cleanText('  Map is blank  ', 'Title', testing.MAX_TITLE), 'Map is blank');
@@ -65,7 +66,7 @@ test('upload tokens round-trip and reject tampering or expiration', () => {
 });
 
 test('bugs API exposes stable issue numbers and export metadata', () => {
-  assert.match(apiSource, /select id, issue_number, title, description, created_at/);
+  assert.match(apiSource, /select id, issue_number, title, description, is_done, created_at/);
   assert.match(apiSource, /action === 'export'/);
   assert.match(apiSource, /attachments: byBug\.get\(report\.id\)/);
 });
@@ -74,4 +75,12 @@ test('issue-number migration backfills existing reports and advances the sequenc
   assert.match(issueNumberMigration, /row_number\(\) over \(order by created_at asc, id asc\)/);
   assert.match(issueNumberMigration, /alter column issue_number set default nextval/);
   assert.match(issueNumberMigration, /bug_reports_issue_number_idx/);
+});
+
+test('done status is persisted and completed bugs are excluded from export', () => {
+  assert.match(doneStatusMigration, /is_done boolean not null default false/);
+  assert.match(apiSource, /request\.method === 'PATCH' && action === 'status'/);
+  assert.match(apiSource, /set is_done = \$\{body\.is_done\}/);
+  assert.match(apiSource, /where is_done = false/);
+  assert.match(apiSource, /r\.is_done = false/);
 });

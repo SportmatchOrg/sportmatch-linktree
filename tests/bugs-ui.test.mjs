@@ -59,3 +59,10 @@ test('human-readable bug keys are visible in list and detail views', () => {
   assert.match(bugsHtml, /id="detail-issue-key"/);
   assert.match(bugsHtml, /key\.textContent = issueKey\(bug\)/);
 });
+
+test('bugs can be marked fixed from the list and detail views', () => {
+  assert.match(bugsHtml, /id="detail-done" type="checkbox" disabled/);
+  assert.match(bugsHtml, /function makeDoneControl\(bug, card\)/);
+  assert.match(bugsHtml, /method: 'PATCH'/);
+  assert.match(bugsHtml, /is_done: isDone/);
+});

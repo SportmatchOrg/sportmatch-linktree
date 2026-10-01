@@ -176,6 +176,40 @@
     transition: transform .16s, box-shadow .16s, border-color .16s;
   }
 
+  .bug-card.is-done { background: #f7faf9; }
+  .bug-card.is-done h2 { color: var(--muted); text-decoration: line-through; }
+
+  .bug-card-link {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    text-align: left;
+  }
+
+  .bug-card-actions { display: flex; align-items: center; gap: 14px; }
+
+  .done-control {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .done-control input { width: 18px; height: 18px; margin: 0; accent-color: var(--success); cursor: pointer; }
+  .done-control input:disabled { cursor: wait; }
+  .detail-done-control { margin-top: 10px; }
+
   .bug-card:hover {
     transform: translateY(-2px);
     border-color: rgba(2, 112, 194, .38);
@@ -466,7 +500,8 @@
     .top-actions { width: 100%; }
     .top-actions button { flex: 1; }
     h1 { font-size: 25px; }
-    .bug-card { padding: 16px; }
+    .bug-card { grid-template-columns: 1fr; padding: 16px; }
+    .bug-card-actions { justify-content: flex-end; }
     .attachments { grid-template-columns: 1fr; }
     .detail-section { padding: 18px; }
     dialog { width: 100%; max-width: none; max-height: calc(100dvh - 16px); margin: auto 0 0; border-radius: 12px 12px 0 0; }
@@ -529,6 +564,10 @@
       <span id="detail-issue-key" class="issue-key"></span>
       <h1 id="detail-title" class="detail-title">Bug</h1>
       <time id="detail-date" class="detail-date"></time>
+      <label class="done-control detail-done-control">
+        <input id="detail-done" type="checkbox" disabled>
+        Fixed
+      </label>
     </header>
     <section id="detail-loading" class="bug-list" aria-label="Loading bug"><div class="skeleton"></div><div class="skeleton"></div></section>
     <section id="detail-error" class="error-panel" hidden role="alert">
@@ -625,12 +664,14 @@
   const uploadPicker = document.getElementById('upload-picker');
   const toast = document.getElementById('toast');
   const exportButton = document.getElementById('export-bugs');
+  const detailDone = document.getElementById('detail-done');
 
   let selectedFiles = [];
   let activeSubmission = null;
   let busy = false;
   let dragDepth = 0;
   let toastTimer;
+  let activeBug = null;
 
   function icon(name) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -837,11 +878,50 @@
     }
   }
 
+  async function setBugDone(id, isDone) {
+    return api(`${API_URL}?action=status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, is_done: isDone })
+    });
+  }
+
+  function makeDoneControl(bug, card) {
+    const label = document.createElement('label');
+    label.className = 'done-control';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = Boolean(bug.is_done);
+    checkbox.setAttribute('aria-label', `Mark ${issueKey(bug)} as fixed`);
+    const text = document.createTextNode('Fixed');
+    checkbox.addEventListener('change', async () => {
+      const next = checkbox.checked;
+      checkbox.disabled = true;
+      try {
+        await setBugDone(bug.id, next);
+        bug.is_done = next;
+        card.classList.toggle('is-done', next);
+        showToast(`${issueKey(bug)} marked as ${next ? 'fixed' : 'open'}`);
+      } catch (error) {
+        checkbox.checked = !next;
+        showToast(error.message || 'The bug status could not be updated.');
+      } finally {
+        checkbox.disabled = false;
+      }
+    });
+    label.append(checkbox, text);
+    return label;
+  }
+
   function renderBugCard(bug) {
-    const card = document.createElement('button');
-    card.type = 'button';
+    const card = document.createElement('article');
     card.className = 'bug-card';
-    card.addEventListener('click', () => { location.hash = `bug/${bug.id}`; });
+    card.classList.toggle('is-done', Boolean(bug.is_done));
+
+    const link = document.createElement('button');
+    link.type = 'button';
+    link.className = 'bug-card-link';
+    link.addEventListener('click', () => { location.hash = `bug/${bug.id}`; });
 
     const copy = document.createElement('span');
     const key = document.createElement('span');
@@ -865,7 +945,11 @@
     copy.append(key, title, preview, meta);
     const arrow = icon('arrow');
     arrow.classList.add('card-arrow');
-    card.append(copy, arrow);
+    link.append(copy, arrow);
+    const actions = document.createElement('span');
+    actions.className = 'bug-card-actions';
+    actions.append(makeDoneControl(bug, card));
+    card.append(link, actions);
     return card;
   }
 
@@ -922,16 +1006,21 @@
   }
 
   async function loadDetail(id) {
+    activeBug = null;
+    detailDone.disabled = true;
     document.getElementById('detail-loading').hidden = false;
     document.getElementById('detail-error').hidden = true;
     document.getElementById('detail-content').hidden = true;
     try {
       const payload = await api(`${API_URL}?id=${encodeURIComponent(id)}`);
       const bug = payload.bug;
+      activeBug = bug;
       document.getElementById('detail-issue-key').textContent = issueKey(bug);
       document.getElementById('detail-title').textContent = bug.title;
       document.getElementById('detail-date').textContent = readableDate(bug.created_at);
       document.getElementById('detail-description').textContent = bug.description;
+      detailDone.checked = Boolean(bug.is_done);
+      detailDone.disabled = false;
       const attachmentsSection = document.getElementById('attachments-section');
       const attachments = document.getElementById('attachments');
       attachments.replaceChildren(...bug.attachments.map(renderAttachment));
@@ -939,12 +1028,29 @@
       document.getElementById('detail-loading').hidden = true;
       document.getElementById('detail-content').hidden = false;
     } catch (error) {
+      activeBug = null;
       document.getElementById('detail-loading').hidden = true;
       document.getElementById('detail-error-title').textContent = error.status === 404 ? 'Bug not found' : 'Couldn’t load this bug';
       document.getElementById('detail-error-message').textContent = error.message;
       document.getElementById('detail-error').hidden = false;
     }
   }
+
+  detailDone.addEventListener('change', async () => {
+    if (!activeBug) return;
+    const next = detailDone.checked;
+    detailDone.disabled = true;
+    try {
+      await setBugDone(activeBug.id, next);
+      activeBug.is_done = next;
+      showToast(`${issueKey(activeBug)} marked as ${next ? 'fixed' : 'open'}`);
+    } catch (error) {
+      detailDone.checked = !next;
+      showToast(error.message || 'The bug status could not be updated.');
+    } finally {
+      detailDone.disabled = false;
+    }
+  });
 
   function route() {
     const match = /^#bug\/([0-9a-f-]+)$/i.exec(location.hash);

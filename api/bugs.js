@@ -189,7 +189,7 @@ async function readReports(request, response) {
   if (id) {
     if (!UUID_PATTERN.test(id)) throw new HttpError(400, 'INVALID_ID', 'The bug ID is invalid.');
     const reports = await sql`
-      select id, issue_number, title, description, created_at
+      select id, issue_number, title, description, is_done, created_at
       from public.bug_reports
       where id = ${id}
       limit 1
@@ -210,6 +210,7 @@ async function readReports(request, response) {
       r.issue_number,
       r.title,
       r.description,
+      r.is_done,
       r.created_at,
       count(a.id)::int as attachment_count
     from public.bug_reports r
@@ -224,15 +225,17 @@ async function readReports(request, response) {
 async function readExport(response) {
   const sql = database();
   const reports = await sql`
-    select id, issue_number, title, description, created_at
+    select id, issue_number, title, description, is_done, created_at
     from public.bug_reports
+    where is_done = false
     order by issue_number asc
   `;
   const attachments = await sql`
-    select id, bug_id, original_name, mime_type, size_bytes, public_url, created_at
-    from public.bug_attachments
-    where upload_state = 'ready'
-    order by bug_id asc, created_at asc, id asc
+    select a.id, a.bug_id, a.original_name, a.mime_type, a.size_bytes, a.public_url, a.created_at
+    from public.bug_attachments a
+    join public.bug_reports r on r.id = a.bug_id
+    where a.upload_state = 'ready' and r.is_done = false
+    order by a.bug_id asc, a.created_at asc, a.id asc
   `;
   const byBug = new Map(reports.map(report => [report.id, []]));
   for (const attachment of attachments) byBug.get(attachment.bug_id)?.push(attachment);
@@ -261,7 +264,7 @@ async function createReport(request, response, body) {
   const inserted = await sql`
     insert into public.bug_reports (title, description, source_hash)
     values (${title}, ${description}, ${hash})
-    returning id, issue_number, title, description, created_at
+    returning id, issue_number, title, description, is_done, created_at
   `;
   const bug = inserted[0];
   const uploadToken = encodeToken({
@@ -269,6 +272,22 @@ async function createReport(request, response, body) {
     exp: Math.floor(Date.now() / 1000) + UPLOAD_TOKEN_SECONDS,
   });
   return json(response, 201, { bug, upload_token: uploadToken });
+}
+
+async function updateReportStatus(response, body) {
+  if (!UUID_PATTERN.test(body.id || '')) throw new HttpError(400, 'INVALID_ID', 'The bug ID is invalid.');
+  if (typeof body.is_done !== 'boolean') {
+    throw new HttpError(400, 'VALIDATION_ERROR', 'is_done must be a boolean.');
+  }
+  const sql = database();
+  const reports = await sql`
+    update public.bug_reports
+    set is_done = ${body.is_done}
+    where id = ${body.id}
+    returning id, issue_number, title, description, is_done, created_at
+  `;
+  if (!reports.length) throw new HttpError(404, 'NOT_FOUND', 'Bug not found.');
+  return json(response, 200, { bug: reports[0] });
 }
 
 async function signUpload(response, body) {
@@ -386,9 +405,10 @@ async function handleRequest(request, response) {
   if (request.method === 'POST' && action === 'create') return createReport(request, response, body);
   if (request.method === 'POST' && action === 'sign-upload') return signUpload(response, body);
   if (request.method === 'POST' && action === 'complete-upload') return completeUpload(response, body);
+  if (request.method === 'PATCH' && action === 'status') return updateReportStatus(response, body);
   if (request.method === 'DELETE' && action === 'cancel-upload') return cancelUpload(response, body);
 
-  throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'This operation is not supported.', { Allow: 'GET, POST, DELETE' });
+  throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'This operation is not supported.', { Allow: 'GET, POST, PATCH, DELETE' });
 }
 
 export default async function handler(request, response) {

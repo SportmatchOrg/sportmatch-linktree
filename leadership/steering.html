@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch — Steering</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root{
+    --navy:#101c53;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --bg:#f8fafc;
+    --panel:#ffffff;
+    --border:#e2e8f0;
+    --soft:#f1f5f9;
+    --blue:#2a78d6;
+    --orange:#eb6834;
+    --good:#15803d;
+    --good-bg:#f0fdf4;
+    --good-border:#bbf7d0;
+    --bad:#b91c1c;
+    --amber-bg:#fffbeb;
+    --amber-border:#fde68a;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; padding:24px 24px 64px;
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  .wrap{ max-width:980px; margin:0 auto; }
+
+  .title{
+    background:var(--navy); color:#fff;
+    border-radius:10px; padding:16px;
+    text-align:center; font-size:22px; font-weight:800; letter-spacing:-0.01em;
+  }
+  .title{ display:flex; align-items:center; justify-content:center; gap:12px; }
+  .title select{
+    font:inherit; font-size:13px; font-weight:700; color:var(--navy); cursor:pointer;
+    background:#fff; border:0; border-radius:8px; padding:4px 8px;
+  }
+
+  .bar{ display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; align-items:center; }
+  .bar a{
+    text-decoration:none; font-size:13px; font-weight:700; color:var(--navy);
+    background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:7px 12px;
+  }
+  .bar a:hover{ border-color:#94a3b8; }
+
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:10px;
+    padding:20px 22px; margin-top:16px;
+  }
+  .card > h2{ margin:0 0 4px; font-size:17px; font-weight:800; letter-spacing:-0.01em; }
+  .card > .lead{ margin:0 0 14px; color:var(--muted); font-size:13px; }
+  h3{ margin:22px 0 8px; font-size:13.5px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.04em; }
+  p{ margin:0 0 10px; font-size:13.5px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; margin:0 0 12px; }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{ font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; }
+  td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  tr.total td{ font-weight:800; border-top:2px solid var(--ink); }
+  tr.cut td{ background:#fdf2ec; font-weight:700; }
+  td.ids{ font-size:12px; color:var(--muted); }
+  .table-scroll{ overflow-x:auto; }
+
+  .kpis{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:4px 0 14px; }
+  .kpi{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; background:var(--panel); }
+  .kpi .k{ font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+  .kpi .v{ font-size:24px; font-weight:800; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .kpi .s{ font-size:12px; color:var(--muted); }
+  .kpi.hl{ border-color:var(--blue); box-shadow:inset 0 2px 0 var(--blue); }
+  .up{ color:var(--good); font-weight:700; }
+  .down{ color:var(--bad); font-weight:700; }
+
+  .formula{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+  .formula span{ font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--soft); border:1px solid var(--border); border-radius:6px; padding:3px 8px; }
+  .note{
+    background:var(--amber-bg); border:1px solid var(--amber-border); border-radius:8px;
+    padding:11px 14px; font-size:13px; color:#78350f; margin:0 0 12px;
+  }
+
+  .chart-head{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin:22px 0 8px; }
+  .chart-head h3{ margin:0; }
+  .export{ display:flex; justify-content:flex-end; margin:0 0 6px; }
+  .btn{
+    font:inherit; font-size:12.5px; font-weight:700; color:var(--navy); cursor:pointer;
+    background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:5px 10px;
+  }
+  .btn:hover{ border-color:#94a3b8; }
+  .chart-box{ position:relative; }
+  .chart-box svg{ display:block; width:100%; height:auto; }
+  .tip{
+    position:absolute; pointer-events:none; background:var(--panel); border:1px solid var(--border);
+    border-radius:8px; padding:8px 10px; font-size:12px; box-shadow:0 4px 14px rgba(15,23,42,.12);
+    opacity:0; transition:opacity .1s; min-width:170px;
+  }
+  .tip b{ display:block; margin-bottom:4px; }
+  .tip .row{ display:flex; justify-content:space-between; gap:12px; font-variant-numeric:tabular-nums; }
+
+  @media (max-width:760px){ body{ padding:16px 16px 48px; } }
+  ul{ margin:0 0 12px; padding-left:20px; font-size:13.5px; }
+  li{ margin-bottom:6px; }
+  .foot{ margin-top:18px; font-size:12px; color:var(--muted); text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="title">
+  <span id="t-name">Steering</span>
+  <select id="ver-select" aria-label="Versión del steering"></select>
+</div>
+
+<nav class="bar">
+  <a href="#avance">Avance</a>
+  <a href="#presupuesto">Presupuesto</a>
+  <a href="#valor-ganado">Valor ganado</a>
+  <a href="#hitos">Hitos</a>
+  <a href="#riesgos">Riesgos</a>
+</nav>
+
+<div class="card" id="avance">
+  <h2>Avance del desarrollo</h2>
+  <p class="lead" id="avance-lead"></p>
+  <div class="kpis" id="avance-kpis"></div>
+  <div class="export"><button class="btn" type="button" data-export="avance-table" data-name="avance">Descargar SVG</button></div>
+  <div class="table-scroll"><table id="avance-table"></table></div>
+</div>
+
+<div class="card" id="presupuesto">
+  <h2>Presupuesto</h2>
+  <p class="lead" id="pres-lead"></p>
+  <div class="export"><button class="btn" type="button" data-export="pres-table" data-name="presupuesto">Descargar SVG</button></div>
+  <div class="table-scroll"><table id="pres-table"></table></div>
+  <div class="kpis" id="pres-kpis"></div>
+  <p class="note" id="pres-note"></p>
+  <h3>Qué recalcar</h3>
+  <ul id="pres-recalcar"></ul>
+</div>
+
+<div class="card" id="valor-ganado">
+  <h2>Valor ganado</h2>
+  <p class="lead" id="evm-lead"></p>
+  <div class="kpis" id="evm-kpis-1"></div>
+  <div class="kpis" id="evm-kpis-2"></div>
+  <div class="formula" id="evm-formula"></div>
+  <p class="note" id="evm-note"></p>
+
+  <div class="chart-head">
+    <h3>Curva S · USD acumulados</h3>
+    <button class="btn" id="svg-dl" type="button">Descargar SVG</button>
+  </div>
+  <div class="chart-box" id="chart-box"><div class="tip" id="tip"></div></div>
+
+  <div class="export"><button class="btn" type="button" data-export="evm-table" data-name="valor-ganado-semanal">Descargar SVG</button></div>
+  <div class="table-scroll" style="margin-top:12px"><table id="evm-table"></table></div>
+
+  <h3>Qué recalcar</h3>
+  <ul id="evm-recalcar"></ul>
+</div>
+
+<div class="card" id="hitos">
+  <h2>Hitos del Charter</h2>
+  <div class="export"><button class="btn" type="button" data-export="hitos-table" data-name="hitos">Descargar SVG</button></div>
+  <div class="table-scroll"><table id="hitos-table"></table></div>
+</div>
+
+<div class="card" id="riesgos">
+  <h2>Riesgos del plan restante</h2>
+  <div class="export"><button class="btn" type="button" data-export="riesgos-table" data-name="riesgos">Descargar SVG</button></div>
+  <div class="table-scroll"><table id="riesgos-table"></table></div>
+</div>
+
+<p class="foot" id="foot"></p>
+
+</div>
+
+<script>
+/* ---- Un objeto por steering ---------------------------------------------
+   Todo lo que se muestra se calcula a partir de estos datos. Para el próximo
+   steering: copiar la entrada, mover el corte y cargar las semanas nuevas. */
+const STEERINGS = {
+  v1: {
+    name: "Steering 17/09",
+    sources: "docs/planning/Cronograma-y-PERT-v4.md (§4 a §7) · docs/planning/WBS-SportMatch-v4.md · outputs/SportMatch - Equipo 11 - EVM y Curva S.xlsx (tarifas, infra e IA)",
+    // Semanas de trabajo, de jueves a jueves: fecha de cierre de cada una. La reserva (05/11 → 12/11) no entra.
+    weeks: ["13/08","20/08","27/08","03/09","10/09","17/09","24/09","01/10","08/10","15/10","22/10","29/10","05/11"],
+    start: "06/08",                    // jueves que abre la semana 1
+    cut: 6,
+    reserve: "05/11 → 12/11",
+    devEffort: 221.62,                 // horas estimadas de los 76 paquetes de desarrollo
+    avance: { done: [43, 123.70], wip: [5, 13.79], todo: [28, 84.13] },
+    roles: [
+      { rol: "Gestión", who: "PM, PO, Tech Lead", people: 3, hWeek: 4, rate: 20 },
+      { rol: "Desarrollo", who: "3 devs", people: 3, hWeek: 6, rate: 10, evm: true },
+      { rol: "QA", who: "QA Lead", people: 1, hWeek: 4, rate: 20 },
+    ],
+    // Costos no laborales: semana (1-based) → USD. Plan y real coinciden hasta el corte.
+    other: [
+      { name: "IA · Claude Code/ChatGPT · 3 × 20 USD/mes", byWeek: { 1: 60, 5: 60, 10: 60 } },
+      { name: "Infra · Azure B1 (back) · 13,14 USD/mes, desde el deploy del 29/08", byWeek: { 4: 13.14, 8: 13.14, 12: 13.14 } },
+      { name: "Infra · Vercel, Neon, Firebase y GitHub Actions (plan gratuito)", byWeek: {} },
+    ],
+    contingency: 0.20,
+    // Hasta el corte: horas reales de desarrollo y paquetes de la WBS cerrados en cada semana (✅ del Cronograma v4 §4).
+    actualHours: [18, 18, 18, 18, 18, 18],
+    earned: [
+      { h: 5.5,   pkgs: ["3.1.1", "3.1.3"] },
+      { h: 32.71, pkgs: ["3.1.2", "3.2.1", "4.1.1", "4.1.3", "4.1.4", "4.2.1", "4.2.2", "4.2.3", "10.2.1"] },
+      { h: 8.72,  pkgs: ["3.2.2", "4.1.2", "6.1.1", "9.1.4"] },
+      { h: 30.3,  pkgs: ["3.2.3", "4.2.5", "6.1.2", "6.1.5", "6.2.3", "6.3.5", "7.2.1", "9.1.1", "9.1.2", "9.1.3"] },
+      { h: 26.29, pkgs: ["5.1.2", "5.2.1", "6.1.3", "6.2.1", "6.2.4", "6.3.1", "6.3.2", "6.3.3", "7.2.2"] },
+      { h: 20.18, pkgs: ["4.2.4", "5.1.3", "5.1.5", "5.2.4", "5.2.5", "6.2.2", "6.3.4", "6.4.1", "6.4.2"] },
+    ],
+    hitos: [
+      ["Kick-off técnico", "Principios de agosto", "13/08", "✅ Cumplido"],
+      ["MVP funcional", "Fines de octubre", "15/10, cierre del S2", "🟡 En plan, con 15 días de adelanto"],
+      ["Deploy del sistema", "Principios de noviembre", "Operativo desde el S1", "✅ Adelantado ~2 meses"],
+      ["Finalización del proyecto", "Fines de noviembre", "Desarrollo al 05/11; entrega final 12/11", "🟡 En plan"],
+    ],
+    riesgos: [
+      ["R1", "11.1.3 (servicio de notificaciones) está en el camino crítico y arrastra invitaciones y aviso de cancelación.", "Alto", "Arrancar el S2 por el módulo 11.0 completo, no por el mapa."],
+      ["R2", "12.2.1 obliga a introducir un rol de administrador que hoy no existe en el modelo de usuario ni en el guard.", "Alto", "Resolver el rol al inicio del S3, no al final."],
+      ["R3", "7.3 (mapa) no tiene coordenadas en el modelo: Partido.ubicacion es texto libre.", "Medio", "Sumar coordenadas a Partido y a User en una sola decisión, antes de 7.3.2."],
+      ["R4", "El S2 usa el 80 % de la capacidad; el S3, el 75 %.", "Bajo", "12,38 h de margen en las 13 semanas, más la semana de reserva."],
+    ],
+  },
+};
+
+/* ---- Cálculo ----------------------------------------------------------- */
+const sum = (a) => a.reduce((s, x) => s + x, 0);
+const cumulative = (a) => { let s = 0; return a.map((x) => (s += x)); };
+
+function compute(d) {
+  const n = d.weeks.length, c = d.cut;
+  const other = (w) => sum(d.other.map((o) => o.byWeek[w + 1] || 0));
+  const devRole = d.roles.find((r) => r.evm);
+  const devWeek = devRole.people * devRole.hWeek;
+  const pvWeek = Array.from({ length: n }, (_, w) => devWeek * devRole.rate + other(w));
+  const pv = cumulative(pvWeek);
+  const bac = pv[n - 1];
+  const evH = cumulative(d.earned.map((e) => e.h));
+  const ev = evH.map((h) => (h / d.devEffort) * bac);          // % completo × BAC
+  const ac = cumulative(d.actualHours.map((h, w) => h * devRole.rate + other(w)));
+  const PV = pv[c - 1], EV = ev[c - 1], AC = ac[c - 1];
+  const spi = EV / PV, cpi = EV / AC, eac = bac / cpi;
+  const labor = d.roles.map((r) => ({ ...r, hh: r.people * r.hWeek * n, cost: r.people * r.hWeek * n * r.rate }));
+  const otherTotal = sum(d.other.map((o) => sum(Object.values(o.byWeek))));
+  const subtotal = sum(labor.map((r) => r.cost)) + otherTotal;
+  return {
+    n, c, pv, ev, ac, evH, bac, PV, EV, AC, spi, cpi, eac,
+    etc: eac - AC, vac: bac - eac, tcpi: (bac - EV) / (bac - AC),
+    devWeek, labor, otherTotal, subtotal, contingency: subtotal * d.contingency,
+    total: subtotal * (1 + d.contingency), hh: sum(labor.map((r) => r.hh)),
+  };
+}
+
+/* ---- Formato ----------------------------------------------------------- */
+const usd = (v, dec = 0) => "$" + v.toLocaleString("es-AR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const num = (v, dec = 2) => v.toLocaleString("es-AR", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+const pct = (v) => num(v * 100, 1) + " %";
+const signed = (v) => (v >= 0 ? "+" : "−") + usd(Math.abs(v));
+const $ = (id) => document.getElementById(id);
+const kpi = (k, v, s = "", hl = false) => `<div class="kpi${hl ? " hl" : ""}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+const trend = (x, good, bad) => x >= 1 ? `<span class="up">▲ ${good}</span>` : `<span class="down">▼ ${bad}</span>`;
+const row = (cells, cls = "") => `<tr${cls ? ` class="${cls}"` : ""}>${cells.join("")}</tr>`;
+const td = (v, cls = "") => `<td${cls ? ` class="${cls}"` : ""}>${v}</td>`;
+const head = (cols) => `<thead><tr>${cols.map(([t, cls]) => `<th${cls ? ` class="${cls}"` : ""}>${t}</th>`).join("")}</tr></thead>`;
+
+/* ---- Curva S ----------------------------------------------------------- */
+// Devuelve el SVG como texto, con la leyenda adentro y sin fondo, para mostrarlo y para descargarlo.
+function curveSvg(d, m) {
+  const W = 900, H = 370, pad = { l: 56, r: 112, t: 48, b: 38 };
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  const yMax = Math.ceil(m.bac / 500) * 500;
+  const x = (i) => pad.l + (iw * i) / (m.n - 1), y = (v) => pad.t + ih - (ih * v) / yMax;
+  const o = [];
+  const el = (tag, a, text) => o.push(`<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(" ")}${text == null ? "/>" : `>${text}</${tag}>`}`);
+  const eacColor = m.vac >= 0 ? "#16a34a" : "#dc2626";
+  [["PV · planificado", "#334155", "6 5"], ["EV · ganado", "#2a78d6"], ["AC · costo real", "#eb6834"], ["EAC · proyección", eacColor, "2 4"]].forEach(([label, c, dash], i) => {
+    const lx = pad.l + i * 150, a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
+    if (dash) a["stroke-dasharray"] = dash;
+    el("line", a);
+    el("text", { x: lx + 28, y: 20, "font-size": 12.5, fill: "#0f172a" }, label);
+  });
+  for (let v = 0; v <= yMax; v += 500) {
+    el("line", { x1: pad.l, x2: W - pad.r, y1: y(v), y2: y(v), stroke: v === 0 ? "#94a3b8" : "#e2e8f0", "stroke-width": 1 });
+    el("text", { x: pad.l - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#64748b" }, usd(v));
+  }
+  d.weeks.forEach((w, i) => el("text", { x: x(i), y: H - pad.b + 18, "text-anchor": "middle", "font-size": 11, fill: "#64748b" }, w));
+  const k = m.c - 1;
+  el("line", { x1: x(k), x2: x(k), y1: pad.t, y2: pad.t + ih, stroke: "#cbd5e1", "stroke-width": 1, "stroke-dasharray": "3 3" });
+  el("text", { x: x(k) + 6, y: pad.t + 12, "font-size": 11, fill: "#64748b" }, "Corte " + d.weeks[k]);
+  const path = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
+  const line = { fill: "none", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" };
+  el("path", { d: path(m.ac), stroke: "#eb6834", ...line });
+  el("path", { d: path(m.pv), stroke: "#334155", ...line, "stroke-dasharray": "6 5" });
+  el("path", { d: path(m.ev), stroke: "#2a78d6", ...line });
+  const acLabel = Math.abs(m.AC - m.PV) < 0.005 ? "AC = PV " : "AC ";
+  [[m.ev, "#2a78d6", "EV " + usd(m.EV), -12, -8, "end"], [m.ac, "#eb6834", acLabel + usd(m.AC), 24, 10, "start"]].forEach(([arr, c, label, dy, dx, anchor]) => {
+    el("circle", { cx: x(k), cy: y(arr[k]), r: 4.5, fill: c, stroke: "#fff", "stroke-width": 2 });
+    el("text", { x: x(k) + dx, y: y(arr[k]) + dy, "text-anchor": anchor, "font-size": 12, "font-weight": 700, fill: "#0f172a" }, label);
+  });
+  // Proyección: desde el costo real al corte hasta el EAC en la última semana. Es un pronóstico,
+  // no una curva medida, así que va punteada y con su propio color según caiga bajo o sobre la base.
+  el("path", { d: `M${x(k).toFixed(1)} ${y(m.AC).toFixed(1)} L${x(m.n - 1).toFixed(1)} ${y(m.eac).toFixed(1)}`, stroke: eacColor, ...line, "stroke-dasharray": "2 4" });
+  el("circle", { cx: x(m.n - 1), cy: y(m.eac), r: 4, fill: eacColor, stroke: "#fff", "stroke-width": 2 });
+  // La línea base no es "el BAC" a secas: el BAC del proyecto incluye gestión, QA y contingencia.
+  el("text", { x: W - pad.r + 8, y: y(m.bac) - 3, "font-size": 10, "font-weight": 600, fill: "#64748b" }, "Línea base EVM");
+  el("text", { x: W - pad.r + 8, y: y(m.bac) + 11, "font-size": 12.5, "font-weight": 700, fill: "#0f172a" }, usd(m.bac));
+  el("text", { x: W - pad.r + 8, y: y(m.eac) - 3, "font-size": 10, "font-weight": 600, fill: eacColor }, "EAC");
+  el("text", { x: W - pad.r + 8, y: y(m.eac) + 11, "font-size": 12.5, "font-weight": 700, fill: eacColor }, usd(m.eac));
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Curva S: PV, EV y AC acumulados por semana">\n${o.join("\n")}\n</svg>\n`;
+  return { svg, geo: { W, pad, iw } };
+}
+
+/* ---- Render ------------------------------------------------------------ */
+function render(ver) {
+  const d = STEERINGS[ver], m = compute(d);
+  document.title = "SportMatch — " + d.name;
+  $("t-name").textContent = d.name;
+  $("foot").innerHTML = "Fuentes: " + d.sources;
+
+  // Avance
+  const [dn, dh] = d.avance.done, [wn, wh] = d.avance.wip, [tn, th] = d.avance.todo;
+  const pkgs = dn + wn + tn, effort = dh + wh + th;
+  const cal = m.c / m.n, done = dh / effort;
+  $("avance-lead").textContent = `${pkgs} paquetes de desarrollo (${num(effort)} h) en ${m.n} semanas de trabajo, de jueves a jueves. Al corte van ${m.c}.`;
+  $("avance-kpis").innerHTML =
+    kpi("Esfuerzo cerrado", pct(done), `${num(dh)} h de ${num(effort)} h`, true) +
+    kpi("Paquetes cerrados", `${dn} / ${pkgs}`, pct(dn / pkgs)) +
+    kpi("Calendario", pct(cal), `${m.c} de ${m.n} semanas`) +
+    kpi("Adelanto", (done >= cal ? "+" : "−") + num(Math.abs(done - cal) * 100, 1) + " pts", "avance sobre el calendario");
+  $("avance-table").innerHTML = head([["Estado"], ["Paquetes", "num"], ["Esfuerzo", "num"], ["% del esfuerzo", "num"]]) + "<tbody>" +
+    [["✅ Hecho", dn, dh], ["🟡 Parcial", wn, wh], ["⬜ Pendiente", tn, th]].map(([s, n, h]) => row([td(s), td(n, "num"), td(num(h) + " h", "num"), td(pct(h / effort), "num")])).join("") +
+    row([td("Total"), td(pkgs, "num"), td(num(effort) + " h", "num"), td("100 %", "num")], "total") + "</tbody>";
+
+  // Presupuesto
+  $("pres-lead").textContent = `Horas-hombre a tarifas de referencia, a dedicación fija durante las ${m.n} semanas de trabajo (${d.start} → ${d.weeks[m.n - 1]}).`;
+  $("pres-table").innerHTML = head([["Rol"], ["Tarifa", "num"], ["HH", "num"], ["Costo", "num"], ["Cómo se calcula"]]) + "<tbody>" +
+    m.labor.map((r) => row([td(`<b>${r.rol}</b> (${r.who})`), td(usd(r.rate) + "/HH", "num"), td(r.hh, "num"), td(usd(r.cost), "num"), td(`${r.people} × ${r.hWeek} h/sem × ${m.n} sem`)])).join("") +
+    d.other.map((o) => { const t = sum(Object.values(o.byWeek)); return row([td(o.name), td("—", "num"), td("—", "num"), td(usd(t, 2), "num"), td(t ? `semanas ${Object.keys(o.byWeek).join(", ")}` : "sin costo")]); }).join("") +
+    row([td("Subtotal"), td(""), td(m.hh, "num"), td(usd(m.subtotal, 2), "num"), td("")], "total") +
+    row([td(`Contingencia ${d.contingency * 100} %`), td(""), td(""), td(usd(m.contingency, 2), "num"), td("reserva para riesgos identificados")]) +
+    row([td("BAC del proyecto"), td(""), td(m.hh, "num"), td(usd(m.total, 2), "num"), td("")], "total") + "</tbody>";
+  $("pres-kpis").innerHTML =
+    kpi("BAC del proyecto", usd(m.total), `subtotal + ${d.contingency * 100} % de contingencia`, true) +
+    kpi("HH totales", m.hh, m.labor.map((r) => `${r.hh} ${r.rol.toLowerCase()}`).join(" · ")) +
+    kpi("Contingencia", usd(m.contingency), `${d.contingency * 100} % del subtotal`) +
+    kpi("Línea base EVM", usd(m.bac), "desarrollo + infra + IA");
+  $("pres-note").innerHTML = `<b>Semana de reserva (${d.reserve}):</b> no lleva trabajo planificado y absorbe atrasos antes de la entrega final. Es reserva de gestión, así que queda fuera del BAC.`;
+
+  // Valor ganado
+  const k = m.c - 1;
+  $("evm-lead").textContent = `Al corte de la semana ${m.c} (${d.weeks[k]}), sobre la línea base de desarrollo más infra e IA: ${usd(m.bac, 2)} en ${m.n} semanas.`;
+  $("evm-kpis-1").innerHTML =
+    kpi("PV", usd(m.PV), `${m.devWeek * m.c} h planificadas · ${pct(m.PV / m.bac)} del BAC`) +
+    kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas · ${pct(m.EV / m.bac)} del BAC`, true) +
+    kpi("AC", usd(m.AC), `${sum(d.actualHours)} h de dedicación pactada`);
+  $("evm-kpis-2").innerHTML =
+    kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
+    kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo")) +
+    kpi("ETC", usd(m.etc), "costo para terminar") +
+    kpi("EAC", usd(m.eac), `vs línea base ${usd(m.bac)} · ${m.vac >= 0 ? `<span class="up">ahorro ${usd(m.vac)}</span>` : `<span class="down">sobrecosto ${usd(-m.vac)}</span>`}`, true);
+  $("evm-formula").innerHTML = [
+    `SV = EV − PV = ${signed(m.EV - m.PV)}`, `CV = EV − AC = ${signed(m.EV - m.AC)}`,
+    "EV = % completo × BAC", "EAC = BAC / CPI", "ETC = EAC − AC", `VAC = BAC − EAC = ${signed(m.vac)}`, `TCPI = ${num(m.tcpi)}`,
+  ].map((f) => `<span>${f}</span>`).join("");
+  $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.`;
+
+  const { svg, geo } = curveSvg(d, m);
+  const box = $("chart-box"), tip = $("tip");
+  box.innerHTML = svg;
+  box.appendChild(tip);
+  const svgEl = box.querySelector("svg");
+  svgEl.addEventListener("pointermove", (evt) => {
+    const r = svgEl.getBoundingClientRect();
+    const px = (evt.clientX - r.left) * (geo.W / r.width);
+    const i = Math.max(0, Math.min(m.n - 1, Math.round((px - geo.pad.l) / (geo.iw / (m.n - 1)))));
+    let html = `<b>Semana ${i + 1} · ${d.weeks[i]}</b><div class="row"><span>PV</span><span>${usd(m.pv[i])}</span></div>`;
+    html += i < m.c
+      ? `<div class="row"><span>EV</span><span>${usd(m.ev[i])}</span></div><div class="row"><span>AC</span><span>${usd(m.ac[i])}</span></div><div class="row"><span>SPI</span><span>${num(m.ev[i] / m.pv[i])}</span></div>`
+      : `<div class="row"><span>EV / AC</span><span>pendiente</span></div>`;
+    tip.innerHTML = html;
+    const bx = box.getBoundingClientRect();
+    let left = evt.clientX - bx.left + 14;
+    if (left + 190 > bx.width) left = evt.clientX - bx.left - 200;
+    tip.style.left = left + "px";
+    tip.style.top = Math.max(0, evt.clientY - bx.top - 40) + "px";
+    tip.style.opacity = 1;
+  });
+  svgEl.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
+  $("svg-dl").onclick = () => download(svg, `SportMatch-Steering-${ver}-curva-s.svg`);
+
+  $("evm-table").innerHTML = head([["Sem."], ["Cierre"], ["PV acum.", "num"], ["EV acum.", "num"], ["AC acum.", "num"], ["Horas ganadas", "num"], ["SPI", "num"], ["CPI", "num"], ["Paquetes cerrados"]]) + "<tbody>" +
+    d.earned.map((e, i) => row([td(i + 1), td(d.weeks[i]), td(usd(m.pv[i]), "num"), td(usd(m.ev[i]), "num"), td(usd(m.ac[i]), "num"), td(num(e.h) + " h", "num"), td(num(m.ev[i] / m.pv[i]), "num"), td(num(m.ev[i] / m.ac[i]), "num"), td(e.pkgs.join(", "), "ids")], i === k ? "cut" : "")).join("") + "</tbody>";
+
+  // Qué recalcar: conceptos de EVM con los números de este steering
+  const li = (items) => items.filter(Boolean).map((x) => `<li>${x}</li>`).join("");
+  $("pres-recalcar").innerHTML = li([
+    `<b>BAC = línea base de costos:</b> el costo del trabajo más la <b>contingencia</b> (${d.contingency * 100} %), que cubre riesgos ya identificados. La reserva de gestión, para imprevistos, queda fuera: por eso la semana de reserva no suma.`,
+    "Presupuestamos por <b>esfuerzo</b> (HH × tarifa), no por calendario. Por eso el presupuesto se compara directo con el avance.",
+    `El <b>valor ganado se ancla en desarrollo</b> más infra e IA (${usd(m.bac)}): es donde hay entregables medibles. Gestión y QA son nivel de esfuerzo y quedan en el BAC del proyecto.`,
+    "La <b>PV no es lineal</b>: los costos mensuales de IA y de Azure generan escalones en la curva.",
+  ]);
+  const weak = d.earned.map((_, i) => i).filter((i) => m.ev[i] / m.pv[i] < 1);
+  const eacAtip = m.AC + m.bac - m.EV;
+  $("evm-recalcar").innerHTML = li([
+    Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
+    `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
+    `<b>Dos EAC posibles:</b> el típico (BAC / CPI = ${usd(m.eac)}) supone que la eficiencia se mantiene; el atípico (AC + BAC − EV = ${usd(eacAtip)}) supone que lo que falta sale según el plan. ${Math.max(m.eac, eacAtip) <= m.bac ? "Los dos quedan dentro del BAC." : "Uno de los dos supera el BAC."}`,
+    `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
+    weak.length && `<b>Semanas con SPI &lt; 1:</b> ${weak.map((i) => `semana ${i + 1} (${num(m.ev[i] / m.pv[i])})`).join(", ")}. El EV sube cuando cierra un paquete, no mientras se trabaja: las semanas en que cierran paquetes grandes compensan a las anteriores.`,
+  ]);
+
+  // Hitos y riesgos
+  $("hitos-table").innerHTML = head([["Hito"], ["Fecha comprometida"], ["Plan"], ["Estado"]]) + "<tbody>" + d.hitos.map((h) => row(h.map((c) => td(c)))).join("") + "</tbody>";
+  $("riesgos-table").innerHTML = head([["#"], ["Riesgo"], ["Impacto"], ["Mitigación"]]) + "<tbody>" + d.riesgos.map((r) => row(r.map((c) => td(c)))).join("") + "</tbody>";
+}
+
+/* ---- Exportar a SVG sin fondo ---------------------------------------- */
+function download(svg, name) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Dibuja una tabla HTML ya renderizada como SVG: mismas columnas, alineación y negritas.
+function tableSvg(table) {
+  const FONT = "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+  const ctx = document.createElement("canvas").getContext("2d");
+  const measure = (t, size, bold) => { ctx.font = `${bold ? 700 : 400} ${size}px ${FONT}`; return ctx.measureText(t).width; };
+  const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const PAD = 10, LINE = 18, MAXW = 300;
+  const rows = [...table.rows].map((tr) => ({
+    head: tr.parentElement.tagName === "THEAD",
+    cls: tr.className,
+    cells: [...tr.cells].map((c) => ({ text: c.textContent.trim(), num: c.classList.contains("num"), muted: c.classList.contains("ids") })),
+  }));
+  const style = (r) => r.head ? { size: 11, bold: true, fill: "#64748b", upper: true } : { size: 13, bold: r.cls === "total" || r.cls === "cut", fill: "#0f172a" };
+  const wrap = (text, st) => {
+    const words = text.split(" "), lines = [];
+    let cur = "";
+    for (const w of words) {
+      const next = cur ? cur + " " + w : w;
+      if (cur && measure(next, st.size, st.bold) > MAXW) { lines.push(cur); cur = w; } else cur = next;
+    }
+    return lines.concat(cur);
+  };
+  const cols = Math.max(...rows.map((r) => r.cells.length));
+  const width = Array(cols).fill(0);
+  rows.forEach((r) => r.cells.forEach((c, i) => {
+    const st = style(r), t = st.upper ? c.text.toUpperCase() : c.text;
+    width[i] = Math.max(width[i], Math.min(MAXW, measure(t, st.size, st.bold)) + 2 * PAD);
+  }));
+  const x0 = width.map((_, i) => width.slice(0, i).reduce((a, b) => a + b, 0));
+  const W = Math.ceil(x0[cols - 1] + width[cols - 1]);
+  const out = [];
+  let y = 0;
+  for (const r of rows) {
+    const st = style(r);
+    const lines = r.cells.map((c) => wrap(st.upper ? c.text.toUpperCase() : c.text, st));
+    const h = Math.max(...lines.map((l) => l.length)) * LINE + 2 * 8;
+    if (r.cls === "cut") out.push(`<rect x="0" y="${y}" width="${W}" height="${h}" fill="#fdf2ec"/>`);
+    if (r.cls === "total") out.push(`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#0f172a" stroke-width="2"/>`);
+    r.cells.forEach((c, i) => {
+      const right = c.num, x = right ? x0[i] + width[i] - PAD : x0[i] + PAD;
+      const fill = c.muted ? "#64748b" : st.fill, size = c.muted ? 12 : st.size;
+      lines[i].forEach((ln, k) => out.push(`<text x="${x.toFixed(1)}" y="${y + 8 + LINE * k + 13}" font-size="${size}"${st.bold ? ' font-weight="700"' : ""}${right ? ' text-anchor="end"' : ""} fill="${fill}">${esc(ln)}</text>`));
+    });
+    y += h;
+    out.push(`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`);
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${y}" width="${W}" height="${y}" font-family="${FONT}">\n${out.join("\n")}\n</svg>\n`;
+}
+
+document.querySelectorAll("[data-export]").forEach((btn) => {
+  btn.addEventListener("click", () => download(tableSvg($(btn.dataset.export)), `SportMatch-Steering-${verSelect.value}-${btn.dataset.name}.svg`));
+});
+
+const verSelect = $("ver-select");
+const versions = Object.keys(STEERINGS);
+verSelect.innerHTML = versions.map((v) => `<option value="${v}">${v}</option>`).join("");
+verSelect.value = versions[versions.length - 1];
+verSelect.addEventListener("change", () => render(verSelect.value));
+render(verSelect.value);
+</script>
+</body>
+</html>
