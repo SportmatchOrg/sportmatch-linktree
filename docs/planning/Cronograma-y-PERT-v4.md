@@ -529,23 +529,31 @@ Cierre del S2:
 | 6.2.1 · 7.2.2 | Mejoras del wizard y de Descubrir | SPO-210 · SPO-190 | retrabajo |
 | — | BUG-9 de QA (refresco automático) | SPO-250 | retrabajo |
 
-Preparación del Steering 2 (operación sobre paquetes ya cerrados del S1: 8.1, 9.1.2 y 9.1.3):
+Preparación del Steering 2 (operación sobre paquetes ya cerrados del S1: 8.1 y 9.1.3):
 
 | Tickets | Qué |
 |---|---|
-| SPO-281 | Release `dev` → `main` el 14/10, variables de prod y smoke test |
 | SPO-280 · SPO-282 | Seed de demo seguro para prod, datos y guion de la demo, ensayo |
+
+El release `dev` → `main` (SPO-281) quedó en el backlog, fuera del plan de la semana: la organización de la
+demo se define por fuera de Linear.
 
 S3 adelantado (capacidad libre de la semana 10, que en la línea base tenía 8,3 h de 18):
 
 | ID | Paquete | Tickets | Semana en la línea base |
 |---|---|---|---|
-| 6.5.1 | Link compartible de partido (back) | SPO-258 | 11 |
+| 6.5.1 | Link compartible de partido (solo el back; el front, SPO-259, queda en el backlog) | SPO-258 | 11 |
 | 6.5.2 | Invitación directa a un usuario | SPO-261 · SPO-263 | 11 |
 | 6.5.3 | Aceptación de invitación | SPO-262 · SPO-264 | 12 |
 | 12.1.1 · 12.1.2 | Modelo y endpoint de reporte | SPO-267 | 11 |
 
-Carga de la semana 10: 28 h de tickets (Pacheco 10, Rudolph 9, Siaba 9).
+Carga de la semana 10: 18 h de tickets, 6 por dev:
+
+| Dev | Tickets |
+|---|---|
+| Pacheco (back) | SPO-278 · SPO-280 · SPO-261 · SPO-262 · SPO-267 |
+| Rudolph (front) | SPO-240 · SPO-279 · SPO-210 · SPO-250 |
+| Siaba (back y front) | SPO-258 · SPO-263 · SPO-264 · SPO-190 · SPO-282 |
 
 ### Lectura contra la línea base
 
