@@ -394,7 +394,7 @@ conviene resolverla al inicio del módulo, no al final.
 
 ### 7.3 Vista Mapa Interactivo
 
-**7.3.1** — Integración con proveedor de mapa: configuración del mapa interactivo y credenciales. Proveedor: Leaflet + OpenStreetMap, sin credenciales; el mapa es la pantalla de inicio (decisión del 24/09).
+**7.3.1** — Integración con proveedor de mapa: configuración del mapa interactivo y credenciales. Proveedor: Google Maps y Google Places (decisión del equipo del 25/09); el mapa es la pantalla de inicio (decisión del 24/09).
 <br>*Dependencias:* 3.2.1, 3.2.3 · *Estimación:* 4.28 h (DO 3 / DM 3.8 / DP 7.5)
 
 **7.3.2** — Visualización de partidos en mapa: marcadores de partidos disponibles según ubicación.

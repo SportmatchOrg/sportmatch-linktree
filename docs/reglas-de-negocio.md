@@ -1,6 +1,6 @@
 # Reglas de negocio — SportMatch
 
-Decisiones de producto del PO para el Sprint 2, tomadas el 24/09/2026. Son la referencia de los tickets de
+Decisiones de producto del PO para el Sprint 2, tomadas el 24/09/2026 y ampliadas el 30/09/2026. Son la referencia de los tickets de
 las semanas 8 a 10 y de lo que se demuestra en el Steering 2. El vocabulario está definido en
 [`CONTEXT.md`](./CONTEXT.md).
 
@@ -88,18 +88,22 @@ Canal actual: **solo in-app** (campanita). **Push PWA** en las últimas semanas 
 | Partido editado | Cambia **fecha, hora o lugar** (no la descripción ni el cupo) | Anotados **y** jugadores con solicitud pendiente |
 | Te marcaron falta | Una falta pasa a existir | El jugador que faltó |
 | Quedaste suspendido | Una falta dispara una suspensión | El jugador suspendido |
+| Te invitaron | El organizador te invita a un partido | El invitado |
+| Aceptó tu invitación | El invitado acepta | Organizador |
+| Rechazó tu invitación | El invitado rechaza | Organizador |
+| Recordatorio | 24 h antes del partido | Anotados y organizador |
 
 - Nadie recibe una notificación por algo que hizo él mismo.
 - **La campanita:** en desktop va al lado de la foto de perfil del header. En mobile va en el header del
   Mapa, y hay un badge de no leídas sobre el tab de Perfil. El contador se refresca cada 30 s y al volver a
   la pestaña.
 - Tocar una notificación la marca como leída y lleva al partido.
-- Futuro (no planificado en el S2): recordatorio antes del partido (WBS 11.1.4).
+- El recordatorio se detalla en §13.
 
 ## 7. Mapa
 
 - Es la **pantalla de inicio**: después de iniciar sesión, la app abre el Mapa.
-- Proveedor: **Leaflet + OpenStreetMap** (sin costo, con atribución visible).
+- Proveedor: **Google Maps** (decisión del equipo del 25/09, por la calidad de la búsqueda de lugares de Google Places), con el logo y la atribución de Google visibles.
 - Muestra los **partidos disponibles**, los mismos que Descubrir: futuros, activos, con lugar, que no
   organizo, en los que no estoy anotado y a los que no pedí sumarme.
 - **Centro inicial:** la ubicación del jugador. Si no da permiso, el centroide de los partidos visibles.
@@ -114,9 +118,10 @@ Canal actual: **solo in-app** (campanita). **Push PWA** en las últimas semanas 
 
 ## 8. Lugar del partido
 
-- En el paso "Lugar" del wizard se escribe una dirección y se **autocompleta** (como Google Maps), con un
-  servicio de direcciones sobre OpenStreetMap (Photon).
+- En el paso "Lugar" del wizard se escribe una dirección y se **autocompleta** con Google Places.
 - Al elegir una dirección aparece un **mini mapa con el pin**, que se puede **arrastrar** para ajustar.
+- Al soltar el pin se busca la dirección de ese punto. Si se movió menos de ~50 m, se conserva el nombre
+  elegido (por ejemplo "Club Norte · Cancha 3"); si se movió más, el lugar pasa a ser la dirección nueva.
 - El partido guarda el nombre del lugar que ve el usuario y sus coordenadas. Un partido nuevo **no se puede
   crear sin coordenadas**.
 - Los partidos anteriores a este cambio no tienen coordenadas y no aparecen en el Mapa.
@@ -132,9 +137,44 @@ Canal actual: **solo in-app** (campanita). **Push PWA** en las últimas semanas 
 - Un jugador sin partidos jugados se ordena solo por (2) y (3).
 - El próximo sprint se puede reemplazar por un algoritmo más interesante sin cambiar la app.
 
-## 10. Fuera de alcance (S2)
+## 10. Link compartible
+
+- `/partidos/:id` se puede abrir **sin cuenta**, en modo lectura.
+- Sin cuenta se ve: deporte, fecha y hora, nombre del lugar, nivel, lugares libres, y el nombre y la foto del
+  organizador. **No** se ve la lista de jugadores.
+- "Sumate" lleva a iniciar sesión o crear cuenta y, después, vuelve al partido.
+- Al compartir el link (por ejemplo por WhatsApp) se ve una vista previa con título e imagen.
+
+## 11. Invitaciones
+
+- **Solo el organizador** invita, a usuarios registrados que busca por nombre.
+- No se puede invitar si el partido está lleno, ya empezó o está cancelado, ni a alguien suspendido, anotado o
+  con una solicitud o invitación pendiente.
+- El invitado **acepta y queda anotado sin aprobación**, porque la invitación ya viene del organizador
+  (decisión 5 de la WBS: la invitación reutiliza la solicitud, con origen "invitación"). Si al aceptar el
+  partido se llenó, no entra.
+- La invitación **vence cuando empieza el partido**.
+
+## 12. Moderación
+
+- Cualquier jugador puede **reportar** a otro desde su perfil o desde el detalle de un partido.
+- Motivos: Comportamiento agresivo · Lenguaje ofensivo · Perfil falso · Otro. Comentario opcional. Las faltas
+  no se reportan acá: tienen su propio flujo (§2).
+- Un **administrador** (rol en el usuario, asignado a mano) revisa los reportes: los marca como revisados, los
+  descarta o **bloquea la cuenta** del reportado por 7 días, 30 días o de forma permanente.
+- **Bloqueo ≠ suspensión.** La suspensión (§5) es automática por faltas e impide sumarse y crear partidos. El
+  bloqueo lo decide un admin e **impide entrar a la app**.
+- Toda acción de moderación queda en un historial por usuario.
+
+## 13. Recordatorio
+
+- **24 h antes** del partido, un solo aviso, para los anotados y el organizador, en la app y como push.
+- Un partido creado con menos de 24 h de anticipación **no** tiene recordatorio.
+
+## 14. Fuera de alcance (S2)
 
 - Mail y preferencias de notificación.
+- Recordatorio para partidos creados con menos de 24 h de anticipación.
 - Deshacer una falta o apelarla.
 - Recordatorio antes del partido (S3, 11.1.4).
 - Filtros en Descubrir.
