@@ -158,9 +158,9 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
     if (t.status === "done") assert.ok(Date.parse(t.end) <= Date.parse("2026-09-17"), `${t.id} is done but ends after the 17/09 steering`);
     assert.ok([1, 2, 3].includes(t.dev), `${t.id}: dev must be 1, 2 or 3`);
   }
-  // Cronograma-y-PERT-v4.md §5: 43 hechos, 5 parciales, 28 pendientes.
-  assert.deepEqual(counts, { done: 43, wip: 5, todo: 28 });
-  assert.equal(d.tasks.length, 76);
+  // Cronograma-y-PERT-v4.md §5: 43 hechos, 5 parciales, 28 pendientes; más los 2 del Challenge (13.0), en curso.
+  assert.deepEqual(counts, { done: 43, wip: 7, todo: 28 });
+  assert.equal(d.tasks.length, 78);
   // Sprint bands and milestones must cover the same calendar the tasks use.
   assert.ok(d.sprints.some((s) => s.end === "2026-11-05"), "S3 must close on 05/11");
   assert.ok(d.milestones.some((m) => m.date === "2026-11-12" && m.type === "delivery"), "Entrega 3 on 12/11");
@@ -239,7 +239,7 @@ test("WBS: each version is the previous one plus its declared additions, and add
 test("WBS v4: carries exactly the packages of the WBS v4 document", () => {
   const { v4 } = wbsTrees();
   assert.deepEqual(leaves(v4.tree).map(leafId).sort(byNum), wbsV4DocIds());
-  assert.equal(leaves(v4.tree).length, 116);
+  assert.equal(leaves(v4.tree).length, 118);
 });
 
 test("WBS: every package the PERT and the Gantt schedule exists in the WBS of that version", () => {
@@ -307,7 +307,7 @@ test("Gantt runtime: both levels build rows for every version", () => {
     assert.equal(l3.rows, l2.groups + l3.subs + l3.tasks, `${ver}: level X.X.X rows`);
     assert.equal(l3.subs, l2.tasks, `${ver}: one sub-package header per X.X group`);
     if (ver === "v4") {
-      assert.deepEqual({ groups: l2.groups, subs: l3.subs, tasks: l3.tasks }, { groups: 9, subs: 21, tasks: 76 });
+      assert.deepEqual({ groups: l2.groups, subs: l3.subs, tasks: l3.tasks }, { groups: 10, subs: 22, tasks: 78 });
       assert.equal(l3.crit, 9, "v4: the nine critical packages are marked at level X.X.X");
     }
   }
@@ -398,11 +398,11 @@ test("Gantt runtime: el CPM de la página reproduce el camino crítico publicado
   evalIn(`CRIT_MODE = "plan"`);
 });
 
-test("WBS runtime: every version renders and v4 has the 116 packages", () => {
+test("WBS runtime: every version renders and v4 has the 118 packages", () => {
   const evalIn = runPage("leadership/wbs.html");
   for (const ver of ["v1", "v2", "v4"]) evalIn(`render("${ver}")`);
-  assert.equal(evalIn(`VIEWS.v4.tree.reduce((n, [, s]) => n + s.reduce((m, [, i]) => m + i.length, 0), 0)`), 116);
-  assert.equal(evalIn(`VIEWS.v4.newLeaves.size`), 16);
+  assert.equal(evalIn(`VIEWS.v4.tree.reduce((n, [, s]) => n + s.reduce((m, [, i]) => m + i.length, 0), 0)`), 118);
+  assert.equal(evalIn(`VIEWS.v4.newLeaves.size`), 18);
 });
 
 // ── Steering ─────────────────────────────────────────────────────────────────

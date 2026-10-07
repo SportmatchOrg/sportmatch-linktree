@@ -23,6 +23,11 @@ De las 44,50 h de diferencia, **32,50 h son los 13 paquetes nuevos** —25,00 h 
 (módulos 4.0 a 7.0) y 7,50 h de QA automatizado y deployment (8.3 y 9.1.4)— y **12,00 h son la
 recalibración de 3.1.2**.
 
+**Agregado el 07/10: 13.0 Challenge.** El reporte diario de KPIs que pidió la cátedra (Lab4,
+`docs/challenge/ADR.md`) suma **2 paquetes por 4,00 h**, el tope de impacto sobre el proyecto que fija el
+ADR. Su ventana la fijó el equipo, del 01/10 al 14/10, y no sale del planificador. Quedan fuera de la
+comparación v3→v4 de arriba.
+
 **Convención.** Cada paquete lleva número, descripción, dependencias y estimación en horas.
 La estimación usa el método PERT sobre tres puntos: DO optimista, DM más probable, DP pesimista,
 con `Estimación = (DO + 4·DM + DP) / 6`. Los paquetes de desarrollo fueron **recalibrados con un
@@ -548,3 +553,14 @@ conviene resolverla al inicio del módulo, no al final.
 
 **12.2.3** 🆕 — Historial de moderación: registro de las acciones tomadas sobre cada reporte y sobre cada usuario.
 <br>*Dependencias:* 12.2.1 · *Estimación:* 3.12 h (DO 1.5 / DM 3 / DP 5.2)
+
+
+## 13.0 Challenge — **NUEVO**
+
+### 13.1 Reporte diario de KPIs
+
+**13.1.1** ✳️ — Instrumentación para KPIs: momento en que un partido completa su cupo y actividad diaria por usuario.
+<br>*Dependencias:* 6.1.1, 4.1.1 · *Estimación:* 1.5 h (DO 1 / DM 1.5 / DP 2)
+
+**13.1.2** ✳️ — Cálculo y persistencia de KPIs: endpoint protegido que calcula los 7 KPIs de negocio de una fecha y guarda la corrida.
+<br>*Dependencias:* 13.1.1 · *Estimación:* 2.5 h (DO 1.5 / DM 2.5 / DP 3.5)

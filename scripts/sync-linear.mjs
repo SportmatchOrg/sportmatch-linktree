@@ -41,6 +41,7 @@ const MILESTONES = {
   10: ['Documentación Final', '2026-10-29'],
   11: ['Notificaciones', '2026-10-29'],
   12: ['Moderación y Reportes', '2026-11-05'],
+  13: ['Challenge', '2026-10-14'],
 };
 const msName = (epic) => `${epic} · ${MILESTONES[epic][0]}`;
 

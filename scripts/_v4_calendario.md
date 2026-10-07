@@ -46,20 +46,20 @@
 | 9.1.4 | Contenedorización del backend y registro de imágenes | 3.50 | 29.14 | Siaba | 20/08 | 27/08 | ✅ |
 | 10.2.1 | README del proyecto | 1.50 | 31.14 | Siaba | 13/08 | 20/08 | ✅ |
 
-### S2 — 57.53 h
+### S2 — 61.53 h
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
 | 5.1.1 | Modelo de perfil | 1.50 | 11.17 | Siaba | 13/08 | 01/10 | 🟡 |
 | 5.1.4 | Servicio de cálculo de rating | 3.00 | 9.41 | Rudolph | 10/09 | 08/10 | 🟡 |
-| 5.2.2 | Edición de perfil | 2.22 | 11.11 | Pache | 08/10 | 15/10 | ⬜ |
+| 5.2.2 | Edición de perfil | 2.22 | 11.11 | Pache | 01/10 | 15/10 | ⬜ |
 | 5.2.3 | Vista de historial | 1.50 | 14.05 | Siaba | 03/09 | 15/10 | 🟡 |
 | 6.1.4 | Cancelación de partido con motivo | 2.35 | 33.52 | Pache | 17/09 | 24/09 | ⬜ |
 | 6.2.5 | Interfaz de cancelación | 1.63 | 33.52 | Pache | 17/09 | 01/10 | ⬜ |
 | 6.2.6 | Notificación de cancelación a participantes | 1.50 | 5.40 | Siaba | 24/09 | 15/10 | ⬜ |
 | 6.4.3 | Regla de penalización por no-show | 2.35 | 9.41 | Rudolph | 17/09 | 24/09 | ⬜ |
 | 7.1.1 | Búsqueda de partidos | 4.62 | 25.79 | Siaba | 03/09 | 24/09 | 🟡 |
-| 7.1.2 | Filtros (deporte, nivel, fecha) | 3.12 | 30.41 | Pache | 08/10 | 15/10 | ⬜ |
+| 7.1.2 | Filtros (deporte, nivel, fecha) | 3.12 | 30.41 | Pache | 01/10 | 15/10 | ⬜ |
 | 7.1.3 | Ordenamiento por rating y compatibilidad | 1.63 | 9.41 | Rudolph | 01/10 | 08/10 | ⬜ |
 | 7.3.1 | Integración con proveedor de mapa | 4.28 | 21.99 | Siaba | 24/09 | 01/10 | ⬜ |
 | 7.3.2 | Visualización de partidos en mapa | 2.47 | 21.99 | Pache | 24/09 | 08/10 | ⬜ |
@@ -71,6 +71,8 @@
 | 11.2.1 | Centro de notificaciones | 3.90 | 12.24 | Pache | 24/09 | 01/10 | ⬜ |
 | 11.2.2 | Recepción de push en cliente | 4.03 | 14.46 | Siaba | 01/10 | 08/10 | ⬜ |
 | 11.2.3 | Preferencias de notificación | 1.63 | 12.24 | Siaba | 01/10 | 08/10 | ⬜ |
+| 13.1.1 | Instrumentación para KPIs | 1.50 | 16.12 | Rudolph | 01/10 | 08/10 | 🟡 |
+| 13.1.2 | Cálculo y persistencia de KPIs | 2.50 | 16.12 | Rudolph | 01/10 | 15/10 | 🟡 |
 
 ### S3 — 40.39 h
 
@@ -95,14 +97,14 @@
 |---|---|---|---|---|---|---:|
 | 7 | 17/09 → 24/09 | S2 | 6.1.4 Cancelación de partido con motivo<br>10.1.2 Entrega final de diseño UX/UI | 6.4.3 Regla de penalización por no-show<br>11.1.1 Modelo de notificación | 7.1.1 Búsqueda de partidos<br>11.1.2 Selección de proveedor de push y email | 16.5 / 18 h |
 | 8 | 24/09 → 01/10 | S2 | 6.2.5 Interfaz de cancelación<br>11.2.1 Centro de notificaciones | 11.1.3 Servicio de envío de notificaciones | 5.1.1 Modelo de perfil<br>7.3.1 Integración con proveedor de mapa | 16.1 / 18 h |
-| 9 | 01/10 → 08/10 | S2 | 7.3.2 Visualización de partidos en mapa<br>7.3.3 Detalle de partido desde mapa | 5.1.4 Servicio de cálculo de rating<br>7.1.3 Ordenamiento por rating y compatibilidad | 11.2.2 Recepción de push en cliente<br>11.2.3 Preferencias de notificación | 16.7 / 18 h |
-| 10 | 08/10 → 15/10 | S2 | 5.2.2 Edición de perfil<br>7.1.2 Filtros (deporte, nivel, fecha) | — | 5.2.3 Vista de historial<br>6.2.6 Notificación de cancelación a participantes | 8.3 / 18 h |
+| 9 | 01/10 → 08/10 | S2 | 7.3.2 Visualización de partidos en mapa<br>7.3.3 Detalle de partido desde mapa | 5.1.4 Servicio de cálculo de rating<br>7.1.3 Ordenamiento por rating y compatibilidad<br>13.1.1 Instrumentación para KPIs<br>13.1.2 Cálculo y persistencia de KPIs | 11.2.2 Recepción de push en cliente<br>11.2.3 Preferencias de notificación | 16.7 / 18 h |
+| 10 | 08/10 → 15/10 | S2 | 5.2.2 Edición de perfil<br>7.1.2 Filtros (deporte, nivel, fecha) | 13.1.2 Cálculo y persistencia de KPIs | 5.2.3 Vista de historial<br>6.2.6 Notificación de cancelación a participantes | 8.3 / 18 h |
 | 11 | 15/10 → 22/10 | S3 | 6.5.1 Link compartible de partido | 6.5.2 Invitación directa a un usuario | 10.2.2 Documentación de APIs<br>12.1.1 Modelo de reporte<br>12.1.2 Endpoint de creación de reporte | 11.9 / 18 h |
 | 12 | 22/10 → 29/10 | S3 | 12.2.1 Panel de revisión de reportes | 6.5.3 Aceptación de invitación<br>11.1.4 Job de recordatorio pre-partido | 10.1.1 Manual de uso y descripción de funcionalidades | 18.4 / 18 h |
 | 13 | 29/10 → 05/11 | S3 | 12.1.3 Interfaz de reporte | 12.2.2 Suspensión de usuario | 12.2.3 Historial de moderación | 10.2 / 18 h |
 | 14 | 05/11 → 12/11 | reserva | — | — | — | 0.0 / 18 h |
 
-### PERT completo (116 paquetes)
+### PERT completo (118 paquetes)
 
 Duración del camino crítico: 83.84 h · 16 paquetes: 1.1.1 → 3.1.1 → 3.1.2 → 4.1.1 → 6.3.1 → 6.3.2 → 6.3.3 → 11.1.3 → 6.5.2 → 6.5.3 → 8.1.9 → 8.2.1 → 8.2.2 → 8.2.3 → 8.2.4 → 1.4.1
 

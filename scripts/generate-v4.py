@@ -4,14 +4,14 @@
 del calendario semana a semana del Cronograma v4.
 
 Entradas
-  docs/planning/WBS-SportMatch-v4.md        116 paquetes: título, dependencias, horas PERT
+  docs/planning/WBS-SportMatch-v4.md        118 paquetes: título, dependencias, horas PERT
   docs/planning/linear-wbs-map.csv          issue de Linear -> paquete de la WBS (a mano)
   docs/planning/linear-issues.csv           estado y fechas reales por ticket (lo refresca sync-linear.mjs)
 
 Salidas (intermedias; se pegan a mano en los HTML y en el doc, no se commitean)
   scripts/_v4_wbs.js          bloque V4_ADD para leadership/wbs.html
-  scripts/_v4_pert.js         tasks / deps / groups para leadership/pert.html (116 paquetes)
-  scripts/_v4_gantt.js        tasks para leadership/gantt.html (76 paquetes de desarrollo)
+  scripts/_v4_pert.js         tasks / deps / groups para leadership/pert.html (118 paquetes)
+  scripts/_v4_gantt.js        tasks para leadership/gantt.html (78 paquetes de desarrollo)
   scripts/_v4_calendario.md   tablas para Cronograma-y-PERT-v4.md (§4 con fechas y §9 semanal)
 
 Calendario: semanas de jueves a jueves, cierre a las 18 h. La semana 1 abre el 06/08.
@@ -60,7 +60,7 @@ for m in PKG_RE.finditer(txt):
     tid, mark, title, deps, est = m.groups()
     deps = [] if deps.strip().startswith('—') else [d.strip() for d in deps.split(',') if d.strip()]
     TASKS[tid] = {'title': title.strip(), 'deps': deps, 'dur': float(est), 'new_v4': '✳️' in mark}
-assert len(TASKS) == 116, len(TASKS)
+assert len(TASKS) == 118, len(TASKS)
 
 MODULES = dict(re.findall(r'^## (\d+)\.0 ([^\n]+?)(?: — \*\*NUEVO\*\*)?$', txt, re.M))          # '4' -> 'Autenticación'
 SUBS = dict(re.findall(r'^### (\d+\.\d+) ([^\n]+?)(?: — \*\*NUEVO\*\*)?$', txt, re.M))          # '4.1' -> 'Backend de autenticación'
@@ -100,10 +100,10 @@ def cpm(scope):
     return r, deps, T
 
 FULL, FULL_DEPS, T_FULL = cpm(TASKS)
-DEV_SCOPE = {'3', '4', '5', '6', '7', '9', '10', '11', '12'}
+DEV_SCOPE = {'3', '4', '5', '6', '7', '9', '10', '11', '12', '13'}
 DEV = {k: v for k, v in TASKS.items() if k.split('.')[0] in DEV_SCOPE}
 DEVCPM, DEV_DEPS, T_DEV = cpm(DEV)
-assert len(DEV) == 76, len(DEV)
+assert len(DEV) == 78, len(DEV)
 crit_full = sorted([n for n in FULL if abs(FULL[n]['H']) < 1e-6], key=lambda n: FULL[n]['ES'])
 crit_dev  = sorted([n for n in DEVCPM if abs(DEVCPM[n]['H']) < 1e-6], key=lambda n: DEVCPM[n]['ES'])
 
@@ -132,6 +132,10 @@ MANUAL_WEEK = {
  '3.1.3': (1, 1, 3),   # convenciones de ramas/PR/Linear escritas en AGENTS.md la semana del kick-off
  '10.2.1': (2, 2, 3),  # README con instalación y ejecución local, junto con la base del repo (SPO-143)
 }
+# 13.0 Challenge: ventana fijada por el equipo, 01/10 → 14/10 (semanas 9 y 10). No pasa por el planificador ni le
+# saca capacidad: el ADR lo acota a 4 h sin mover fechas (docs/challenge/ADR.md). 13.1.1 cerró en la semana 9;
+# 13.1.2 queda abierto hasta el cierre de la épica.
+FIXED_WEEK = {'13.1.1': (9, 9, 2), '13.1.2': (9, 10, 2)}
 # Estado según Cronograma-y-PERT-v4.md §4/§5: 43 ✅ (S1), 5 🟡 (parciales, cierran en S2).
 # 6.4.2 cierra en el S1: SPO-215 y SPO-218 pasaron a Done el 15/09 y el 16/09 (export del 17/09).
 DONE = {'3.1.1','3.1.2','3.1.3','3.2.1','3.2.2','3.2.3','4.1.1','4.1.2','4.1.3','4.1.4','4.2.1','4.2.2',
@@ -142,10 +146,10 @@ WIP = {'5.1.1', '5.1.4', '5.2.3', '7.1.1', '10.1.2'}
 SPRINT_OF = {}
 for k in DONE: SPRINT_OF[k] = 'S1'
 for k in ['5.1.1','5.1.4','5.2.2','5.2.3','6.1.4','6.2.5','6.2.6','6.4.3','7.1.1','7.1.2','7.1.3',
-          '7.3.1','7.3.2','7.3.3','10.1.2','11.1.1','11.1.2','11.1.3','11.2.1','11.2.2','11.2.3']: SPRINT_OF[k] = 'S2'
+          '7.3.1','7.3.2','7.3.3','10.1.2','11.1.1','11.1.2','11.1.3','11.2.1','11.2.2','11.2.3','13.1.1','13.1.2']: SPRINT_OF[k] = 'S2'
 for k in ['6.5.1','6.5.2','6.5.3','10.1.1','10.2.2','11.1.4','12.1.1','12.1.2','12.1.3','12.2.1','12.2.2','12.2.3']: SPRINT_OF[k] = 'S3'
 assert set(SPRINT_OF) == set(DEV), set(DEV) ^ set(SPRINT_OF)
-assert len(DONE) == 43 and len([k for k, s in SPRINT_OF.items() if s == 'S2']) == 21
+assert len(DONE) == 43 and len([k for k, s in SPRINT_OF.items() if s == 'S2']) == 23
 
 # Dev preferido para lo pendiente, por naturaleza del paquete. El scheduler puede dárselo a otro
 # dev si así termina antes: Siaba (3) tomó tickets de front en los sprints 4 y 5.
@@ -160,6 +164,9 @@ for k in SPRINT_OF:
 # ───────────────────────── fechas de lo hecho ─────────────────────────
 sched = {}   # id -> {'sw','ew','dev','status'}
 for k in DEV:
+    if k in FIXED_WEEK:
+        sw, ew, dev = FIXED_WEEK[k]; sched[k] = {'sw': sw, 'ew': ew, 'dev': dev, 'psw': sw, 'status': 'wip'}
+        continue
     # Sólo los tickets ya cerrados fijan la ventana. Si al paquete no le cerró ninguno todavía,
     # queda para el planificador de más abajo.
     ts = [TICKETS[n] for n in PKG_TICKETS.get(k, []) if TICKETS[n]['status'] in DONE_STATUSES]
@@ -178,7 +185,7 @@ for k in DEV:
 
 # ───────────────────────── planificación de lo pendiente ─────────────────────────
 cap = {d: {w: CAP_PER_DEV for w in range(1, N_WEEKS + 1)} for d in DEVS}
-pending = [k for k in DEV if k not in DONE]
+pending = [k for k in DEV if k not in DONE and k not in FIXED_WEEK]
 # Prioridad: sprint, después la cadena más larga que queda por delante dentro del mismo sprint
 # (para que un dev tome el bloque completo y no se pierda una semana en cada cambio de manos), después id.
 SUCC = defaultdict(list)
@@ -268,7 +275,7 @@ for sub, items in adds.items():
 lines.append('];')
 (OUT / '_v4_wbs.js').write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
-# PERT: 116 paquetes con CPM completo.
+# PERT: 118 paquetes con CPM completo.
 GROUPS = {
  '1.1':'Planificación técnica','1.2':'Gestión del proyecto','1.3':'Comunicación','1.4':'Cierre del proyecto',
  '2.1':'Identidad y perfiles','2.2':'Diseño de pantallas','2.3':'Modelo de datos',
@@ -278,6 +285,7 @@ GROUPS = {
  '7.2':'Experiencia swipe','7.3':'Visualización en mapa','8.1':'QA manual','8.2':'Pruebas con usuarios',
  '8.3':'QA automatizado','9.1':'Despliegue','10.1':'Docs de usuario','10.2':'Docs técnicas',
  '11.1':'Notificaciones backend','11.2':'Notificaciones frontend','12.1':'Reportar usuario','12.2':'Panel de moderación',
+ '13.1':'Reporte de KPIs',
 }
 assert {l2(k) for k in TASKS} <= set(GROUPS)
 f2 = lambda x: f'{x:.2f}'
@@ -294,7 +302,7 @@ for g in sorted(GROUPS, key=key):
 lines += ['    },', f"    newIds: {json.dumps(sorted([k for k in TASKS if k not in V2_IDS], key=key))},"]
 (OUT / '_v4_pert.js').write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
-# Gantt: 76 paquetes de desarrollo con fechas jueves a jueves.
+# Gantt: 78 paquetes de desarrollo con fechas jueves a jueves.
 lines = ['    tasks: [']
 for k in sorted(DEV, key=key):
     s = sched[k]
@@ -336,13 +344,13 @@ for w in range(7, N_WEEKS + 1):
         cells.append('<br>'.join(f'{k} {DEV[k]["title"]}' for k in items) or '—')
     load = sum(CAP_PER_DEV - cap[d][w] for d in DEVS)
     md.append(f'| {w} | {wstart(w):%d/%m} → {wend(w):%d/%m} | {sprint_of_week(w)} | ' + ' | '.join(cells) + f' | {load:.1f} / 18 h |')
-md += ['', '### PERT completo (116 paquetes)', '',
+md += ['', '### PERT completo (118 paquetes)', '',
        f'Duración del camino crítico: {T_FULL:.2f} h · {len(crit_full)} paquetes: ' + ' → '.join(crit_full), '']
 (OUT / '_v4_calendario.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
 print('->', ', '.join(p.name for p in (OUT / '_v4_wbs.js', OUT / '_v4_pert.js', OUT / '_v4_gantt.js', OUT / '_v4_calendario.md')))
 
 # ───────────────────────── actividades clave (tablero semanal del steering) ─────────────────────────
-# docs/planning/actividades-clave.csv (a mano): actividad -> prefijos de la WBS, fin de línea base, comentario
+# docs/planning/actividades-clave.csv (a mano): actividad -> prefijos de la WBS y fin de línea base
 # y, si el número calculado no refleja la realidad, avance y estado pisados a mano.
 # Avance: puntos de los issues en Done sobre los puntos de todos los issues de la actividad (cada issue una
 # sola vez, sólo filas con fechas='si', sin cancelados). Sin issues, 0 %.
@@ -354,7 +362,7 @@ D = lambda s: datetime.strptime(s, '%d/%m/%y').date()
 F = lambda d: f'{d:%d/%m/%y}' if d else ''
 art = lambda ts: (ts - timedelta(hours=3)).date()
 this_week = week_of(datetime.utcnow())
-cut = date.today() - timedelta(days=(date.today().weekday() - 3) % 7)   # jueves del corte: el de hoy o el último
+cut = date.today() + timedelta(days=(3 - date.today().weekday()) % 7)   # jueves del corte: el de hoy o el próximo, el que cierra la semana en curso
 # Títulos de los issues: los trae sync-linear.mjs al bloque LINEAR del Gantt (linear-issues.csv no guarda texto).
 _lin = (ROOT / 'leadership' / 'gantt.html').read_text(encoding='utf-8')
 _i = _lin.index('\n  issues: ', _lin.index('// linear-begin')) + len('\n  issues: ')
@@ -381,7 +389,7 @@ with io.open(ACT_CSV, encoding='utf-8') as f:
         planned = [wend(sched[k]['ew']) for k in pkgs if k in sched]
         est = real or (max(planned + [wend(this_week)]) if planned else base)
         rows.append({'actividad': r['actividad'], 'wbs': r['wbs'], 'estado': estado, 'avance': avance, 'base': F(base),
-                     'estimado': F(est), 'real': F(real), 'desvio': (base - real).days if real else None, 'comentario': r['comentario'],
+                     'estimado': F(est), 'real': F(real), 'desvio': (base - real).days if real else None,
                      'calc': calc, 'detalle': detalle})
 
 steer = ROOT / 'leadership' / 'steering.html'

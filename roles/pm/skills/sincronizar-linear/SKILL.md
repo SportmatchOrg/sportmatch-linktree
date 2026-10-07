@@ -16,7 +16,7 @@ El plan completo y por qué cada pieza es así: `docs/planning/plan-linear.md`.
 |---|---|---|
 | `docs/planning/linear-wbs-map.csv` | issue → paquete de la WBS. Una fila por par | **A mano** (este skill) |
 | `docs/planning/linear-issues.csv` | estado, puntos y fechas reales | Generado, no tocar |
-| `docs/planning/actividades-clave.csv` | actividad clave → paquetes de la WBS, línea base, comentarios | **A mano** (paso 5) |
+| `docs/planning/actividades-clave.csv` | actividad clave → paquetes de la WBS y línea base | **A mano** (paso 5) |
 | `leadership/gantt.html` | bloques `linear-begin` y `gen-begin` | Generado, no tocar |
 | `leadership/steering.html` | bloque `actividades-begin`: un snapshot por semana | Generado, no tocar |
 | `scripts/sync-linear.mjs` | trae Linear, reporta y escribe el repo | — |
@@ -106,7 +106,7 @@ otros tres archivos que deja en `scripts/_v4_*` van a mano y **solo si cambiaron
 ## Paso 5 — Tablero de actividades clave (todas las semanas)
 
 El mismo `generate-v4.py` del paso 4 escribe el tablero en la card "Actividades clave" de
-`leadership/steering.html`, bajo el jueves del corte. Correrlo dos veces en la misma semana pisa el snapshot
+`leadership/steering.html`, bajo el jueves que cierra la semana en curso (el de hoy si es jueves). Correrlo dos veces en la misma semana pisa el snapshot
 de esa semana; los anteriores quedan como historial y se eligen con el selector de la card.
 Cada fila se abre con un clic y muestra de dónde sale su avance: sus issues, su estado y sus puntos.
 
@@ -121,9 +121,8 @@ Qué sale solo y de dónde:
 
 Lo que se edita en `actividades-clave.csv` **antes** de correr el paso 4:
 
-- **`comentario`**: el de esta semana. Se guarda en el snapshot, así que el de la semana pasada no se pierde.
 - **`avance` / `estado`**: vacíos = automático. Se cargan solo cuando el número no refleja la realidad (por
-  ejemplo, trabajo hecho sin ticket). Dejarlo dicho en el comentario y **vaciarlos** cuando Linear se ponga al día.
+  ejemplo, trabajo hecho sin ticket). **Vaciarlos** cuando Linear se ponga al día.
 - **`wbs`**: prefijos separados por espacio (`5.1 5.2`, `6.1.4`). Un prefijo que no existe en la WBS corta el script.
 - **`fin_base`**: es la línea base, así que no se toca salvo que se rebaselinee el plan.
 
@@ -159,7 +158,7 @@ Los archivos que cambian y se commitean juntos:
 ```
 docs/planning/linear-wbs-map.csv      # las filas nuevas
 docs/planning/linear-issues.csv       # el snapshot de Linear
-docs/planning/actividades-clave.csv   # comentarios de la semana
+docs/planning/actividades-clave.csv   # solo si cambiaron actividades o se pisó avance/estado
 leadership/gantt.html                 # bloques linear-begin y gen-begin
 leadership/steering.html              # snapshot semanal de actividades clave
 docs/planning/Cronograma-y-PERT-v4.md # solo si cambió el calendario

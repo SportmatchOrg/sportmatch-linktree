@@ -19,4 +19,6 @@ const V4_ADD = [
    ["9.1.4 Contenedorización del backend y registro de imágenes"]],
  ["12.0 Moderación y Reportes", "12.2 Panel de moderación",
    ["12.2.1 Panel de revisión de reportes", "12.2.2 Suspensión de usuario", "12.2.3 Historial de moderación"]],
+ ["13.0 Challenge", "13.1 Reporte diario de KPIs",
+   ["13.1.1 Instrumentación para KPIs", "13.1.2 Cálculo y persistencia de KPIs"]],
 ];

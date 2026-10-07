@@ -167,3 +167,13 @@ SPO-272,12.2.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-272/bloquear-d
 SPO-273,12.2.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-273/historial-de-moderacion-por-jugador
 SPO-274,10.2.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-274/documentacion-de-la-api-con-swagger
 SPO-275,8.3.1,no,https://linear.app/sportmatch-dirproy/issue/SPO-275/activar-el-security-agent-en-sportmatch
+SPO-276,13.1.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-276/instrumentacion-para-kpis-matchfilledat-y-actividad-diaria
+SPO-277,13.1.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-277/post-kpissnapshots-calculo-y-persistencia-de-los-7-kpis-de-negocio
+SPO-278,5.1.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-278/deportes-y-nivel-del-usuario-en-el-back-userlevel-deportes-en-getpatch
+SPO-279,5.2.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-279/deportes-y-nivel-en-editar-perfil-y-en-el-perfil-propio-y-ajeno
+SPO-279,5.2.1,no,https://linear.app/sportmatch-dirproy/issue/SPO-279/deportes-y-nivel-en-editar-perfil-y-en-el-perfil-propio-y-ajeno
+SPO-280,8.1.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-280/seed-de-demo-seguro-para-produccion-solo-datos-demouser-sin-borrar
+SPO-281,9.1.2,no,https://linear.app/sportmatch-dirproy/issue/SPO-281/release-del-mvp-a-produccion-para-el-steering-2-dev-main-env-vars-de
+SPO-281,9.1.3,no,https://linear.app/sportmatch-dirproy/issue/SPO-281/release-del-mvp-a-produccion-para-el-steering-2-dev-main-env-vars-de
+SPO-282,8.1.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-282/datos-y-guion-de-la-demo-del-steering-2-en-produccion
+SPO-282,9.1.3,no,https://linear.app/sportmatch-dirproy/issue/SPO-282/datos-y-guion-de-la-demo-del-steering-2-en-produccion

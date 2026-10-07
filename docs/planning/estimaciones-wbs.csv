@@ -115,4 +115,6 @@
 12.2.1,"Panel de revisión de reportes: listado con filtro por estado y acción de marcar como revisado, restringido a rol administrador.",3.8,6,9.8,"Vista nueva con control de acceso por rol; el rol administrador no existe hoy y hay que introducirlo. Recalibrado a la velocidad real del equipo (factor 0,75, medido sobre las 4 primeras semanas).",6.27
 12.2.2,"Suspensión de usuario: acción de suspender una cuenta desde el panel, con bloqueo de acceso a rutas privadas.",2.2,3.8,6.8,"Toca el guard de autenticación y el modelo de usuario; requiere pruebas de regresión. Recalibrado a la velocidad real del equipo (factor 0,75, medido sobre las 4 primeras semanas).",4.03
 12.2.3,Historial de moderación: registro de las acciones tomadas sobre cada reporte y sobre cada usuario.,1.5,3,5.2,"Entidad de auditoría más vista de consulta; IA genera la base. Recalibrado a la velocidad real del equipo (factor 0,75, medido sobre las 4 primeras semanas).",3.12
-TOTAL,,257,424.1,693.6,,440.27
+13.1.1,Instrumentación para KPIs: momento en que un partido completa su cupo y actividad diaria por usuario.,1,1.5,2,"Una columna y una tabla nuevas, sin backfill; parte del tope de 4 h del ADR del Challenge.",1.5
+13.1.2,Cálculo y persistencia de KPIs: endpoint protegido que calcula los 7 KPIs de negocio de una fecha y guarda la corrida.,1.5,2.5,3.5,"Funciones puras por KPI más dos modelos y un guard; resto del tope de 4 h del ADR del Challenge.",2.5
+TOTAL,,259.5,428.1,699.1,,444.27
