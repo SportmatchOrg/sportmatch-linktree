@@ -29,6 +29,7 @@ El plan completo y por qué cada pieza es así: `docs/planning/plan-linear.md`.
 - **No pisa un milestone puesto a mano.** Si difiere del CSV, lo reporta y sigue: manda Linear.
 - No inventa el paquete de un issue cuya descripción no da para decidirlo. Ahí se pregunta.
 - No commitea: el commit lo decide quien corre el skill.
+- **Nunca cambia la línea base.** Ver la regla del paso 4.
 
 ## Paso 1 — Traer Linear y ver qué falta
 
@@ -101,7 +102,22 @@ otros tres archivos que deja en `scripts/_v4_*` van a mano y **solo si cambiaron
 
 - `_v4_wbs.js` → `leadership/wbs.html` (cambia solo si cambió la WBS)
 - `_v4_pert.js` → `leadership/pert.html` (ídem)
-- `_v4_calendario.md` → `docs/planning/Cronograma-y-PERT-v4.md`, §4 y §9
+- `_v4_calendario.md` → `docs/planning/Cronograma-y-PERT-v4.md`, §4 y §9: **solo las filas de paquetes nuevos**
+
+### La línea base no se toca nunca
+
+En `Cronograma-y-PERT-v4.md`, las fechas y horas de §4 (plan por sprint), §8 (ES / EF / LS / LF / holgura) y
+§9 (calendario semana a semana) son la **línea base**, y lo mismo vale para `fin_base` en
+`actividades-clave.csv`. No se cambian nunca, aunque el generador dé otras fechas. Lo que sí se puede:
+
+- **Agregar** filas de paquetes nuevos (alcance nuevo, por ejemplo la épica 13.0), sin mover las existentes, y
+  sumar sus horas a los totales.
+- **Actualizar los marcadores de estado** (✅ 🟡 ⬜) de §4 y §8 con lo cerrado en Linear.
+
+Por eso `_v4_calendario.md` **no se pega entero** sobre los bloques `v4:sprints` y `v4:semanas`: se copian
+solo las filas nuevas. Las fechas reales y el plan de lo pendiente se ven en el Gantt, que sí se regenera
+completo. Antes de commitear, `git diff` sobre el Cronograma tiene que mostrar solo filas agregadas y cambios
+de estado.
 
 ## Paso 5 — Tablero de actividades clave (todas las semanas)
 
@@ -161,7 +177,7 @@ docs/planning/linear-issues.csv       # el snapshot de Linear
 docs/planning/actividades-clave.csv   # solo si cambiaron actividades o se pisó avance/estado
 leadership/gantt.html                 # bloques linear-begin y gen-begin
 leadership/steering.html              # snapshot semanal de actividades clave
-docs/planning/Cronograma-y-PERT-v4.md # solo si cambió el calendario
+docs/planning/Cronograma-y-PERT-v4.md # solo filas nuevas y estados, nunca fechas de la línea base
 ```
 
 Si el paso 4 movió fechas de paquetes que ya estaban planificados, vale la pena decirlo en el commit:
