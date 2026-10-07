@@ -14,7 +14,7 @@ SportMatch usa Next.js, NestJS, Prisma y PostgreSQL en Azure; `dev` integra y `m
 
 - 10 KPIs diarios (7 de negocio, 2 técnicos, 1 de salud) con las reglas de negocio en un solo lugar.
 - Reporter independiente del uptime del servicio medido, si está caído podemos reportar igual, con logs, reintento y disparo manual.
-- Impacto acotado sobre Lab2 (≤ 4 h) y sin credenciales de base de datos fuera de Azure, ya que solicitamos a el back la generación de los KPIs. El workflow nunca toca la base de SportMatch. 
+- Impacto acotado sobre Lab2 (≤ 6 h) y sin credenciales de base de datos fuera de Azure, ya que solicitamos a el back la generación de los KPIs. El workflow nunca toca la base de SportMatch. 
 - Cuando un KPI resulta en `NO_DATA` nunca equivale a 0; trazabilidad por `run_id`; idempotencia; mínimo privilegio.
 - Alerta a los leads sin que tengan que mirar GitHub Actions.
 
@@ -79,12 +79,12 @@ La frecuencia es diaria con una medicion de ventana móvil de 30 días salvo ind
 
 **Se modifica:** aceptar solicitudes y editar capacidad ahora fijan `filledAt` (una vez, inmutable); el flujo autenticado registra una fila de actividad por usuario y día, sin rutas ni datos personales; secretos y Environments de CI. Sin backfill: `time_to_full` y `user_return_rate` serán `NO_DATA` hasta que haya muestra.
 
-**Se difiere:** SPO-249 (bugs visuales, 1 h) y SPO-250 (refresco con TanStack Query, 3 h) pasan a una iteración posterior. 
+**Se difiere:** SPO-249 (bugs visuales, 1 h) y SPO-250 (refresco con TanStack Query, 3 h) pasan a una iteración posterior. Además, se despriorizó el paquete de trabajo *Perfil de usuario* para abordar el challenge: sus dos issues pendientes, SPO-278 y SPO-279 (1 h cada uno), pasan a la semana siguiente. Esto mueve levemente el cronograma, pero no afecta el camino crítico. 
 
-**Por qué ellos:** son los únicos ítems pendientes sin dependencia del flujo central ni de las fuentes de los KPIs; su costo es cosmético o tiene alternativa (recarga manual). No se tocaron notificaciones, partidos ni reputación porque alimentan los KPIs de negocio. Quedan fuera dashboard propio, endpoints públicos y reintentos automáticos (un día fallido se reenvía con `date`, pero no suma nota).
+**Por qué ellos:** SPO-249 y SPO-250 no dependen del flujo central ni de las fuentes de los KPIs; su costo es cosmético o tiene alternativa (recarga manual). SPO-278 y SPO-279 no forman parte del camino crítico. No se tocaron notificaciones, partidos ni reputación porque alimentan los KPIs de negocio. Quedan fuera dashboard propio, endpoints públicos y reintentos automáticos (un día fallido se reenvía con `date`, pero no suma nota).
 
 **Horas:** 
 
-- **Lab2: 4 h** (instrumentación y endpoint, compensadas con las 4 h diferidas)
+- **Lab2: 6 h** (instrumentación y endpoint, compensadas con las 6 h diferidas)
 - **Lab4: 6 h** (workflow, integración, alertas, ADR).
 
