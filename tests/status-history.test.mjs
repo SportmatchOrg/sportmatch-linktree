@@ -25,6 +25,14 @@ test('history offers day, week, month and year', () => {
   }
 });
 
+test('the cron records once every 30 minutes, not on every 5-minute tick', () => {
+  const at = minute => new Date(Date.UTC(2026, 9, 10, 12, minute, 20));
+  const recorded = Array.from({ length: 60 }, (_, m) => m).filter(m => testing.isRecordTick(at(m)));
+  assert.deepEqual(recorded, [0, 1, 2, 3, 4, 30, 31, 32, 33, 34]);
+  const ticks = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => at(m + 2));
+  assert.equal(ticks.filter(t => testing.isRecordTick(t)).length, 2);
+});
+
 test('an unknown range is rejected before touching the database', async () => {
   const response = await call({ method: 'GET', query: { range: 'decade' } });
   assert.equal(response.code, 400);
