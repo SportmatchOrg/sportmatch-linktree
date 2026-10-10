@@ -6,3 +6,4 @@ node_modules/
 
 # intermedios de scripts/generate-v4.py (se pegan en las vistas y en el doc)
 scripts/_v4_*
+.idea
