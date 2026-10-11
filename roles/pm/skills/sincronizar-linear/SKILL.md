@@ -187,3 +187,5 @@ es información de cronograma, no ruido.
 
 Un issue creado **con milestone** y **con estimate** no necesita nada más que el paso 1. Sin milestone,
 el issue aparece sin épica y hay que rastrearlo a mano; sin estimate, no suma al avance de su milestone.
+
+Después de commitear, el update semanal del proyecto en Linear se arma con [`/update-linear`](../update-linear/SKILL.md).

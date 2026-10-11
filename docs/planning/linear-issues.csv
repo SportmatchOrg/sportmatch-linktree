@@ -73,7 +73,7 @@ SPO-206,Canceled,canceled,1,,,
 SPO-207,Done,completed,2,2026-09-11T20:29:59,2026-09-12T13:51:33,jrudolph
 SPO-208,Done,completed,1,2026-09-11T14:33:36,2026-09-12T14:33:44,ipacheco
 SPO-209,Done,completed,2,2026-09-19T18:42:34,2026-09-20T14:45:27,ipacheco
-SPO-210,Todo,unstarted,2,,,jrudolph
+SPO-210,In Progress,started,2,2026-10-08T18:58:05,,jrudolph
 SPO-211,Done,completed,1,2026-09-12T21:09:15,2026-09-14T12:58:11,jrudolph
 SPO-212,Done,completed,2,2026-09-12T21:16:36,2026-09-14T12:41:39,jrudolph
 SPO-213,Done,completed,1,2026-09-12T20:40:40,2026-09-14T14:49:31,jrudolph
@@ -124,7 +124,7 @@ SPO-257,Backlog,backlog,1,,,
 SPO-258,Todo,unstarted,1,,,jfsiaba
 SPO-259,Backlog,backlog,3,,,
 SPO-260,Canceled,canceled,1,,,
-SPO-261,Todo,unstarted,2,,,ipacheco
+SPO-261,In Review,started,2,2026-10-08T20:25:18,,ipacheco
 SPO-262,Todo,unstarted,1,,,ipacheco
 SPO-263,Todo,unstarted,2,,,jfsiaba
 SPO-264,Todo,unstarted,1,,,jfsiaba
@@ -141,8 +141,9 @@ SPO-274,Backlog,backlog,2,,,
 SPO-275,Done,completed,0,2026-10-02T00:59:42,2026-10-03T16:31:20,jfsiaba
 SPO-276,Done,completed,1,2026-10-06T15:48:01,2026-10-06T18:35:12,jrudolph
 SPO-277,Done,completed,1,2026-10-06T18:54:50,2026-10-06T19:21:27,jrudolph
-SPO-278,Todo,unstarted,1,,,ipacheco
+SPO-278,In Review,started,1,2026-10-08T19:21:12,,ipacheco
 SPO-279,Todo,unstarted,1,,,jrudolph
 SPO-280,Todo,unstarted,1,,,ipacheco
 SPO-281,Backlog,backlog,1,,,
 SPO-282,Todo,unstarted,1,,,jfsiaba
+SPO-283,Todo,unstarted,1,,,ipacheco
