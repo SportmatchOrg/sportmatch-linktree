@@ -120,6 +120,8 @@
   .pill.completed{ background:#dcfce7; color:#15803d; }
   .pill.started{ background:#fef3c7; color:#b45309; }
   .det-note{ margin:0; font-size:12px; color:var(--muted); }
+  .weeks{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; }
+  .weeks .btn[aria-pressed="true"]{ background:var(--navy); color:#fff; border-color:var(--navy); }
   .foot{ margin-top:18px; font-size:12px; color:var(--muted); text-align:center; }
 </style>
 </head>
@@ -182,6 +184,11 @@
     <button class="btn" id="svg-dl" type="button">Descargar SVG</button>
   </div>
   <div class="chart-box" id="chart-box"><div class="tip" id="tip"></div></div>
+
+  <h3>Semana a semana</h3>
+  <div class="weeks" id="wk-pick" role="group" aria-label="Semana"></div>
+  <div class="kpis" id="wk-kpis"></div>
+  <p class="note" id="wk-read"></p>
 
   <div class="export"><button class="btn" type="button" data-export="evm-table" data-name="valor-ganado-semanal">Descargar SVG</button></div>
   <div class="table-scroll" style="margin-top:12px"><table id="evm-table"></table></div>
@@ -263,9 +270,9 @@ const STEERINGS = {
     start: "06/08",
     cut: 10,
     reserve: "05/11 → 12/11",
-    // 225,62 h del Cronograma v4 (78 paquetes, con 13.0) y 13.1 re-estimada de 4 h a 6 h (Lab2, ADR-001).
+    // 227,62 h del Cronograma v4: 78 paquetes, con 13.1 re-estimada a 6 h (Lab2, ADR-001).
     devEffort: 227.62,
-    // Supuesto: se cierra al 15/10 todo lo que está en Todo, In Progress o In Review (SPO-262, SPO-264, SPO-279).
+    // SPO-262, SPO-264 y SPO-279 cerraron el 13/10 y el 14/10.
     // Parciales: 6.5.1 (back hecho, front en Backlog) y 10.1.2 (entrega de diseño, 🟡 en el Cronograma).
     avance: { done: [68, 193.31], wip: [2, 5.64], todo: [8, 28.67] },
     // loe: nivel de esfuerzo. Entra en la línea base EVM con EV = PV (incidente Sem08: en el S1 faltó su valor).
@@ -274,7 +281,7 @@ const STEERINGS = {
       { rol: "Desarrollo", who: "3 devs", people: 3, hWeek: 6, rate: 10, evm: true },
       { rol: "QA", who: "QA Lead", people: 1, hWeek: 4, rate: 20, evm: true, loe: true },
     ],
-    // Infra e IA de las semanas 7 a 10: real = plan, pendiente de confirmar con lo facturado.
+    // Infra e IA de las semanas 7 a 10: lo facturado coincide con el plan (confirmado el 14/10).
     other: [
       { name: "IA · Claude Code/ChatGPT · 3 × 20 USD/mes", byWeek: { 1: 60, 5: 60, 10: 60 } },
       { name: "Infra · Azure B1 (back) · 13,14 USD/mes, desde el deploy del 29/08", byWeek: { 4: 13.14, 8: 13.14, 12: 13.14 } },
@@ -429,16 +436,15 @@ const head = (cols) => `<thead><tr>${cols.map(([t, cls]) => `<th${cls ? ` class=
 /* ---- Curva S ----------------------------------------------------------- */
 // Devuelve el SVG como texto, con la leyenda adentro y sin fondo, para mostrarlo y para descargarlo.
 function curveSvg(d, m) {
-  const W = 900, H = 370, pad = { l: 56, r: 112, t: 48, b: 38 };
+  const W = 900, H = 370, pad = { l: 56, r: 24, t: 48, b: 38 };
   const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
   const step = m.bac > 4000 ? 1000 : 500;
   const yMax = Math.ceil(m.bac / step) * step;
   const x = (i) => pad.l + (iw * i) / (m.n - 1), y = (v) => pad.t + ih - (ih * v) / yMax;
   const o = [];
   const el = (tag, a, text) => o.push(`<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(" ")}${text == null ? "/>" : `>${text}</${tag}>`}`);
-  const eacColor = m.vac >= 0 ? "#16a34a" : "#dc2626";
-  [["PV · planificado", "#334155", "6 5"], ["EV · ganado", "#2a78d6"], ["AC · costo real", "#eb6834"], ["EAC · proyección", eacColor, "2 4"]].forEach(([label, c, dash], i) => {
-    const lx = pad.l + i * 150, a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
+  [["PV · plan", "#334155", "6 5"], ["EV · valor terminado", "#2a78d6"], ["AC · costo real", "#eb6834"]].forEach(([label, c, dash], i) => {
+    const lx = pad.l + i * 170, a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
     if (dash) a["stroke-dasharray"] = dash;
     el("line", a);
     el("text", { x: lx + 28, y: 20, "font-size": 12.5, fill: "#0f172a" }, label);
@@ -448,30 +454,13 @@ function curveSvg(d, m) {
     el("text", { x: pad.l - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#64748b" }, usd(v));
   }
   d.weeks.forEach((w, i) => el("text", { x: x(i), y: H - pad.b + 18, "text-anchor": "middle", "font-size": 11, fill: "#64748b" }, w));
-  const k = m.c - 1;
-  el("line", { x1: x(k), x2: x(k), y1: pad.t, y2: pad.t + ih, stroke: "#cbd5e1", "stroke-width": 1, "stroke-dasharray": "3 3" });
-  el("text", { x: x(k) + 6, y: pad.t + 12, "font-size": 11, fill: "#64748b" }, "Corte " + d.weeks[k]);
+  // Sólo PV, EV y AC, con un punto por semana. EV y AC llegan hasta el corte; PV sigue hasta el final.
   const path = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
   const line = { fill: "none", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" };
-  el("path", { d: path(m.ac), stroke: "#eb6834", ...line });
-  el("path", { d: path(m.pv), stroke: "#334155", ...line, "stroke-dasharray": "6 5" });
-  el("path", { d: path(m.ev), stroke: "#2a78d6", ...line });
-  const acLabel = Math.abs(m.AC - m.PV) < 0.005 ? "AC = PV " : "AC ";
-  [[m.ev, "#2a78d6", "EV " + usd(m.EV), -12, -8, "end"], [m.ac, "#eb6834", acLabel + usd(m.AC), 24, 10, "start"]].forEach(([arr, c, label, dy, dx, anchor]) => {
-    el("circle", { cx: x(k), cy: y(arr[k]), r: 4.5, fill: c, stroke: "#fff", "stroke-width": 2 });
-    el("text", { x: x(k) + dx, y: y(arr[k]) + dy, "text-anchor": anchor, "font-size": 12, "font-weight": 700, fill: "#0f172a" }, label);
+  [[m.pv, "#334155", "6 5"], [m.ac, "#eb6834"], [m.ev, "#2a78d6"]].forEach(([arr, c, dash]) => {
+    el("path", { d: path(arr), stroke: c, ...line, ...(dash ? { "stroke-dasharray": dash } : {}) });
+    arr.forEach((v, i) => el("circle", { cx: x(i).toFixed(1), cy: y(v).toFixed(1), r: 3.5, fill: c }));
   });
-  // Proyección: desde el costo real al corte hasta el EAC en la última semana. Es un pronóstico,
-  // no una curva medida, así que va punteada y con su propio color según caiga bajo o sobre la base.
-  el("path", { d: `M${x(k).toFixed(1)} ${y(m.AC).toFixed(1)} L${x(m.n - 1).toFixed(1)} ${y(m.eac).toFixed(1)}`, stroke: eacColor, ...line, "stroke-dasharray": "2 4" });
-  el("circle", { cx: x(m.n - 1), cy: y(m.eac), r: 4, fill: eacColor, stroke: "#fff", "stroke-width": 2 });
-  // La línea base no es "el BAC" a secas: el BAC del proyecto incluye gestión, QA y contingencia.
-  el("text", { x: W - pad.r + 8, y: y(m.bac) - 3, "font-size": 10, "font-weight": 600, fill: "#64748b" }, "Línea base EVM");
-  el("text", { x: W - pad.r + 8, y: y(m.bac) + 11, "font-size": 12.5, "font-weight": 700, fill: "#0f172a" }, usd(m.bac));
-  // Si el EAC cae cerca de la línea base, su etiqueta va debajo para no pisarla.
-  const eacY = Math.max(y(m.eac), y(m.bac) + 34);
-  el("text", { x: W - pad.r + 8, y: eacY - 3, "font-size": 10, "font-weight": 600, fill: eacColor }, "EAC");
-  el("text", { x: W - pad.r + 8, y: eacY + 11, "font-size": 12.5, "font-weight": 700, fill: eacColor }, usd(m.eac));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Curva S: PV, EV y AC acumulados por semana">\n${o.join("\n")}\n</svg>\n`;
   return { svg, geo: { W, pad, iw } };
 }
@@ -521,12 +510,10 @@ function render(ver) {
     kpi("AC", usd(m.AC), `${sum(d.actualHours) + sum(d.loeActualHours || [])} h de dedicación pactada`);
   $("evm-kpis-2").innerHTML =
     kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
-    kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo")) +
-    kpi("ETC", usd(m.etc), "costo para terminar") +
-    kpi("EAC", usd(m.eac), `vs línea base ${usd(m.bac)} · ${m.vac >= 0 ? `<span class="up">ahorro ${usd(m.vac)}</span>` : `<span class="down">sobrecosto ${usd(-m.vac)}</span>`}`, true);
+    kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
   $("evm-formula").innerHTML = [
     `SV = EV − PV = ${signed(m.EV - m.PV)}`, `CV = EV − AC = ${signed(m.EV - m.AC)}`,
-    m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC", "EAC = BAC / CPI", "ETC = EAC − AC", `VAC = BAC − EAC = ${signed(m.vac)}`, `TCPI = ${num(m.tcpi)}`,
+    m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC", "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${num(m.tcpi)}`,
   ].map((f) => `<span>${f}</span>`).join("");
   $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.` +
     (m.loeWeek ? ` Ese % se aplica al BAC de desarrollo (${usd(m.bacDev, 2)}). Los leads (${m.loeWeekH} h/sem) son nivel de esfuerzo: su trabajo no se cierra por paquetes, así que su EV es igual a su PV.` : "");
@@ -555,6 +542,35 @@ function render(ver) {
   svgEl.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
   $("svg-dl").onclick = () => download(svg, `SportMatch-Steering-${ver}-curva-s.svg`);
 
+  // Semana a semana: la foto de cualquier semana hasta el corte, con los mismos datos de la tabla.
+  const showGlobal = () => {
+    $("wk-pick").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", j === 0));
+    $("wk-kpis").innerHTML =
+      kpi("BAC · proyecto", usd(m.bac), `${m.n} semanas, al ${d.weeks[m.n - 1]}`) +
+      kpi("EV", usd(m.EV), `${pct(m.EV / m.bac)} del BAC ganado`, true) +
+      kpi("AC", usd(m.AC), `${pct(m.AC / m.bac)} del BAC gastado`) +
+      kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
+      kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
+    $("wk-read").innerHTML = `<b>Lectura:</b> en ${m.c} de ${m.n} semanas (${pct(m.c / m.n)} del calendario) el equipo ganó el ${pct(m.EV / m.bac)} del presupuesto ` +
+      `y gastó el ${pct(m.AC / m.bac)}. `+
+      `Quedan ${num(d.devEffort - m.evH[k])} h de WBS por cerrar.`;
+  };
+  const showWeek = (i) => {
+    const spi = m.ev[i] / m.pv[i], cpi = m.ev[i] / m.ac[i];
+    $("wk-pick").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", j === i + 1));
+    $("wk-kpis").innerHTML =
+      kpi(`PV · semana ${i + 1}`, usd(m.pv[i]), `al ${d.weeks[i]}`) + kpi("EV", usd(m.ev[i]), `${num(m.evH[i])} h de WBS cerradas`, true) +
+      kpi("AC", usd(m.ac[i]), "costo real acumulado") +
+      kpi("SPI", num(spi), trend(spi, "adelantados", "atrasados")) + kpi("CPI", num(cpi), trend(cpi, "eficientes", "sobre costo"));
+    $("wk-read").innerHTML = `<b>Lectura:</b> al ${d.weeks[i]} el trabajo terminado vale ${usd(m.ev[i])} contra ${usd(m.pv[i])} planificados ` +
+      `(${signed(m.ev[i] - m.pv[i])}) y costó ${usd(m.ac[i])} (${signed(m.ev[i] - m.ac[i])} de diferencia con lo ganado). ` +
+      `Esa semana cierran: ${d.earned[i].pkgs.join(", ") || "ningún paquete"}.`;
+  };
+  $("wk-pick").innerHTML = `<button class="btn" type="button" aria-pressed="false">Global</button>` +
+    d.earned.map((_, i) => `<button class="btn" type="button" aria-pressed="false">Sem ${i + 1}</button>`).join("");
+  $("wk-pick").querySelectorAll("button").forEach((b, j) => (b.onclick = () => (j ? showWeek(j - 1) : showGlobal())));
+  showGlobal();
+
   $("evm-table").innerHTML = head([["Sem."], ["Cierre"], ["PV acum.", "num"], ["EV acum.", "num"], ["AC acum.", "num"], ["Horas ganadas", "num"], ["SPI", "num"], ["CPI", "num"], ["Paquetes cerrados"]]) + "<tbody>" +
     d.earned.map((e, i) => row([td(i + 1), td(d.weeks[i]), td(usd(m.pv[i]), "num"), td(usd(m.ev[i]), "num"), td(usd(m.ac[i]), "num"), td(num(e.h) + " h", "num"), td(num(m.ev[i] / m.pv[i]), "num"), td(num(m.ev[i] / m.ac[i]), "num"), td(e.pkgs.join(", "), "ids")], i === k ? "cut" : "")).join("") + "</tbody>";
 
@@ -569,12 +585,10 @@ function render(ver) {
     "La <b>PV no es lineal</b>: los costos mensuales de IA y de Azure generan escalones en la curva.",
   ]);
   const weak = d.earned.map((_, i) => i).filter((i) => m.ev[i] / m.pv[i] < 1);
-  const eacAtip = m.AC + m.bac - m.EV;
   $("evm-recalcar").innerHTML = li([
     Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek + m.loeWeekH} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
     m.loeWeek && `<b>Los leads acercan los índices a 1:</b> como su EV es igual a su PV, diluyen el desvío. Midiendo solo desarrollo, infra e IA, el SPI da <b>${num(m.spiDev)}</b>.`,
     `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
-    `<b>Dos EAC posibles:</b> el típico (BAC / CPI = ${usd(m.eac)}) supone que la eficiencia se mantiene; el atípico (AC + BAC − EV = ${usd(eacAtip)}) supone que lo que falta sale según el plan. ${Math.max(m.eac, eacAtip) <= m.bac ? "Los dos quedan dentro del BAC." : "Uno de los dos supera el BAC."}`,
     `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
     weak.length && `<b>Semanas con SPI &lt; 1:</b> ${weak.map((i) => `semana ${i + 1} (${num(m.ev[i] / m.pv[i])})`).join(", ")}. El EV sube cuando cierra un paquete, no mientras se trabaja: las semanas en que cierran paquetes grandes compensan a las anteriores.`,
   ]);
