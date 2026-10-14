@@ -443,11 +443,17 @@ function curveSvg(d, m) {
   const x = (i) => pad.l + (iw * i) / (m.n - 1), y = (v) => pad.t + ih - (ih * v) / yMax;
   const o = [];
   const el = (tag, a, text) => o.push(`<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(" ")}${text == null ? "/>" : `>${text}</${tag}>`}`);
-  [["PV · plan", "#334155", "6 5"], ["EV · valor terminado", "#2a78d6"], ["AC · costo real", "#eb6834"]].forEach(([label, c, dash], i) => {
-    const lx = pad.l + i * 170, a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
+  // Leyenda alineada a la izquierda: cada entrada empieza a la misma distancia del final de la anterior.
+  // El ancho del texto se mide con canvas, igual que en tableSvg, con la misma fuente del SVG.
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = `400 12.5px -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`;
+  let lx = pad.l;
+  [["PV · plan", "#334155", "6 5"], ["EV · valor terminado", "#2a78d6"], ["AC · costo real", "#eb6834"]].forEach(([label, c, dash]) => {
+    const a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
     if (dash) a["stroke-dasharray"] = dash;
     el("line", a);
     el("text", { x: lx + 28, y: 20, "font-size": 12.5, fill: "#0f172a" }, label);
+    lx += 28 + ctx.measureText(label).width + 32;
   });
   for (let v = 0; v <= yMax; v += step) {
     el("line", { x1: pad.l, x2: W - pad.r, y1: y(v), y2: y(v), stroke: v === 0 ? "#94a3b8" : "#e2e8f0", "stroke-width": 1 });
@@ -505,8 +511,8 @@ function render(ver) {
   const k = m.c - 1;
   $("evm-lead").textContent = `Al corte de la semana ${m.c} (${d.weeks[k]}), sobre la línea base de desarrollo${m.loeWeek ? ", leads," : " más"} infra e IA: ${usd(m.bac, 2)} en ${m.n} semanas.`;
   $("evm-kpis-1").innerHTML =
-    kpi("PV", usd(m.PV), `${(m.devWeek + m.loeWeekH) * m.c} h planificadas · ${pct(m.PV / m.bac)} del BAC`) +
-    kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas${m.loeWeek ? " + leads" : ""} · ${pct(m.EV / m.bac)} del BAC`, true) +
+    kpi("PV", usd(m.PV), `${(m.devWeek + m.loeWeekH) * m.c} h planificadas · ${pct(m.PV / m.bac)} de la línea base`) +
+    kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas${m.loeWeek ? " + leads" : ""} · ${pct(m.EV / m.bac)} de la línea base`, true) +
     kpi("AC", usd(m.AC), `${sum(d.actualHours) + sum(d.loeActualHours || [])} h de dedicación pactada`);
   $("evm-kpis-2").innerHTML =
     kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
@@ -546,12 +552,12 @@ function render(ver) {
   const showGlobal = () => {
     $("wk-pick").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", j === 0));
     $("wk-kpis").innerHTML =
-      kpi("BAC · proyecto", usd(m.bac), `${m.n} semanas, al ${d.weeks[m.n - 1]}`) +
-      kpi("EV", usd(m.EV), `${pct(m.EV / m.bac)} del BAC ganado`, true) +
-      kpi("AC", usd(m.AC), `${pct(m.AC / m.bac)} del BAC gastado`) +
+      kpi("Línea base EVM", usd(m.bac), `BAC del proyecto ${usd(m.total)} con ${d.contingency * 100} % de contingencia`) +
+      kpi("EV", usd(m.EV), `${pct(m.EV / m.bac)} de la línea base ganado`, true) +
+      kpi("AC", usd(m.AC), `${pct(m.AC / m.bac)} de la línea base gastado`) +
       kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
       kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
-    $("wk-read").innerHTML = `<b>Lectura:</b> en ${m.c} de ${m.n} semanas (${pct(m.c / m.n)} del calendario) el equipo ganó el ${pct(m.EV / m.bac)} del presupuesto ` +
+    $("wk-read").innerHTML = `<b>Lectura:</b> en ${m.c} de ${m.n} semanas (${pct(m.c / m.n)} del calendario) el equipo ganó el ${pct(m.EV / m.bac)} de la línea base EVM (${usd(m.bac)}) ` +
       `y gastó el ${pct(m.AC / m.bac)}. `+
       `Quedan ${num(d.devEffort - m.evH[k])} h de WBS por cerrar.`;
   };

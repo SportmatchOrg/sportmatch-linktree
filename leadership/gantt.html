@@ -479,6 +479,9 @@ const DATA = {
     label: 'WBS v4 · 3 devs · 78 tareas',
     sub: '3 devs · 78 tareas · 228 h de desarrollo · semanas de jueves a jueves (cierre 18 h) · lo hecho con fechas reales de Linear, lo pendiente planificado a 6 h por dev y semana · el desarrollo cierra el 05/11 y la semana hasta la entrega del 12/11 queda de reserva',
     rangeEnd: '2026-11-20',
+    // Cronograma ganado al corte del Steering 2: EV $5.374 cae entre el PV del 15/10 ($5.206) y el del
+    // 22/10 ($5.706), a 0,33 semanas del 15/10. Sale de leadership/steering.html v2 (lo verifica el test).
+    progress: { date: '2026-10-17', note: 'lo terminado al corte del 15/10 equivale al plan del 17/10 (cronograma ganado)' },
     weekly: true,
     // gen-begin — lo escribe scripts/generate-v4.py; no editar a mano
     tasks: [
@@ -939,6 +942,17 @@ function todayLine(x, y1, y2){
   return line;
 }
 
+/* Línea azul de avance: la fecha en que el plan preveía tener lo que ya está terminado
+   (cronograma ganado, EVM). A la derecha de "Hoy", vamos adelantados. */
+function progressLine(x, y1, y2){
+  const p = DATA[VER].progress;
+  const line = svgEl("line", { x1:x, y1, x2:x, y2, stroke:"#2a78d6", "stroke-width":2 });
+  const t = document.createElementNS(SVGNS, "title");
+  t.textContent = `Avance · ${p.date}: ${p.note}`;
+  line.appendChild(t);
+  return line;
+}
+
 /* ---------------- TIMELINE HEADER ---------------- */
 const Y_MONTH = 14, Y_WEEK = HEADER_H - 7, WEEK_BAND_TOP = HEADER_H - 18;
 /* Dos filas para las etiquetas de hitos: si dos caen muy juntas (p. ej. "Fin
@@ -1009,11 +1023,14 @@ function buildHeader(){
   if(parse(TODAY) >= rangeStart && parse(TODAY) <= rangeEnd){
     markers.push({ date: TODAY, label: "Hoy", type: "today", x: xLine(TODAY) });
   }
+  const prog = DATA[VER].progress;
+  if(prog) markers.push({ date: prog.date, label: "Avance", type: "progress", x: xLine(prog.date) });
   markers.sort((a, b) => a.x - b.x);
 
   const STYLE = {
     delivery: { fill:"#dc2626", size:11, weight:700, stroke:"#dc2626", sw:1.5, dash:"none" },
     today:    { fill:"#16a34a", size:11, weight:700, stroke:"#16a34a", sw:2,   dash:"none" },
+    progress: { fill:"#2a78d6", size:11, weight:700, stroke:"#2a78d6", sw:2,   dash:"none" },
     event:    { fill:"#64748b", size:10, weight:600, stroke:"#cbd5e1", sw:1,   dash:"3 3" },
   };
 
@@ -1021,8 +1038,8 @@ function buildHeader(){
   // cruza por encima de una etiqueta ya dibujada.
   markers.forEach(m => {
     const st = STYLE[m.type] || STYLE.event;
-    headSvg.appendChild(m.type === "today"
-      ? todayLine(m.x, 22, HEADER_H)
+    headSvg.appendChild(m.type === "today" ? todayLine(m.x, 22, HEADER_H)
+      : m.type === "progress" ? progressLine(m.x, 22, HEADER_H)
       : svgEl("line",{ x1:m.x, y1:22, x2:m.x, y2:HEADER_H,
                        stroke:st.stroke, "stroke-width":st.sw, "stroke-dasharray":st.dash }));
   });
@@ -1064,7 +1081,7 @@ function visibleRows(){
 
 function drawBar(parent, t, rowY, color){
   const { x, w } = barGeom(t.start, t.end);
-  const barH = 18, barY = rowY + (ROW_H - barH)/2;
+  const barH = Math.min(18, ROW_H - 4), barY = rowY + (ROW_H - barH)/2;
   const onCrit = state.showCrit && criticalSet.has(t.id);
   // La lámina del steering usa barras translúcidas, como las envolventes de una épica colapsada.
   const soft = state.level === "mix";
@@ -1087,7 +1104,7 @@ function drawBar(parent, t, rowY, color){
 /* Envelope bar: a collapsed épica (whole module) or, in "l3", a sub-package header row. */
 function drawEnvelope(parent, start, end, color, rowY, opacity = 0.35, pkg = null){
   const { x, w } = barGeom(start, end);
-  const barH = 18, barY = rowY + (ROW_H - barH)/2;
+  const barH = Math.min(18, ROW_H - 4), barY = rowY + (ROW_H - barH)/2;
   const rect = svgEl("rect",{ x, y:barY, width:w, height:barH, rx:5, ry:5,
     fill:color, "fill-opacity":opacity, stroke:color, "stroke-width":1.4, "stroke-opacity":opacity + 0.2 });
   // La barra de una épica colapsada (o de un sub-paquete) abre sus issues, igual que su etiqueta.
@@ -1203,6 +1220,7 @@ function render(){
   if(parse(TODAY) >= rangeStart && parse(TODAY) <= rangeEnd){
     gMile.appendChild(todayLine(xLine(TODAY), 0, plotHeight));
   }
+  if(DATA[VER].progress) gMile.appendChild(progressLine(xLine(DATA[VER].progress.date), 0, plotHeight));
 
   /* Hitos del Charter: la fila es la del paquete; en "l3", su cabecera de sub-paquete;
      con la épica colapsada, la fila de la épica. */
@@ -1441,14 +1459,20 @@ function measureLabelW(rows){
    geometría, arma el SVG y vuelve a la de pantalla. El estirado tiene tope para que un nivel
    con muchas filas no termine con barras absurdas. */
 const SLIDE_ASPECT = 16 / 9;
-const SLIDE_ROW_H = 24, DAY_W_MIN = 9, DAY_W_MAX = 26;
+/* Con muchas filas ("l3" tiene 110) estirar el eje no alcanza: llega al tope y la imagen queda en
+   1,28. Entonces también baja el alto de fila, hasta SLIDE_ROW_H_MIN, para llegar a 16:9. */
+const SLIDE_ROW_H = 24, SLIDE_ROW_H_MIN = 20, DAY_W_MIN = 9, DAY_W_MAX = 32;
 function forSlide(build){
   if(!document.getElementById("tg-slide").checked) return build();
   const dayW0 = DAY_W, rowH0 = ROW_H;
   ROW_H = SLIDE_ROW_H;
-  const rows = visibleRows();
-  const h = HEADER_H + rows.length * ROW_H;
-  DAY_W = Math.min(DAY_W_MAX, Math.max(DAY_W_MIN, (SLIDE_ASPECT * h - measureLabelW(rows)) / totalDays));
+  const rows = visibleRows(), labelW = measureLabelW(rows);
+  const fit = () => (SLIDE_ASPECT * (HEADER_H + rows.length * ROW_H) - labelW) / totalDays;
+  if(fit() > DAY_W_MAX){
+    const h = (labelW + DAY_W_MAX * totalDays) / SLIDE_ASPECT;
+    ROW_H = Math.max(SLIDE_ROW_H_MIN, Math.floor((h - HEADER_H) / rows.length));
+  }
+  DAY_W = Math.min(DAY_W_MAX, Math.max(DAY_W_MIN, fit()));
   render();
   try { return build(); }
   finally { DAY_W = dayW0; ROW_H = rowH0; render(); }
