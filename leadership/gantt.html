@@ -673,7 +673,7 @@ const RANGE_START = "2026-07-30";
 const CRITICAL_L3 = ["4.1.1","6.1.3","6.3.1","6.2.3","9.1.1","6.3.2","6.4.3","7.2.1",
                      "5.1.4","7.2.2","6.2.1","7.1.3","6.2.2","5.2.2","5.2.3","9.1.2","9.1.3","10.2.1"];
 
-const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const STATUS_LABEL = { done:"hecho", wip:"parcial", todo:"pendiente" };
 
 /* ---------------- HELPERS ---------------- */
@@ -687,7 +687,8 @@ function todayISO(){
   const p = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
 }
-const TODAY = todayISO();
+// TEMPORAL (Steering 2): "Hoy" fijo en el corte del 15/10 para la presentación. Volver a todayISO() después.
+const TODAY = "2026-10-15";
 function l2id(id){ const p=id.split('.'); return p[0]+'.'+p[1]; }
 function isLeafId(id){ return id.split('.').length === 3; }
 function svgEl(name, attrs){
@@ -984,15 +985,15 @@ function buildHeader(){
 
   // ── mes + ticks de semana ──────────────────────────────────────────────────
   const months = [];
-  let monthStartX = 0, curMonth = rangeStart.getUTCMonth(), curYear = rangeStart.getUTCFullYear();
+  let monthStartX = 0, curMonth = rangeStart.getUTCMonth();
   for(let i=0; i<=totalDays; i++){
     const x = i*DAY_W;
     const dt = new Date(rangeStart.getTime() + i*DAY_MS);
     const beyond = i >= totalDays;
     if(beyond || dt.getUTCMonth() !== curMonth){
-      months.push({ label: MONTHS[curMonth] + " " + (curYear%100), from: monthStartX, to: x });
+      months.push({ label: MONTHS[curMonth], from: monthStartX, to: x });
       headSvg.appendChild(svgEl("line",{ x1:x, y1:0, x2:x, y2:HEADER_H, stroke:"#cbd5e1","stroke-width":1, "data-no-export":"" }));
-      if(!beyond){ curMonth = dt.getUTCMonth(); curYear = dt.getUTCFullYear(); monthStartX = x; }
+      if(!beyond){ curMonth = dt.getUTCMonth(); monthStartX = x; }
     }
     if(beyond) break;
     if(dt.getUTCDay() === 4){ // jueves = inicio de semana académica
@@ -1048,10 +1049,10 @@ function buildHeader(){
   markers.forEach(m => {
     const st = STYLE[m.type] || STYLE.event;
     const w  = textW(m.label, HFONT(st.size, st.weight));
-    const lx = m.x + 4;
-    // primera fila libre; si ninguna lo está, la que termine antes
+    let lx = m.x + 4;
+    // primera fila libre; si ninguna lo está, la que termine antes, corriendo la etiqueta para no pisarla
     let row = MILE_ROWS.findIndex((_, i) => lx > rowRight[i] + 6);
-    if(row === -1) row = rowRight.indexOf(Math.min(...rowRight));
+    if(row === -1){ row = rowRight.indexOf(Math.min(...rowRight)); lx = Math.max(lx, rowRight[row] + 6); }
     rowRight[row] = lx + w;
     headSvg.appendChild(headLabel(lx, MILE_ROWS[row], m.label, st.size, st.weight, st.fill));
   });
@@ -1081,7 +1082,7 @@ function visibleRows(){
 
 function drawBar(parent, t, rowY, color){
   const { x, w } = barGeom(t.start, t.end);
-  const barH = Math.min(18, ROW_H - 4), barY = rowY + (ROW_H - barH)/2;
+  const barH = Math.min(ROW_H - 4, Math.max(18, Math.round(ROW_H * 0.45))), barY = rowY + (ROW_H - barH)/2;
   const onCrit = state.showCrit && criticalSet.has(t.id);
   // La lámina del steering usa barras translúcidas, como las envolventes de una épica colapsada.
   const soft = state.level === "mix";
@@ -1104,7 +1105,7 @@ function drawBar(parent, t, rowY, color){
 /* Envelope bar: a collapsed épica (whole module) or, in "l3", a sub-package header row. */
 function drawEnvelope(parent, start, end, color, rowY, opacity = 0.35, pkg = null){
   const { x, w } = barGeom(start, end);
-  const barH = Math.min(18, ROW_H - 4), barY = rowY + (ROW_H - barH)/2;
+  const barH = Math.min(ROW_H - 4, Math.max(18, Math.round(ROW_H * 0.45))), barY = rowY + (ROW_H - barH)/2;
   const rect = svgEl("rect",{ x, y:barY, width:w, height:barH, rx:5, ry:5,
     fill:color, "fill-opacity":opacity, stroke:color, "stroke-width":1.4, "stroke-opacity":opacity + 0.2 });
   // La barra de una épica colapsada (o de un sub-paquete) abre sus issues, igual que su etiqueta.
@@ -1459,19 +1460,19 @@ function measureLabelW(rows){
    geometría, arma el SVG y vuelve a la de pantalla. El estirado tiene tope para que un nivel
    con muchas filas no termine con barras absurdas. */
 const SLIDE_ASPECT = 16 / 9;
-/* Con muchas filas ("l3" tiene 110) estirar el eje no alcanza: llega al tope y la imagen queda en
-   1,28. Entonces también baja el alto de fila, hasta SLIDE_ROW_H_MIN, para llegar a 16:9. */
-const SLIDE_ROW_H = 24, SLIDE_ROW_H_MIN = 20, DAY_W_MIN = 9, DAY_W_MAX = 32;
+/* Si el eje de tiempo topa, ajusta el alto de fila para llegar igual a 16:9: con muchas filas ("l3"
+   tiene 110) lo baja hasta SLIDE_ROW_H_MIN; con pocas (épicas colapsadas, 10 filas) lo sube hasta
+   SLIDE_ROW_H_MAX, y las barras crecen con la fila. */
+const SLIDE_ROW_H = 24, SLIDE_ROW_H_MIN = 20, SLIDE_ROW_H_MAX = 72, DAY_W_MIN = 9, DAY_W_MAX = 32;
 function forSlide(build){
   if(!document.getElementById("tg-slide").checked) return build();
   const dayW0 = DAY_W, rowH0 = ROW_H;
   ROW_H = SLIDE_ROW_H;
   const rows = visibleRows(), labelW = measureLabelW(rows);
   const fit = () => (SLIDE_ASPECT * (HEADER_H + rows.length * ROW_H) - labelW) / totalDays;
-  if(fit() > DAY_W_MAX){
-    const h = (labelW + DAY_W_MAX * totalDays) / SLIDE_ASPECT;
-    ROW_H = Math.max(SLIDE_ROW_H_MIN, Math.floor((h - HEADER_H) / rows.length));
-  }
+  const rowFor = (dayW) => ((labelW + dayW * totalDays) / SLIDE_ASPECT - HEADER_H) / rows.length;
+  if(fit() > DAY_W_MAX) ROW_H = Math.max(SLIDE_ROW_H_MIN, Math.floor(rowFor(DAY_W_MAX)));
+  else if(fit() < DAY_W_MIN) ROW_H = Math.min(SLIDE_ROW_H_MAX, Math.ceil(rowFor(DAY_W_MIN)));
   DAY_W = Math.min(DAY_W_MAX, Math.max(DAY_W_MIN, fit()));
   render();
   try { return build(); }
