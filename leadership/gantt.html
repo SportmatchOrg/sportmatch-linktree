@@ -260,7 +260,7 @@
   <div class="sep"></div>
   <button class="ctl" id="btn-fold">Colapsar épicas</button>
   <div class="sep"></div>
-  <label title="Exporta en proporción de diapositiva (16:9): baja el alto de fila y estira el eje de tiempo para que la imagen llene la lámina en vez de quedar casi cuadrada"><input type="checkbox" id="tg-slide" checked> 16:9</label>
+  <label title="Exporta para lámina: proporción 2:1 y texto más grande (nombres a 18 px), ajustando el alto de fila y el eje de tiempo"><input type="checkbox" id="tg-slide" checked> Lámina 2:1</label>
   <button class="ctl" id="btn-svg">Exportar SVG</button>
   <button class="ctl" id="btn-png">Exportar PNG</button>
 </div>
@@ -664,7 +664,10 @@ const SVGNS = "http://www.w3.org/2000/svg";
 const DAY_MS = 86400000;
 let DAY_W = 11;
 let ROW_H = 32;
-const HEADER_H = 80;
+let HEADER_H = 80;
+/* Escala del texto del encabezado y de la columna de nombres: 1 en pantalla. El export para
+   lámina la sube para que los nombres salgan a 18 px (ver forSlide). */
+let FS = 1;
 const RANGE_START = "2026-07-30";
 
 /* Cadena crítica del cronograma nivelado: la secuencia CONTIGUA de tareas que fija
@@ -955,11 +958,11 @@ function progressLine(x, y1, y2){
 }
 
 /* ---------------- TIMELINE HEADER ---------------- */
-const Y_MONTH = 14, Y_WEEK = HEADER_H - 7, WEEK_BAND_TOP = HEADER_H - 18;
+const Y_MONTH = () => 14 * FS, Y_WEEK = () => HEADER_H - 7 * FS, WEEK_BAND_TOP = () => HEADER_H - 18 * FS;
 /* Dos filas para las etiquetas de hitos: si dos caen muy juntas (p. ej. "Fin
    desarrollo" el 10-Nov y "Entrega 3" el 12-Nov, a 2 días = 22 px), la segunda
    baja de fila en vez de dibujarse encima de la primera. */
-const MILE_ROWS = [34, 48];
+const MILE_ROWS = () => [34 * FS, 48 * FS];
 
 const HFONT = (size, weight) =>
   `${weight} ${size}px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
@@ -997,8 +1000,8 @@ function buildHeader(){
     }
     if(beyond) break;
     if(dt.getUTCDay() === 4){ // jueves = inicio de semana académica
-      headSvg.appendChild(svgEl("line",{ x1:x, y1:WEEK_BAND_TOP, x2:x, y2:HEADER_H, stroke:"#e2e8f0","stroke-width":1, "data-no-export":"" }));
-      const t = svgEl("text",{ x:x+3, y:Y_WEEK, "font-size":10, fill:"#64748b" });
+      headSvg.appendChild(svgEl("line",{ x1:x, y1:WEEK_BAND_TOP(), x2:x, y2:HEADER_H, stroke:"#e2e8f0","stroke-width":1, "data-no-export":"" }));
+      const t = svgEl("text",{ x:x+3, y:Y_WEEK(), "font-size":10 * FS, fill:"#64748b" });
       t.textContent = dt.getUTCDate()+"/"+(dt.getUTCMonth()+1);
       headSvg.appendChild(t);
     }
@@ -1007,14 +1010,14 @@ function buildHeader(){
   /* El mes va centrado en su banda, pero un mes que entra apenas al rango
      (Jul, con 2 días) tiene el centro fuera del gráfico y quedaba cortado:
      se lo empuja adentro, y se omite sólo si aun así pisaría al mes anterior. */
-  const monthFont = HFONT(12.5, 700);
+  const monthFont = HFONT(12.5 * FS, 700);
   let lastRight = -Infinity;
   months.forEach(({ label, from, to }) => {
     const w = textW(label, monthFont);
     const cx = Math.min(Math.max((from + to) / 2, w/2 + 3), W - w/2 - 3);
     if(cx - w/2 < lastRight + 8) return;
     lastRight = cx + w/2;
-    const t = headLabel(cx, Y_MONTH, label, 12.5, 700, "#1e293b");
+    const t = headLabel(cx, Y_MONTH(), label, 12.5 * FS, 700, "#1e293b");
     t.setAttribute("text-anchor", "middle");
     headSvg.appendChild(t);
   });
@@ -1039,22 +1042,22 @@ function buildHeader(){
   // cruza por encima de una etiqueta ya dibujada.
   markers.forEach(m => {
     const st = STYLE[m.type] || STYLE.event;
-    headSvg.appendChild(m.type === "today" ? todayLine(m.x, 22, HEADER_H)
-      : m.type === "progress" ? progressLine(m.x, 22, HEADER_H)
-      : svgEl("line",{ x1:m.x, y1:22, x2:m.x, y2:HEADER_H,
+    headSvg.appendChild(m.type === "today" ? todayLine(m.x, 22 * FS, HEADER_H)
+      : m.type === "progress" ? progressLine(m.x, 22 * FS, HEADER_H)
+      : svgEl("line",{ x1:m.x, y1:22 * FS, x2:m.x, y2:HEADER_H,
                        stroke:st.stroke, "stroke-width":st.sw, "stroke-dasharray":st.dash }));
   });
 
-  const rowRight = MILE_ROWS.map(() => -Infinity);
+  const rowRight = MILE_ROWS().map(() => -Infinity);
   markers.forEach(m => {
     const st = STYLE[m.type] || STYLE.event;
-    const w  = textW(m.label, HFONT(st.size, st.weight));
+    const w  = textW(m.label, HFONT(st.size * FS, st.weight));
     let lx = m.x + 4;
     // primera fila libre; si ninguna lo está, la que termine antes, corriendo la etiqueta para no pisarla
-    let row = MILE_ROWS.findIndex((_, i) => lx > rowRight[i] + 6);
+    let row = MILE_ROWS().findIndex((_, i) => lx > rowRight[i] + 6);
     if(row === -1){ row = rowRight.indexOf(Math.min(...rowRight)); lx = Math.max(lx, rowRight[row] + 6); }
     rowRight[row] = lx + w;
-    headSvg.appendChild(headLabel(lx, MILE_ROWS[row], m.label, st.size, st.weight, st.fill));
+    headSvg.appendChild(headLabel(lx, MILE_ROWS()[row], m.label, st.size * FS, st.weight, st.fill));
   });
 
   headSvg.appendChild(svgEl("line",{ x1:0, y1:HEADER_H-0.5, x2:W, y2:HEADER_H-0.5, stroke:"#e2e8f0", "data-no-export":"" }));
@@ -1438,20 +1441,20 @@ function measureLabelW(rows){
   let need = LABEL_W_MIN;
   rows.forEach(r => {
     if(r.type === "group"){
-      need = Math.max(need, 30 + textW(r.g.mod, HFONT(12.5, 700)) + 12);
+      need = Math.max(need, (30 + 12) * FS + textW(r.g.mod, HFONT(12.5 * FS, 700)));
       return;
     }
     const item = r.type === "sub" ? r.sub : r.task, leaf = r.type === "task" && isLeafId(item.id);
-    const x0 = r.type === "sub" ? 22 : leaf ? 36 : 26, idxW = leaf ? 46 : 34;
+    const x0 = (r.type === "sub" ? 22 : leaf ? 36 : 26) * FS, idxW = (leaf ? 46 : 34) * FS;
     const dev  = leaf && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
     const tail = (dev ? dev + "  " : "") + item.hours.toFixed(1) + " h";
-    const size = r.type === "sub" ? 11.5 : 12.5, weight = r.type === "sub" ? 700 : 400;
+    const size = (r.type === "sub" ? 11.5 : 12.5) * FS, weight = r.type === "sub" ? 700 : 400;
     // En pantalla la fila lleva además la chapa NUEVO / +N, que el SVG no dibuja pero ocupa lugar.
     const badge = r.type === "task" && (isNew(item.id) || newPkgsIn(VER, item.id).length) ? 56 : 0;
-    need = Math.max(need, x0 + idxW + 8 + textW(item.name, HFONT(size, weight)) + 10
-                          + textW(tail, HFONT(10.5, 500)) + 12 + badge);
+    need = Math.max(need, x0 + idxW + 8 * FS + textW(item.name, HFONT(size, weight)) + 10 * FS
+                          + textW(tail, HFONT(10.5 * FS, 500)) + 12 * FS + badge);
   });
-  return Math.min(LABEL_W_MAX, Math.ceil(need));
+  return Math.min(LABEL_W_MAX * FS, Math.ceil(need));
 }
 
 /* La vista de pantalla exporta una imagen casi cuadrada (1494 × 1168 = 1,28). Metida en una
@@ -1459,7 +1462,9 @@ function measureLabelW(rows){
    fila y estira el eje de tiempo hasta la proporción de la lámina, re-renderiza con esa
    geometría, arma el SVG y vuelve a la de pantalla. El estirado tiene tope para que un nivel
    con muchas filas no termine con barras absurdas. */
-const SLIDE_ASPECT = 16 / 9;
+/* 2:1, un poco más apaisado que la lámina: deja lugar para el título arriba. */
+const SLIDE_ASPECT = 2;
+const SLIDE_FS = 18 / 12.5;      // nombres de épica y de paquete a 18 px
 /* Si el eje de tiempo topa, ajusta el alto de fila para llegar igual a 16:9: con muchas filas ("l3"
    tiene 110) lo baja hasta SLIDE_ROW_H_MIN; con pocas (épicas colapsadas, 10 filas) lo sube hasta
    SLIDE_ROW_H_MAX, y las barras crecen con la fila. */
@@ -1467,16 +1472,19 @@ const SLIDE_ROW_H = 24, SLIDE_ROW_H_MIN = 20, SLIDE_ROW_H_MAX = 72, DAY_W_MIN = 
 function forSlide(build){
   if(!document.getElementById("tg-slide").checked) return build();
   const dayW0 = DAY_W, rowH0 = ROW_H;
-  ROW_H = SLIDE_ROW_H;
+  FS = SLIDE_FS; HEADER_H = Math.round(80 * FS);
+  ROW_H = Math.round(SLIDE_ROW_H * FS);
   const rows = visibleRows(), labelW = measureLabelW(rows);
   const fit = () => (SLIDE_ASPECT * (HEADER_H + rows.length * ROW_H) - labelW) / totalDays;
   const rowFor = (dayW) => ((labelW + dayW * totalDays) / SLIDE_ASPECT - HEADER_H) / rows.length;
-  if(fit() > DAY_W_MAX) ROW_H = Math.max(SLIDE_ROW_H_MIN, Math.floor(rowFor(DAY_W_MAX)));
-  else if(fit() < DAY_W_MIN) ROW_H = Math.min(SLIDE_ROW_H_MAX, Math.ceil(rowFor(DAY_W_MIN)));
-  DAY_W = Math.min(DAY_W_MAX, Math.max(DAY_W_MIN, fit()));
+  if(fit() > DAY_W_MAX) ROW_H = Math.max(Math.round(SLIDE_ROW_H_MIN * FS), Math.floor(rowFor(DAY_W_MAX)));
+  else if(fit() < DAY_W_MIN) ROW_H = Math.min(Math.round(SLIDE_ROW_H_MAX * FS), Math.ceil(rowFor(DAY_W_MIN)));
+  // Las filas ya se ajustaron para que fit() quede dentro del rango; si topó en el alto mínimo
+  // (muchas filas), el eje se estira lo que haga falta para llegar a la proporción.
+  DAY_W = Math.max(DAY_W_MIN, fit());
   render();
   try { return build(); }
-  finally { DAY_W = dayW0; ROW_H = rowH0; render(); }
+  finally { DAY_W = dayW0; ROW_H = rowH0; FS = 1; HEADER_H = 80; render(); }
 }
 
 function buildExportSvg(){
@@ -1488,7 +1496,7 @@ function buildExportSvg(){
   const fit = (str, font, max) => { if(textW(str, font) <= max) return str;
     while(str && textW(str + "…", font) > max) str = str.slice(0, -1); return str + "…"; };
 
-  text(12, HEADER_H - 10, "ÍNDICE · TAREA", { "font-size":11, "font-weight":600, fill:"#64748b", "letter-spacing":".04em" });
+  text(12 * FS, HEADER_H - 10 * FS, "ÍNDICE · TAREA", { "font-size":11 * FS, "font-weight":600, fill:"#64748b", "letter-spacing":".04em" });
   const place = (svg, x, y) => { const g = svgEl("g", { transform:`translate(${x},${y})` });
     [...svg.childNodes].filter(n => !n.hasAttribute("data-no-export")).forEach(n => g.appendChild(n.cloneNode(true))); out.appendChild(g); };
   place(headSvg, LABEL_W, 0);
@@ -1496,25 +1504,25 @@ function buildExportSvg(){
   place(overlaySvg, LABEL_W, HEADER_H);
 
   rows.forEach(r => {
-    const y = HEADER_H + r.y, cy = y + ROW_H/2 + 4;
+    const y = HEADER_H + r.y, cy = y + ROW_H/2 + 4 * FS;
     if(r.type === "group"){
-      out.appendChild(svgEl("rect", { x:12, y:cy - 9, width:10, height:10, rx:3, fill:r.g.color }));
-      text(30, cy, fit(r.g.mod, HFONT(12.5, 700), LABEL_W - 42), { "font-size":12.5, "font-weight":700, fill:"#0f172a" });
+      out.appendChild(svgEl("rect", { x:12 * FS, y:cy - 9 * FS, width:10 * FS, height:10 * FS, rx:3, fill:r.g.color }));
+      text(30 * FS, cy, fit(r.g.mod, HFONT(12.5 * FS, 700), LABEL_W - 42 * FS), { "font-size":12.5 * FS, "font-weight":700, fill:"#0f172a" });
       return;
     }
     const item = r.type === "sub" ? r.sub : r.task, leaf = r.type === "task" && isLeafId(item.id);
-    const x0 = r.type === "sub" ? 22 : leaf ? 36 : 26, idxW = leaf ? 46 : 34;
+    const x0 = (r.type === "sub" ? 22 : leaf ? 36 : 26) * FS, idxW = (leaf ? 46 : 34) * FS;
     // El punto de estado también va en las filas de bloque: es lo que se lee en la lámina.
     if((leaf || (r.type === "task" && item.block)) && item.status)
-      out.appendChild(svgEl("circle", { cx:x0 - 8, cy:cy - 4, r:4,
+      out.appendChild(svgEl("circle", { cx:x0 - 8 * FS, cy:cy - 4 * FS, r:4 * FS,
         fill:{ done:"#16a34a", wip:"#f59e0b" }[item.status] || "#cbd5e1" }));
     const hrs = item.hours.toFixed(1) + " h", dev = leaf && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
     const tail = (dev ? dev + "  " : "") + hrs;
-    const size = r.type === "sub" ? 11.5 : 12.5, weight = r.type === "sub" ? 700 : 400;
-    text(x0, cy, item.id, { "font-size":11.5, fill:"#64748b" });
-    text(x0 + idxW + 8, cy, fit(item.name, HFONT(size, weight), LABEL_W - 12 - (x0 + idxW + 8) - textW(tail, HFONT(10.5, 500)) - 10),
+    const size = (r.type === "sub" ? 11.5 : 12.5) * FS, weight = r.type === "sub" ? 700 : 400;
+    text(x0, cy, item.id, { "font-size":11.5 * FS, fill:"#64748b" });
+    text(x0 + idxW + 8 * FS, cy, fit(item.name, HFONT(size, weight), LABEL_W - 12 * FS - (x0 + idxW + 8 * FS) - textW(tail, HFONT(10.5 * FS, 500)) - 10 * FS),
       { "font-size":size, "font-weight":weight, fill:r.type === "sub" ? "#475569" : "#0f172a" });
-    text(LABEL_W - 12, cy, tail, { "font-size":10.5, fill:"#64748b", "text-anchor":"end" });
+    text(LABEL_W - 12 * FS, cy, tail, { "font-size":10.5 * FS, fill:"#64748b", "text-anchor":"end" });
   });
   return out;
 }
