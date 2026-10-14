@@ -133,7 +133,7 @@ MANUAL_WEEK = {
  '10.2.1': (2, 2, 3),  # README con instalación y ejecución local, junto con la base del repo (SPO-143)
 }
 # 13.0 Challenge: ventana fijada por el equipo, 01/10 → 14/10 (semanas 9 y 10). No pasa por el planificador ni le
-# saca capacidad: el ADR lo acota a 4 h sin mover fechas (docs/challenge/ADR.md). 13.1.1 cerró en la semana 9;
+# saca capacidad: el ADR le asigna 6 h a Lab2 (3 h por paquete, re-estimado el 12/10) sin mover fechas (docs/challenge/ADR.md). 13.1.1 cerró en la semana 9;
 # 13.1.2 queda abierto hasta el cierre de la épica.
 FIXED_WEEK = {'13.1.1': (9, 9, 2), '13.1.2': (9, 10, 2)}
 # Estado según Cronograma-y-PERT-v4.md §4/§5: 43 ✅ (S1), 5 🟡 (parciales, cierran en S2).

@@ -5,7 +5,7 @@ y que la v3 no tenía. Reemplaza a *PERT y Camino Crítico (v2 IA)*, que corría
 
 **Alcance del modelo: solo desarrollo.** Entran los módulos **3.0 a 13.0 excepto el 8.0**. Quedan fuera
 la gestión del proyecto (1.0), el diseño (2.0) y el QA y la validación (8.0), que no consumen horas del
-equipo de desarrollo. Son **78 paquetes y 225,62 h**, contando los 2 del Challenge (13.0) que se
+equipo de desarrollo. Son **78 paquetes y 227,62 h**, contando los 2 del Challenge (13.0) que se
 sumaron el 07/10 con ventana fija del 01/10 al 14/10.
 
 **Qué agrega esta revisión.** Cada paquete lleva **fecha de inicio y de cierre en jueves** (§4) y hay un
@@ -129,9 +129,9 @@ flowchart LR
 | Sprint | Paquetes | Esfuerzo | Capacidad | Uso |
 |---|---:|---:|---:|---:|
 | S1 | 43 | 123.70 h | 108 h | 115% |
-| S2 | 23 | 61.53 h | 72 h | 85% |
+| S2 | 23 | 63.53 h | 72 h | 88% |
 | S3 | 12 | 40.39 h | 54 h | 75% |
-| **Total** | **78** | **225.62 h** | **234 h** | **96%** |
+| **Total** | **78** | **227.62 h** | **234 h** | **97%** |
 
 Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y las fechas de **inicio** y
 **fin** (siempre jueves). Para lo hecho son las semanas reales de Linear; para lo pendiente, el plan de §9.
@@ -185,7 +185,7 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 9.1.4 | Contenedorización del backend y registro de imágenes | 3.50 | 29.14 | Siaba | 20/08 | 27/08 | ✅ |
 | 10.2.1 | README del proyecto | 1.50 | 31.14 | Siaba | 13/08 | 20/08 | ✅ |
 
-### S2 — 61.53 h
+### S2 — 63.53 h
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
@@ -210,8 +210,8 @@ Las tablas siguientes llevan, por paquete, el **dev** que lo tiene asignado y la
 | 11.2.1 | Centro de notificaciones | 3.90 | 12.24 | Pache | 24/09 | 01/10 | ✅ |
 | 11.2.2 | Recepción de push en cliente | 4.03 | 14.46 | Siaba | 01/10 | 08/10 | ✅ |
 | 11.2.3 | Preferencias de notificación | 1.63 | 12.24 | Siaba | 01/10 | 08/10 | ⬜ |
-| 13.1.1 | Instrumentación para KPIs | 1.50 | 16.12 | Rudolph | 01/10 | 08/10 | 🟡 |
-| 13.1.2 | Cálculo y persistencia de KPIs | 2.50 | 16.12 | Rudolph | 01/10 | 15/10 | 🟡 |
+| 13.1.1 | Instrumentación para KPIs | 3.00 | 14.12 | Rudolph | 01/10 | 08/10 | 🟡 |
+| 13.1.2 | Cálculo y persistencia de KPIs | 3.00 | 14.12 | Rudolph | 01/10 | 15/10 | 🟡 |
 
 ### S3 — 40.39 h
 
