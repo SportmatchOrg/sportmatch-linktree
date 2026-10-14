@@ -359,7 +359,7 @@ funcionando con integración continua desde el S1.
 | 6.3.4 | Visualización de estado de solicitud | 2.47 | 30.35 | 32.82 | 37.03 | 39.50 | 6.68 |  | S1 | ✅ |
 | 6.3.5 | Inscripción directa y baja del partido | 3.00 | 24.23 | 27.23 | 39.00 | 42.00 | 14.77 |  | S1 | ✅ |
 | 6.4.1 | Modelo de calificación | 2.23 | 21.88 | 24.11 | 31.29 | 33.52 | 9.41 |  | S1 | ✅ |
-| 6.4.2 | Interfaz de calificación | 1.63 | 24.11 | 25.74 | 34.24 | 35.87 | 10.13 |  | S2 | 🟡 |
+| 6.4.2 | Interfaz de calificación | 1.63 | 24.11 | 25.74 | 34.24 | 35.87 | 10.13 |  | S2 | ✅ |
 | 6.4.3 | Regla de penalización por no-show | 2.35 | 24.11 | 26.46 | 33.52 | 35.87 | 9.41 |  | S2 | ✅ |
 | 6.5.1 | Link compartible de partido | 2.47 | 6.60 | 9.07 | 39.53 | 42.00 | 32.93 |  | S3 | ⬜ |
 | 6.5.2 | Invitación directa a un usuario | 3.90 | 35.10 | 39.00 | 35.10 | 39.00 | 0.00 | ★ | S3 | ⬜ |

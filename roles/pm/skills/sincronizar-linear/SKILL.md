@@ -37,17 +37,16 @@ El plan completo y por qué cada pieza es así: `docs/planning/plan-linear.md`.
 node --env-file=.env.local scripts/sync-linear.mjs
 ```
 
-Sin `--push` no escribe nada en Linear. Actualiza `linear-issues.csv`, el bloque del Gantt, y agrega al
+Sin `--push` no escribe nada en Linear. Con `--corte`, los issues en Todo, In Progress e In Review cuentan como Done (solo en el repo), para cerrar la semana antes de un steering. Actualiza `linear-issues.csv`, el bloque del Gantt, y agrega al
 mapa los issues nuevos con `wbs_id` vacío.
 
-Lo que reporta y qué significa cada cosa:
+Lo que reporta y qué significa cada cosa. Que los paquetes de las épicas 1 y 2 no tengan milestone es esperado y no se reporta:
 
 | Aviso | Qué hacer |
 |---|---|
 | `sin paquete en el CSV` | Paso 2. Es el trabajo real |
 | `sin proyecto` | Paso 3: `--push` los suma |
 | `milestone distinto al del CSV` | Decidir cuál está bien. Si manda Linear, corregir el CSV; si manda el CSV, corregirlo en Linear a mano |
-| `paquete en épica 1 o 2: sin milestone` | Esperado: gestión y diseño no tienen milestone. SPO-201 a 205 salen siempre |
 | `sin estimate` | Pedirle al PO que lo cargue: sin puntos, el issue no suma al avance |
 | `en el CSV pero ya no en Linear` | Borrar esas filas del CSV |
 
