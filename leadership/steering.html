@@ -289,7 +289,9 @@ const STEERINGS = {
     ],
     contingency: 0.20,
     actualHours: [18, 18, 18, 18, 18, 18, 18, 18, 18, 18],
-    loeActualHours: [16, 16, 16, 16, 16, 16, 16, 16, 16, 16],
+    // Semana 9: +6 h de Lab4 del challenge (workflow, alertas y ADR), por encima del nivel de esfuerzo; las cubre la contingencia.
+    loeActualHours: [16, 16, 16, 16, 16, 16, 16, 16, 22, 16],
+    acNote: "Semana 9: los leads suman 6 h de Lab4 del challenge (+120 USD de AC) por encima de su nivel de esfuerzo. El EV no cambia porque Lab4 no está en la línea base; las cubre la contingencia (1.344 → 1.224 USD).",
     // Semanas 7 a 10: paquetes que no habían cerrado en el S1, con la fecha de cierre de Linear (tickets con fechas = si).
     earned: [
       { h: 5.5,   pkgs: ["3.1.1", "3.1.3"] },
@@ -522,7 +524,8 @@ function render(ver) {
     m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC", "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${num(m.tcpi)}`,
   ].map((f) => `<span>${f}</span>`).join("");
   $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.` +
-    (m.loeWeek ? ` Ese % se aplica al BAC de desarrollo (${usd(m.bacDev, 2)}). Los leads (${m.loeWeekH} h/sem) son nivel de esfuerzo: su trabajo no se cierra por paquetes, así que su EV es igual a su PV.` : "");
+    (m.loeWeek ? ` Ese % se aplica al BAC de desarrollo (${usd(m.bacDev, 2)}). Los leads (${m.loeWeekH} h/sem) son nivel de esfuerzo: su trabajo no se cierra por paquetes, así que su EV es igual a su PV.` : "") +
+    (d.acNote ? ` ${d.acNote}` : "");
 
   const { svg, geo } = curveSvg(d, m);
   const box = $("chart-box"), tip = $("tip");
