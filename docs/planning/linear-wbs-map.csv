@@ -180,3 +180,14 @@ SPO-282,9.1.3,no,https://linear.app/sportmatch-dirproy/issue/SPO-282/datos-y-gui
 SPO-283,6.3.2,no,https://linear.app/sportmatch-dirproy/issue/SPO-283/bug-el-cupo-no-cuenta-al-organizador
 SPO-283,13.1.1,no,https://linear.app/sportmatch-dirproy/issue/SPO-283/bug-el-cupo-no-cuenta-al-organizador
 SPO-284,8.3.1,no,https://linear.app/sportmatch-dirproy/issue/SPO-284/actualizar-los-wrappers-de-agentes-de-ia-al-formato-comun-de-agents
+SPO-285,5.3.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-285/onboarding-en-el-back-useronboardedat-patch-usersidonboarding
+SPO-286,7.1.4,si,https://linear.app/sportmatch-dirproy/issue/SPO-286/descubrir-recomienda-con-el-nivel-y-los-deportes-del-perfil
+SPO-287,14.1.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-287/almacenamiento-de-imagenes-en-azure-blob-storage-storageservice
+SPO-288,15.1.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-288/modulo-ai-proveedor-clave-y-limite-de-uso-por-usuario
+SPO-289,5.3.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-289/pantalla-de-onboarding-bienvenida
+SPO-290,5.3.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-290/tutorial-de-descubrir
+SPO-291,14.1.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-291/foto-de-perfil-propia-post-usersidphoto-editar-perfil
+SPO-292,14.1.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-292/foto-del-partido-matchphotourl-wizard-tarjeta-y-detalle
+SPO-293,15.1.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-293/post-aimatch-draft-texto-libre-borrador-de-partido
+SPO-294,15.1.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-294/crear-partido-por-texto-o-voz-en-el-wizard
+SPO-295,15.2.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-295/generar-foto-de-perfil-o-de-partido-con-ia

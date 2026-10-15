@@ -1,4 +1,4 @@
-# Tickets del alcance agregado en la v5 (borrador, 14/10)
+# Tickets del alcance agregado en la v5 (creados el 14/10)
 
 Bajada a tickets de los 11 paquetes de desarrollo nuevos de la **WBS v5** (🔷). Todos se crean en **Backlog,
 sin assignee y sin `dueDate`**: la semana y el dev se fijan cuando se planee cada semana del S3. La columna
@@ -8,22 +8,22 @@ Rutas verificadas contra `origin/dev` al 14/10 (después del release #136).
 
 | # | Ticket | WBS | Label | SP | Lane sugerida | Semana v5 | Bloqueado por |
 |---|---|---|---|---:|---|---:|---|
-| T1 | Onboarding en el back: `User.onboardedAt` + `PATCH /users/:id/onboarding` | 5.3.1 | Backend | 2 | Pacheco | 11 | — |
-| T2 | Descubrir recomienda con el nivel y los deportes del perfil | 7.1.4 | Backend | 1 | Pacheco | 12 | — |
-| T3 | Pantalla de onboarding (`/bienvenida`) | 5.3.2 | Frontend | 3 | Rudolph | 13 | T1 · diseño 2.2.9 |
-| T4 | Tutorial de Descubrir | 5.3.3 | Frontend | 1 | Siaba | 13 | diseño 2.2.9 |
-| T5 | Almacenamiento de imágenes en Azure Blob Storage (`StorageService`) | 14.1.1 | Infra | 3 | Siaba | 11 | — |
-| T6 | Foto de perfil propia: `POST /users/:id/photo` + Editar perfil | 14.1.2 | Backend · Frontend | 2 | Siaba | 12 | T5 |
-| T7 | Foto del partido: `Match.photoUrl` + wizard, tarjeta y detalle | 14.1.3 | Backend · Frontend | 3 | Siaba | 11 | T5 |
-| T8 | Módulo `ai`: proveedor, clave y límite de uso por usuario | 15.1.1 | Backend | 2 | Pacheco | 11 | decisión #10 |
-| T9 | `POST /ai/match-draft`: texto libre → borrador de partido | 15.1.2 | Backend | 2 | Pacheco | 11 | T8 |
-| T10 | Crear partido por texto o voz en el wizard | 15.1.3 | Frontend | 3 | Siaba | 13 | T9 · diseño 2.2.9 |
-| T11 | Generar foto de perfil o de partido con IA | 15.2.1 | Backend · Frontend | 4 | Siaba | 12 | T6 · T7 · T8 |
+| SPO-285 | Onboarding en el back: `User.onboardedAt` + `PATCH /users/:id/onboarding` | 5.3.1 | Backend | 2 | Pacheco | 11 | — |
+| SPO-286 | Descubrir recomienda con el nivel y los deportes del perfil | 7.1.4 | Backend | 1 | Pacheco | 12 | — |
+| SPO-287 | Pantalla de onboarding (`/bienvenida`) | 5.3.2 | Frontend | 3 | Rudolph | 13 | SPO-285 · diseño 2.2.9 |
+| SPO-288 | Tutorial de Descubrir | 5.3.3 | Frontend | 1 | Siaba | 13 | diseño 2.2.9 |
+| SPO-289 | Almacenamiento de imágenes en Azure Blob Storage (`StorageService`) | 14.1.1 | Infra | 3 | Siaba | 11 | — |
+| SPO-290 | Foto de perfil propia: `POST /users/:id/photo` + Editar perfil | 14.1.2 | Backend · Frontend | 2 | Siaba | 12 | SPO-289 |
+| SPO-291 | Foto del partido: `Match.photoUrl` + wizard, tarjeta y detalle | 14.1.3 | Backend · Frontend | 3 | Siaba | 11 | SPO-289 |
+| SPO-292 | Módulo `ai`: proveedor, clave y límite de uso por usuario | 15.1.1 | Backend | 2 | Pacheco | 11 | decisión 10 |
+| SPO-293 | `POST /ai/match-draft`: texto libre → borrador de partido | 15.1.2 | Backend | 2 | Pacheco | 11 | SPO-292 |
+| SPO-294 | Crear partido por texto o voz en el wizard | 15.1.3 | Frontend | 3 | Siaba | 13 | SPO-293 · diseño 2.2.9 |
+| SPO-295 | Generar foto de perfil o de partido con IA | 15.2.1 | Backend · Frontend | 4 | Siaba | 12 | SPO-290 · SPO-291 · SPO-292 |
 | | **Total** | | | **26** | | | |
 
 ---
 
-## T1 · Onboarding en el back: `User.onboardedAt` + `PATCH /users/:id/onboarding`
+## SPO-285 · Onboarding en el back: `User.onboardedAt` + `PATCH /users/:id/onboarding`
 
 **Referencia:** RF-02 · WBS 5.3.1
 
@@ -50,14 +50,14 @@ Un usuario nuevo tiene que completar deportes, nivel y ciudad apenas crea la cue
 **Notas**
 
 * Código en inglés; la ruta del front (`/bienvenida`) es la única en castellano.
-* No se pide edad: ninguna función la usa (decisión #7 de la WBS v5).
+* No se pide edad: ninguna función la usa (decisión 7 de la WBS v5).
 * Se puede editar todo después desde Editar perfil (`PATCH /users/:id`), que no cambia.
 
 **Bloqueado por:** —
 
 ---
 
-## T2 · Descubrir recomienda con el nivel y los deportes del perfil
+## SPO-286 · Descubrir recomienda con el nivel y los deportes del perfil
 
 **Referencia:** RF-04 · WBS 7.1.4
 
@@ -81,19 +81,19 @@ Hoy `sortByCompatibility` (`back/src/matches/matches.service.ts`) usa como nivel
 **Notas**
 
 * La ciudad no entra en el orden: es texto libre y no tiene coordenadas. La cercanía ya la resuelve el mapa.
-* No depende de T1: usa campos del perfil que existen desde SPO-278.
+* No depende de SPO-285: usa campos del perfil que existen desde SPO-278.
 
 **Bloqueado por:** —
 
 ---
 
-## T3 · Pantalla de onboarding (`/bienvenida`)
+## SPO-287 · Pantalla de onboarding (`/bienvenida`)
 
 **Referencia:** RF-02 · WBS 5.3.2 · diseño 2.2.9
 
 **Descripción**
 
-Al entrar por primera vez, el usuario completa deportes, nivel y ciudad antes de ver el mapa. Son los datos que alimentan la recomendación de Descubrir (T2).
+Al entrar por primera vez, el usuario completa deportes, nivel y ciudad antes de ver el mapa. Son los datos que alimentan la recomendación de Descubrir (SPO-286).
 
 **Pasos**
 
@@ -112,13 +112,13 @@ Al entrar por primera vez, el usuario completa deportes, nivel y ciudad antes de
 **Notas**
 
 * No es una de las 14 pantallas del diseño. Si el diseño 2.2.9 no está al arrancar, se arma con los componentes de Editar perfil, sin inventar estilos.
-* La foto de perfil no va en el onboarding: la ponen T6 y T11 desde Editar perfil.
+* La foto de perfil no va en el onboarding: la ponen SPO-290 y SPO-295 desde Editar perfil.
 
-**Bloqueado por:** T1 · diseño 2.2.9 (PMs)
+**Bloqueado por:** SPO-285 · diseño 2.2.9 (PMs)
 
 ---
 
-## T4 · Tutorial de Descubrir
+## SPO-288 · Tutorial de Descubrir
 
 **Referencia:** RF-04 · WBS 5.3.3 · pantalla 04 · diseño 2.2.9
 
@@ -148,9 +148,9 @@ La primera vez que alguien entra a Descubrir no sabe que la tarjeta se desliza. 
 
 ---
 
-## T5 · Almacenamiento de imágenes en Azure Blob Storage (`StorageService`)
+## SPO-289 · Almacenamiento de imágenes en Azure Blob Storage (`StorageService`)
 
-**Referencia:** WBS 14.1.1 · decisión #8 de la WBS v5
+**Referencia:** WBS 14.1.1 · decisión 8 de la WBS v5
 
 **Descripción**
 
@@ -174,14 +174,14 @@ Base de las fotos de perfil, de partido y de las generadas con IA. Las imágenes
 
 **Notas**
 
-* Los endpoints de subida los agregan T6 y T7; este ticket deja solo el servicio.
+* Los endpoints de subida los agregan SPO-290 y SPO-291; este ticket deja solo el servicio.
 * Los nombres de blob llevan un id aleatorio: nunca el nombre original del archivo.
 
 **Bloqueado por:** —
 
 ---
 
-## T6 · Foto de perfil propia: `POST /users/:id/photo` + Editar perfil
+## SPO-290 · Foto de perfil propia: `POST /users/:id/photo` + Editar perfil
 
 **Referencia:** RF-02 · WBS 14.1.2 · pantalla 14
 
@@ -191,9 +191,9 @@ Hoy la foto de perfil es la de Google, y quien entra con email no tiene foto. El
 
 **Pasos**
 
-1. Back: `@Post(':id/photo')` en `back/src/users/users.controller.ts`, con `OwnAccountGuard` y `FileInterceptor('photo')` de `@nestjs/platform-express`, que ya está instalado (sumar `@types/multer` como devDependency). El service sube con `StorageService` (T5), guarda `photoUrl` con el repository y borra la foto anterior si era del contenedor (no la de Google).
+1. Back: `@Post(':id/photo')` en `back/src/users/users.controller.ts`, con `OwnAccountGuard` y `FileInterceptor('photo')` de `@nestjs/platform-express`, que ya está instalado (sumar `@types/multer` como devDependency). El service sube con `StorageService` (SPO-289), guarda `photoUrl` con el repository y borra la foto anterior si era del contenedor (no la de Google).
 2. Front: en `front/src/components/profile/edit-profile-form.tsx`, el avatar (`ProfileAvatar`) pasa a ser un botón "Cambiar foto" con `<input type="file" accept="image/*">`. Se sube al elegir el archivo, con estado de carga sobre el avatar.
-3. `front/src/lib/users.ts`: `uploadProfilePhoto(userId, file)` con `apiFetch` y `FormData`. Hoy `apiFetch` (`front/src/lib/api.ts`) fija siempre `Content-Type: application/json`: cuando el body es `FormData` no tiene que mandarlo, para que el navegador ponga el `boundary`. T7 y T11 usan el mismo cambio.
+3. `front/src/lib/users.ts`: `uploadProfilePhoto(userId, file)` con `apiFetch` y `FormData`. Hoy `apiFetch` (`front/src/lib/api.ts`) fija siempre `Content-Type: application/json`: cuando el body es `FormData` no tiene que mandarlo, para que el navegador ponga el `boundary`. SPO-291 y SPO-295 usan el mismo cambio.
 
 **Criterios de aceptación**
 
@@ -205,11 +205,11 @@ Hoy la foto de perfil es la de Google, y quien entra con email no tiene foto. El
 
 * `sharpPhotoUrl` (`front/src/lib/photo-url.ts`) solo transforma fotos de Google; una URL del contenedor pasa sin cambios.
 
-**Bloqueado por:** T5
+**Bloqueado por:** SPO-289
 
 ---
 
-## T7 · Foto del partido: `Match.photoUrl` + wizard, tarjeta y detalle
+## SPO-291 · Foto del partido: `Match.photoUrl` + wizard, tarjeta y detalle
 
 **Referencia:** RF-03 · WBS 14.1.3 · pantallas 04, 05 y 09
 
@@ -219,7 +219,7 @@ El organizador puede ponerle una foto al partido, por ejemplo la de la cancha. S
 
 **Pasos**
 
-1. Back: `Match.photoUrl String?` (migración `add_match_photo`). `@Post(':id/photo')` en `back/src/matches/matches.controller.ts`, con `FileInterceptor('photo')`; solo el organizador (**403** para el resto) y nunca sobre un partido cancelado (**409**). Sube con `StorageService` (T5). El `photoUrl` entra en las respuestas de listado y detalle (`back/src/matches/matches.repository.ts`).
+1. Back: `Match.photoUrl String?` (migración `add_match_photo`). `@Post(':id/photo')` en `back/src/matches/matches.controller.ts`, con `FileInterceptor('photo')`; solo el organizador (**403** para el resto) y nunca sobre un partido cancelado (**409**). Sube con `StorageService` (SPO-289). El `photoUrl` entra en las respuestas de listado y detalle (`back/src/matches/matches.repository.ts`).
 2. Front, wizard (`front/src/components/matches/match-wizard.tsx`): campo opcional "Foto del partido" en el paso **Jugadores**, con vista previa. Como la foto necesita el id del partido, se sube después del `POST /matches` dentro de `save()`; si la subida falla, el partido queda creado y un toast avisa "No pudimos subir la foto".
 3. Mostrar `match.photoUrl ?? sportPhotoUrl(...)` en los lugares que hoy usan `sportPhotoUrl`: `swipe-card.tsx`, `match-card.tsx`, `match-row.tsx`, `match-summary.tsx` y `front/src/app/(app)/partidos/[id]/page.tsx`.
 4. En modo edición (`front/src/app/(app)/partidos/[id]/editar/page.tsx`), la foto se puede reemplazar.
@@ -236,21 +236,21 @@ El organizador puede ponerle una foto al partido, por ejemplo la de la cancha. S
 * El `photoUrl` no se acepta en `POST`/`PATCH /matches`: solo se escribe por el endpoint de subida, para que nadie apunte a una URL externa.
 * Las fotos quedan alcanzadas por los reportes de moderación (12.1) sin cambios: se reporta al organizador.
 
-**Bloqueado por:** T5
+**Bloqueado por:** SPO-289
 
 ---
 
-## T8 · Módulo `ai`: proveedor, clave y límite de uso por usuario
+## SPO-292 · Módulo `ai`: proveedor, clave y límite de uso por usuario
 
-**Referencia:** WBS 15.1.1 · decisión #10 de la WBS v5
+**Referencia:** WBS 15.1.1 · decisión 10 de la WBS v5
 
 **Descripción**
 
-Un único punto del back para llamar a los modelos de IA (texto en T9, imágenes en T11), con la clave fuera del front y un límite diario por usuario para acotar el costo.
+Un único punto del back para llamar a los modelos de IA (texto en SPO-293, imágenes en SPO-295), con la clave fuera del front y un límite diario por usuario para acotar el costo.
 
 **Pasos**
 
-1. `back/src/ai/`: `ai.module.ts`, `ai.controller.ts` (vacío hasta T9), `ai.service.ts` y `ai.repository.ts`, con la estructura de `users` (SPO-155).
+1. `back/src/ai/`: `ai.module.ts`, `ai.controller.ts` (vacío hasta SPO-293), `ai.service.ts` y `ai.repository.ts`, con la estructura de `users` (SPO-155).
 2. Modelo `AiUsage` (`userId`, `kind`: `MATCH_DRAFT` · `IMAGE`, `createdAt`), migración `add_ai_usage`. `AiService.assertQuota(userId, kind)` cuenta las del día y lanza **429** (`HttpException` con `HttpStatus.TOO_MANY_REQUESTS`) al pasar el límite: 20 borradores y 5 imágenes por día, configurables por variable.
 3. Cliente del proveedor de texto. **Si se elige Claude:** dependencia `@anthropic-ai/sdk` (**QA-03:** SDK oficial), clave en `ANTHROPIC_API_KEY`, modelo en `AI_TEXT_MODEL` (por defecto `claude-opus-5-5`). El cliente vive en `back/src/ai/` y nada fuera del módulo lo importa.
 4. Variables nuevas en `back/src/config/env.validation.ts` y `back/.env.example`: la clave, el modelo y los dos límites. Cargadas en dev y prod.
@@ -264,25 +264,25 @@ Un único punto del back para llamar a los modelos de IA (texto en T9, imágenes
 
 **Notas**
 
-* **Antes de arrancar, los PMs eligen el proveedor y consiguen la clave** (decisión #10). El de imágenes puede ser otro: Claude no genera imágenes.
+* **Antes de arrancar, los PMs eligen el proveedor y consiguen la clave** (decisión 10). El de imágenes puede ser otro: Claude no genera imágenes.
 * El modelo por defecto es el más capaz; bajarlo a uno más barato (`claude-haiku-5-5`) es una decisión de costo que queda en la variable `AI_TEXT_MODEL`, sin cambiar código.
 
-**Bloqueado por:** decisión #10 (proveedor y clave)
+**Bloqueado por:** decisión 10 (proveedor y clave)
 
 ---
 
-## T9 · `POST /ai/match-draft`: texto libre → borrador de partido
+## SPO-293 · `POST /ai/match-draft`: texto libre → borrador de partido
 
 **Referencia:** RF-03 · WBS 15.1.2
 
 **Descripción**
 
-Convierte una frase como "fútbol 5 el sábado a las 19 en River Courts, faltan 3, nivel intermedio" en los campos del wizard. **No crea el partido**: devuelve un borrador que el usuario revisa (T10).
+Convierte una frase como "fútbol 5 el sábado a las 19 en River Courts, faltan 3, nivel intermedio" en los campos del wizard. **No crea el partido**: devuelve un borrador que el usuario revisa (SPO-294).
 
 **Pasos**
 
 1. `ai.controller.ts`: `@Post('match-draft')` con `FirebaseAuthGuard`, body `{ text }` (DTO con `text` de 3 a 500 caracteres).
-2. `ai.service.ts`: `assertQuota` (T8) y después la llamada al modelo con salida estructurada. Con Claude: `client.messages.parse()` + `output_config: { format: zodOutputFormat(schema) }` (helper `@anthropic-ai/sdk/helpers/zod`; dependencia `zod`, **QA-03:** es el formato que pide el helper del SDK). Esquema: `sport` (uno de `FUTBOL`, `BASQUET`, `TENIS`, `PADEL`, `RUNNING` o `null`), `level`, `date` (ISO), `location`, `capacity` y `description`, cada uno `null` si no se dice.
+2. `ai.service.ts`: `assertQuota` (SPO-292) y después la llamada al modelo con salida estructurada. Con Claude: `client.messages.parse()` + `output_config: { format: zodOutputFormat(schema) }` (helper `@anthropic-ai/sdk/helpers/zod`; dependencia `zod`, **QA-03:** es el formato que pide el helper del SDK). Esquema: `sport` (uno de `FUTBOL`, `BASQUET`, `TENIS`, `PADEL`, `RUNNING` o `null`), `level`, `date` (ISO), `location`, `capacity` y `description`, cada uno `null` si no se dice.
 3. El prompt incluye la fecha y hora actuales en `America/Argentina/Buenos_Aires`, para resolver "el sábado" o "mañana".
 4. Post-proceso en el service: `sport` → `sportId` con el catálogo de `sports`, `capacity` entre `CAPACITY_MIN` y `CAPACITY_MAX`, y una fecha pasada pasa a `null`. Registrar el uso en `AiUsage`.
 5. Si la respuesta tiene `stop_reason === 'refusal'` o `parsed_output` es `null`, **422** "No pudimos entender el partido. Probá con otras palabras".
@@ -298,17 +298,17 @@ Convierte una frase como "fútbol 5 el sábado a las 19 en River Courts, faltan 
 
 * Las coordenadas no se piden al modelo: las resuelve el front con el autocompletado de lugares que ya usa el paso Lugar.
 
-**Bloqueado por:** T8
+**Bloqueado por:** SPO-292
 
 ---
 
-## T10 · Crear partido por texto o voz en el wizard
+## SPO-294 · Crear partido por texto o voz en el wizard
 
 **Referencia:** RF-03 · WBS 15.1.3 · pantallas 06 a 10 · diseño 2.2.9
 
 **Descripción**
 
-Al abrir el wizard, el usuario puede describir el partido en una frase, escrita o dictada, y el asistente completa los pasos. El usuario revisa el borrador y lo acepta o lo descarta (decisión #9).
+Al abrir el wizard, el usuario puede describir el partido en una frase, escrita o dictada, y el asistente completa los pasos. El usuario revisa el borrador y lo acepta o lo descarta (decisión 9).
 
 **Pasos**
 
@@ -331,23 +331,23 @@ Al abrir el wizard, el usuario puede describir el partido en una frase, escrita 
 * No hay pantalla en el diseño: es parte de 2.2.9. Plan B: un campo más con los componentes del wizard (`TextareaField`).
 * El asistente nunca publica el partido: siempre pasa por Revisión.
 
-**Bloqueado por:** T9 · diseño 2.2.9 (PMs)
+**Bloqueado por:** SPO-293 · diseño 2.2.9 (PMs)
 
 ---
 
-## T11 · Generar foto de perfil o de partido con IA
+## SPO-295 · Generar foto de perfil o de partido con IA
 
 **Referencia:** RF-02 · RF-03 · WBS 15.2.1
 
 **Descripción**
 
-Desde Editar perfil y desde el paso Jugadores del wizard, el usuario puede generar una imagen a partir de una descripción ("una cancha de pádel al atardecer") en vez de subir una foto. La imagen generada se guarda como cualquier otra (T5).
+Desde Editar perfil y desde el paso Jugadores del wizard, el usuario puede generar una imagen a partir de una descripción ("una cancha de pádel al atardecer") en vez de subir una foto. La imagen generada se guarda como cualquier otra (SPO-289).
 
 **Pasos**
 
-1. Back: `@Post('images')` en `ai.controller.ts`, body `{ prompt, target: 'profile' | 'match', matchId? }`. El service valida permisos como T6 y T7 (dueño de la cuenta u organizador), llama a `assertQuota(userId, 'IMAGE')`, pide la imagen al proveedor elegido, la sube con `StorageService` y actualiza `photoUrl`.
+1. Back: `@Post('images')` en `ai.controller.ts`, body `{ prompt, target: 'profile' | 'match', matchId? }`. El service valida permisos como SPO-290 y SPO-291 (dueño de la cuenta u organizador), llama a `assertQuota(userId, 'IMAGE')`, pide la imagen al proveedor elegido, la sube con `StorageService` y actualiza `photoUrl`.
 2. Cliente del proveedor de imágenes en `back/src/ai/`, con su clave en una variable propia (`AI_IMAGE_API_KEY`).
-3. Front: botón "Generar con IA" junto a "Cambiar foto" (T6) y en el campo de foto del partido (T7). Abre un `Dialog` con el texto, estado de carga y la vista previa; "Usar esta" la guarda y "Otra" vuelve a generar (y cuenta para el límite).
+3. Front: botón "Generar con IA" junto a "Cambiar foto" (SPO-290) y en el campo de foto del partido (SPO-291). Abre un `Dialog` con el texto, estado de carga y la vista previa; "Usar esta" la guarda y "Otra" vuelve a generar (y cuenta para el límite).
 4. `front/src/lib/ai.ts`: `generateImage(...)` con `apiFetch`.
 
 **Criterios de aceptación**
@@ -361,4 +361,4 @@ Desde Editar perfil y desde el paso Jugadores del wizard, el usuario puede gener
 * Es el primero que se corta si el S3 no alcanza (riesgo R5 del Cronograma v5): no es prerrequisito de nada.
 * El texto del usuario se manda al proveedor tal cual; el filtro de contenido es el del proveedor.
 
-**Bloqueado por:** T6 · T7 · T8
+**Bloqueado por:** SPO-290 · SPO-291 · SPO-292
