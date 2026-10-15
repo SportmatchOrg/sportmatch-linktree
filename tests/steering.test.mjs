@@ -17,14 +17,17 @@ test('steering v1 keeps the numbers presented on 17/09', () => {
   near(m.AC, 1213.14);
 });
 
-test('steering v2 matches outputs/Steering 2.xlsx (leads as level of effort)', () => {
+test('steering v2 matches outputs/Steering 2.xlsx (leads as level of effort, activity contingency in PV and EV)', () => {
   const m = compute(STEERINGS.v2);
-  near(m.bac, 6719.42);
+  near(m.bac, 7391.36);   // 6.719,42 + 10 % de contingencia de actividades
+  near(m.total, m.bac);
+  near(m.total + m.mr, 8063.30);   // + 10 % de contingencia de gestión, fuera del BAC
   near(m.bacDev, 2559.42);
-  near(m.PV, 5206.28);
-  near(m.EV, 5373.63);
-  near(m.AC, 5206.28);
-  near(m.eac, 6510.16);
+  near(m.PV, 5726.91);
+  near(m.EV, 5910.99);
+  near(m.AC, 5326.28);   // con las 6 h de Lab4 de los leads en la semana 9
+  near(m.eac, 6660.21);
+  near(m.cpiNoCont * 1000, 1008.89);
   const { done, wip, todo } = STEERINGS.v2.avance;
   near(done[1] + wip[1] + todo[1], STEERINGS.v2.devEffort);
   near(m.evH.at(-1), done[1]);

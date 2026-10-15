@@ -287,11 +287,16 @@ const STEERINGS = {
       { name: "Infra · Azure B1 (back) · 13,14 USD/mes, desde el deploy del 29/08", byWeek: { 4: 13.14, 8: 13.14, 12: 13.14 } },
       { name: "Infra · Vercel, Neon, Firebase, GitHub Actions, Google Maps y Places (plan gratuito)", byWeek: {} },
     ],
-    contingency: 0.20,
+    // Contingencia de actividades: parte de la línea base de costos (PMBOK 7.3). Se reparte en proporción al
+    // trabajo planificado, así que PV y EV van × 1,1 y el BAC del EVM es el BAC del proyecto. El AC no cambia.
+    contingency: 0.10,
+    contingencyInEvm: true,
+    // Contingencia de gestión: reserva de gestión, fuera del BAC y del EVM. Presupuesto total = BAC + reserva.
+    managementReserve: 0.10,
     actualHours: [18, 18, 18, 18, 18, 18, 18, 18, 18, 18],
     // Semana 9: +6 h de Lab4 del challenge (workflow, alertas y ADR), por encima del nivel de esfuerzo; las cubre la contingencia.
     loeActualHours: [16, 16, 16, 16, 16, 16, 16, 16, 22, 16],
-    acNote: "Semana 9: los leads suman 6 h de Lab4 del challenge (+120 USD de AC) por encima de su nivel de esfuerzo. El EV no cambia porque Lab4 no está en la línea base; las cubre la contingencia (1.344 → 1.224 USD).",
+    acNote: "Semana 9: los leads suman 6 h de Lab4 del challenge (+120 USD de AC) por encima de su nivel de esfuerzo. El EV no cambia porque Lab4 no está en la línea base; las cubre la contingencia de actividades (672 → 552 USD).",
     // Semanas 7 a 10: paquetes que no habían cerrado en el S1, con la fecha de cierre de Linear (tickets con fechas = si).
     earned: [
       { h: 5.5,   pkgs: ["3.1.1", "3.1.3"] },
@@ -404,10 +409,11 @@ function compute(d) {
   const loeWeekH = sum(loe.map((r) => r.people * r.hWeek)), loeWeek = sum(loe.map((r) => r.people * r.hWeek * r.rate));
   const loeRate = loeWeekH ? loeWeek / loeWeekH : 0;
   const devPv = cumulative(Array.from({ length: n }, (_, w) => devWeek * devRole.rate + other(w)));
-  const pv = devPv.map((v, w) => v + loeWeek * (w + 1));
+  const kc = d.contingencyInEvm ? 1 + d.contingency : 1;   // contingencia repartida en PV y EV
+  const pv = devPv.map((v, w) => (v + loeWeek * (w + 1)) * kc);
   const bac = pv[n - 1], bacDev = devPv[n - 1];
   const evH = cumulative(d.earned.map((e) => e.h));
-  const ev = evH.map((h, w) => (h / d.devEffort) * bacDev + loeWeek * (w + 1));   // % completo × BAC desarrollo + PV loe
+  const ev = evH.map((h, w) => ((h / d.devEffort) * bacDev + loeWeek * (w + 1)) * kc);   // (% completo × BAC desarrollo + PV loe) × contingencia
   const loeAct = d.loeActualHours || [];
   const ac = cumulative(d.actualHours.map((h, w) => h * devRole.rate + other(w) + (loeAct[w] || 0) * loeRate));
   const PV = pv[c - 1], EV = ev[c - 1], AC = ac[c - 1];
@@ -418,7 +424,8 @@ function compute(d) {
   return {
     n, c, pv, ev, ac, evH, bac, bacDev, PV, EV, AC, spi, cpi, eac,
     etc: eac - AC, vac: bac - eac, tcpi: (bac - EV) / (bac - AC),
-    devWeek, loeWeek, loeWeekH, spiDev: (EV - loeWeek * c) / devPv[c - 1], labor, otherTotal, subtotal, contingency: subtotal * d.contingency,
+    kc, cpiNoCont: EV / kc / AC, bacNoCont: bac / kc,
+    devWeek, loeWeek, loeWeekH, spiDev: (EV / kc - loeWeek * c) / devPv[c - 1], labor, otherTotal, subtotal, contingency: subtotal * d.contingency, mr: subtotal * (d.managementReserve || 0),
     total: subtotal * (1 + d.contingency), hh: sum(labor.map((r) => r.hh)),
   };
 }
@@ -500,18 +507,21 @@ function render(ver) {
     m.labor.map((r) => row([td(`<b>${r.rol}</b> (${r.who})`), td(usd(r.rate) + "/HH", "num"), td(r.hh, "num"), td(usd(r.cost), "num"), td(`${r.people} × ${r.hWeek} h/sem × ${m.n} sem`)])).join("") +
     d.other.map((o) => { const t = sum(Object.values(o.byWeek)); return row([td(o.name), td("—", "num"), td("—", "num"), td(usd(t, 2), "num"), td(t ? `semanas ${Object.keys(o.byWeek).join(", ")}` : "sin costo")]); }).join("") +
     row([td("Subtotal"), td(""), td(m.hh, "num"), td(usd(m.subtotal, 2), "num"), td("")], "total") +
-    row([td(`Contingencia ${d.contingency * 100} %`), td(""), td(""), td(usd(m.contingency, 2), "num"), td("reserva para riesgos identificados")]) +
-    row([td("BAC del proyecto"), td(""), td(m.hh, "num"), td(usd(m.total, 2), "num"), td("")], "total") + "</tbody>";
+    row([td(`Contingencia${m.mr ? " de actividades" : ""} ${d.contingency * 100} %`), td(""), td(""), td(usd(m.contingency, 2), "num"), td("reserva para riesgos identificados")]) +
+    row([td("BAC del proyecto"), td(""), td(m.hh, "num"), td(usd(m.total, 2), "num"), td("")], "total") +
+    (m.mr ? row([td(`Contingencia de gestión ${d.managementReserve * 100} %`), td(""), td(""), td(usd(m.mr, 2), "num"), td("reserva de gestión, para imprevistos: fuera del BAC")]) +
+      row([td("Presupuesto total"), td(""), td(""), td(usd(m.total + m.mr, 2), "num"), td("BAC + reserva de gestión")], "total") : "") + "</tbody>";
   $("pres-kpis").innerHTML =
-    kpi("BAC del proyecto", usd(m.total), `subtotal + ${d.contingency * 100} % de contingencia`, true) +
+    kpi("BAC del proyecto", usd(m.total), `subtotal + ${d.contingency * 100} % de contingencia${m.mr ? " de actividades" : ""}`, true) +
     kpi("HH totales", m.hh, m.labor.map((r) => `${r.hh} ${r.rol.toLowerCase()}`).join(" · ")) +
-    kpi("Contingencia", usd(m.contingency), `${d.contingency * 100} % del subtotal`) +
-    kpi("Línea base EVM", usd(m.bac), m.loeWeek ? "desarrollo + leads + infra + IA" : "desarrollo + infra + IA");
-  $("pres-note").innerHTML = `<b>Semana de reserva (${d.reserve}):</b> no lleva trabajo planificado y absorbe atrasos antes de la entrega final. Es reserva de gestión, así que queda fuera del BAC.`;
+    kpi(m.mr ? "Contingencia de actividades" : "Contingencia", usd(m.contingency), `${d.contingency * 100} % del subtotal` + (m.mr ? ` · la de gestión (${usd(m.mr)}) queda fuera del BAC` : "")) +
+    kpi("Línea base EVM", usd(m.bac), (m.loeWeek ? "desarrollo + leads + infra + IA" : "desarrollo + infra + IA") + (m.kc > 1 ? ` + ${d.contingency * 100} % de contingencia` : ""));
+  $("pres-note").innerHTML = `<b>Semana de reserva (${d.reserve}):</b> no lleva trabajo planificado y absorbe atrasos antes de la entrega final. Es reserva de gestión, así que queda fuera del BAC.` +
+    (m.mr ? ` También la <b>contingencia de gestión</b> (${d.managementReserve * 100} %, ${usd(m.mr, 2)}): el presupuesto total es ${usd(m.total + m.mr, 2)}, pero el BAC y el EVM llegan hasta ${usd(m.total, 2)}.` : "");
 
   // Valor ganado
   const k = m.c - 1;
-  $("evm-lead").textContent = `Al corte de la semana ${m.c} (${d.weeks[k]}), sobre la línea base de desarrollo${m.loeWeek ? ", leads," : " más"} infra e IA: ${usd(m.bac, 2)} en ${m.n} semanas.`;
+  $("evm-lead").textContent = `Al corte de la semana ${m.c} (${d.weeks[k]}), sobre la línea base de desarrollo${m.loeWeek ? ", leads," : " más"} infra e IA${m.kc > 1 ? `, con el ${d.contingency * 100} % de contingencia` : ""}: ${usd(m.bac, 2)} en ${m.n} semanas.`;
   $("evm-kpis-1").innerHTML =
     kpi("PV", usd(m.PV), `${(m.devWeek + m.loeWeekH) * m.c} h planificadas · ${pct(m.PV / m.bac)} de la línea base`) +
     kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas${m.loeWeek ? " + leads" : ""} · ${pct(m.EV / m.bac)} de la línea base`, true) +
@@ -521,10 +531,11 @@ function render(ver) {
     kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
   $("evm-formula").innerHTML = [
     `SV = EV − PV = ${signed(m.EV - m.PV)}`, `CV = EV − AC = ${signed(m.EV - m.AC)}`,
-    m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC", "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${num(m.tcpi)}`,
+    (m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC") + (m.kc > 1 ? `, × ${num(m.kc, 1)}` : ""), "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${num(m.tcpi)}`,
   ].map((f) => `<span>${f}</span>`).join("");
   $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.` +
     (m.loeWeek ? ` Ese % se aplica al BAC de desarrollo (${usd(m.bacDev, 2)}). Los leads (${m.loeWeekH} h/sem) son nivel de esfuerzo: su trabajo no se cierra por paquetes, así que su EV es igual a su PV.` : "") +
+    (m.kc > 1 ? ` PV y EV incluyen la contingencia (× ${num(m.kc, 1)}), repartida en proporción al trabajo planificado; el AC es el gasto real, también el que cubre la contingencia.` : "") +
     (d.acNote ? ` ${d.acNote}` : "");
 
   const { svg, geo } = curveSvg(d, m);
@@ -555,7 +566,7 @@ function render(ver) {
   const showGlobal = () => {
     $("wk-pick").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", j === 0));
     $("wk-kpis").innerHTML =
-      kpi("Línea base EVM", usd(m.bac), `BAC del proyecto ${usd(m.total)} con ${d.contingency * 100} % de contingencia`) +
+      kpi("Línea base EVM", usd(m.bac), m.kc > 1 ? `= BAC del proyecto, con ${d.contingency * 100} % de contingencia` : `BAC del proyecto ${usd(m.total)} con ${d.contingency * 100} % de contingencia`) +
       kpi("EV", usd(m.EV), `${pct(m.EV / m.bac)} de la línea base ganado`, true) +
       kpi("AC", usd(m.AC), `${pct(m.AC / m.bac)} de la línea base gastado`) +
       kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
@@ -586,11 +597,12 @@ function render(ver) {
   // Qué recalcar: conceptos de EVM con los números de este steering
   const li = (items) => items.filter(Boolean).map((x) => `<li>${x}</li>`).join("");
   $("pres-recalcar").innerHTML = li([
-    `<b>BAC = línea base de costos:</b> el costo del trabajo más la <b>contingencia</b> (${d.contingency * 100} %), que cubre riesgos ya identificados. La reserva de gestión, para imprevistos, queda fuera: por eso la semana de reserva no suma.`,
+    `<b>BAC = línea base de costos:</b> el costo del trabajo más la <b>contingencia${m.mr ? " de actividades" : ""}</b> (${d.contingency * 100} %), que cubre riesgos ya identificados. La reserva de gestión, para imprevistos, queda fuera: ${m.mr ? `la contingencia de gestión (${d.managementReserve * 100} %) y ` : "por eso "}la semana de reserva no suma${m.mr ? "n" : ""}.`,
     "Presupuestamos por <b>esfuerzo</b> (HH × tarifa), no por calendario. Por eso el presupuesto se compara directo con el avance.",
     m.loeWeek
       ? `La <b>línea base EVM incluye a los leads</b> (${usd(m.bac)}): desarrollo se mide por paquetes cerrados de la WBS; gestión y QA son nivel de esfuerzo, con EV = PV. En el Steering 1 la base era solo desarrollo y su valor no aparecía.`
       : `El <b>valor ganado se ancla en desarrollo</b> más infra e IA (${usd(m.bac)}): es donde hay entregables medibles. Gestión y QA son nivel de esfuerzo y quedan en el BAC del proyecto.`,
+    m.kc > 1 && `<b>La contingencia${m.mr ? " de actividades" : ""} entra en el EVM:</b> es parte de la línea base de costos (PMBOK 7.3), así que se reparte en proporción al trabajo planificado y el BAC del EVM pasa de ${usd(m.bacNoCont)} a ${usd(m.bac)}. En el Steering 1 el EVM se midió sin contingencia.`,
     "La <b>PV no es lineal</b>: los costos mensuales de IA y de Azure generan escalones en la curva.",
   ]);
   const weak = d.earned.map((_, i) => i).filter((i) => m.ev[i] / m.pv[i] < 1);
@@ -598,6 +610,7 @@ function render(ver) {
     Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek + m.loeWeekH} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
     m.loeWeek && `<b>Los leads acercan los índices a 1:</b> como su EV es igual a su PV, diluyen el desvío. Midiendo solo desarrollo, infra e IA, el SPI da <b>${num(m.spiDev)}</b>.`,
     `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
+    m.kc > 1 && `<b>El CPI incluye la contingencia que no se usó:</b> sin ella da <b>${num(m.cpiNoCont)}</b>, es decir, el gasto va casi exacto al plan. Cada vez que se use contingencia, el AC sube y el CPI baja, que es lo esperable.`,
     `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
     weak.length && `<b>Semanas con SPI &lt; 1:</b> ${weak.map((i) => `semana ${i + 1} (${num(m.ev[i] / m.pv[i])})`).join(", ")}. El EV sube cuando cierra un paquete, no mientras se trabaja: las semanas en que cierran paquetes grandes compensan a las anteriores.`,
   ]);
