@@ -655,6 +655,9 @@ const DATA = {
     // Mismo cronograma ganado que en v4 (EVM del Steering 2, leadership/steering.html v2).
     progress: { date: '2026-10-17', note: 'lo terminado al corte del 15/10 equivale al plan del 17/10 (cronograma ganado)' },
     weekly: true,
+    // Épicas que no se dibujan (ni en pantalla ni en el export): la documentación sumaba ruido.
+    // Los paquetes siguen en los datos y en el Cronograma v5; nada depende de ellos.
+    hiddenMods: ["10.0 Documentación Final"],
     // v5-gen-begin — lo escribe scripts/generate-v5.py; no editar a mano
     tasks: [
     { id:"3.1.1", mod:"3.0 Capacitación y Setup", name:"Stack tecnológico definido", dev:3, start:"2026-08-06", end:"2026-08-13", hours:4.00, status:"done", deps:[] },
@@ -981,7 +984,7 @@ function loadVersion(ver){
   rangeEnd   = parse(d.rangeEnd);
   totalDays  = days(RANGE_START, d.rangeEnd) + 1;
 
-  RAW      = d.tasks;
+  RAW      = d.tasks.filter(t => !(d.hiddenMods || []).includes(t.mod));
   NAMES    = d.names;
   DEVS     = d.devs || {};
   CRIT_IDS = d.critical || CRITICAL_L3;
