@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Sincroniza el team SPO de Linear con la WBS v4. Ver docs/planning/plan-linear.md.
+ * Sincroniza el team SPO de Linear con la WBS v5. Ver docs/planning/plan-linear.md.
  *
  *   node --env-file=.env.local scripts/sync-linear.mjs           revisa, reporta y actualiza el repo
  *   node --env-file=.env.local scripts/sync-linear.mjs --push     además escribe en Linear
@@ -9,7 +9,7 @@
  *
  * Entradas
  *   docs/planning/linear-wbs-map.csv          issue -> paquete de la WBS (a mano)
- *   docs/planning/WBS-SportMatch-v4.md        los 116 paquetes válidos
+ *   docs/planning/WBS-SportMatch-v5.md        los 131 paquetes válidos
  *
  * Salidas
  *   docs/planning/linear-issues.csv           estado, puntos y fechas reales (lo lee generate-v4.py)
@@ -25,7 +25,7 @@ const root = new URL('../', import.meta.url);
 const MAP_CSV = new URL('docs/planning/linear-wbs-map.csv', root);
 const ISSUES_CSV = new URL('docs/planning/linear-issues.csv', root);
 const GANTT = new URL('leadership/gantt.html', root);
-const WBS_MD = new URL('docs/planning/WBS-SportMatch-v4.md', root);
+const WBS_MD = new URL('docs/planning/WBS-SportMatch-v5.md', root);
 
 const TEAM = 'SPO';
 const PROJECT_NAME = 'SportMatch';
@@ -165,7 +165,7 @@ const problems = [];
 const add = (label, list) => list.length && problems.push([label, list]);
 
 add('sin paquete en el CSV', issues.filter((i) => packagesOf(i.identifier).length === 0).map((i) => i.identifier));
-add('wbs_id que no existe en la WBS v4', map.filter((r) => r.wbs_id && !wbsIds.has(r.wbs_id)).map((r) => `${r.issue}→${r.wbs_id}`));
+add('wbs_id que no existe en la WBS v5', map.filter((r) => r.wbs_id && !wbsIds.has(r.wbs_id)).map((r) => `${r.issue}→${r.wbs_id}`));
 add('en el CSV pero ya no en Linear', [...rowsOf.keys()].filter((id) => !byId.has(id)));
 add('sin proyecto', issues.filter((i) => !i.project).map((i) => i.identifier));
 add('sin estimate', issues.filter((i) => i.estimate == null && i.state.type !== 'canceled').map((i) => i.identifier));

@@ -23,11 +23,12 @@ const l2 = (id) => id.split(".").slice(0, 2).join(".");
 const numKey = (id) => id.split(".").map(Number);
 const byNum = (a, b) => { const x = numKey(a), y = numKey(b); for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
 
-/** Package ids declared in the WBS v4 document (the source the v4 data is generated from). */
-function wbsV4DocIds() {
-  const md = read("docs/planning/WBS-SportMatch-v4.md");
+/** Package ids declared in a WBS document (the source each version's data is generated from). */
+function wbsDocIds(ver) {
+  const md = read(`docs/planning/WBS-SportMatch-${ver}.md`);
   return [...md.matchAll(/^\*\*(\d+\.\d+\.\d+)\*\*/gm)].map((m) => m[1]).sort(byNum);
 }
+const wbsV4DocIds = () => wbsDocIds("v4");
 
 /** Same shape as applyAdds() in wbs.html. */
 function applyAdds(base, adds, renames = {}) {
@@ -58,13 +59,16 @@ function wbsTrees() {
   const V4_RENAME = constant(html, "V4_RENAME");
   const v2 = applyAdds(V1, V2_ADD);
   const v4 = applyAdds(v2.tree, V4_ADD, V4_RENAME);
-  return { v1: { tree: V1, added: new Set() }, v2, v4, V2_ADD, V4_ADD, V4_RENAME };
+  const V5_ADD = constant(html, "V5_ADD", "[", "];");
+  const V5_RENAME = constant(html, "V5_RENAME");
+  const v5 = applyAdds(v4.tree, V5_ADD, V5_RENAME);
+  return { v1: { tree: V1, added: new Set() }, v2, v4, v5, V2_ADD, V4_ADD, V4_RENAME, V5_ADD, V5_RENAME };
 }
 
 // ── PERT ─────────────────────────────────────────────────────────────────────
 test("PERT: every dependency and every group name resolves, in every version", () => {
   const DATA = constant(read("leadership/pert.html"), "DATA");
-  assert.deepEqual(Object.keys(DATA), ["v1", "v2", "v4"]);
+  assert.deepEqual(Object.keys(DATA), ["v1", "v2", "v4", "v5"]);
   for (const [ver, { tasks, deps, groups, newIds = [] }] of Object.entries(DATA)) {
     for (const [succ, preds] of Object.entries(deps)) {
       assert.ok(tasks[succ], `${ver}: dep declared for unknown task ${succ}`);
@@ -99,6 +103,14 @@ test("PERT: each version keeps every group of the previous one and adds packages
 test("PERT v4: carries exactly the packages of the WBS v4 document", () => {
   const DATA = constant(read("leadership/pert.html"), "DATA");
   assert.deepEqual(Object.keys(DATA.v4.tasks).sort(byNum), wbsV4DocIds());
+});
+
+test("PERT v5: carries exactly the packages of the WBS v5 document, and marks the 13 new ones", () => {
+  const DATA = constant(read("leadership/pert.html"), "DATA");
+  assert.deepEqual(Object.keys(DATA.v5.tasks).sort(byNum), wbsDocIds("v5"));
+  assert.equal(Object.keys(DATA.v5.tasks).length, 131);
+  const v4 = new Set(Object.keys(DATA.v4.tasks));
+  assert.deepEqual([...DATA.v5.newIds].sort(byNum), Object.keys(DATA.v5.tasks).filter((id) => !v4.has(id)).sort(byNum));
 });
 
 // ── Gantt ────────────────────────────────────────────────────────────────────
@@ -166,6 +178,33 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
   assert.ok(d.milestones.some((m) => m.date === "2026-11-12" && m.type === "delivery"), "Entrega 3 on 12/11");
 });
 
+test("Gantt v5: S2 closed with real dates, S3 planned inside the sprint, 11.2.3 dropped, 10.1 with the PMs", () => {
+  const DATA = constant(read("leadership/gantt.html"), "DATA");
+  const d = DATA.v5;
+  assert.equal(d.weekly, true, "v5 must declare weekly dates");
+  const isThursday = (iso) => new Date(iso + "T00:00:00Z").getUTCDay() === 4;
+  const counts = { done: 0, wip: 0, todo: 0 };
+  for (const t of d.tasks) {
+    assert.ok(isThursday(t.start) && isThursday(t.end), `${t.id} is not Thursday to Thursday`);
+    assert.ok(t.end !== t.start, `${t.id} spans zero weeks`);
+    assert.ok(Date.parse(t.end) <= Date.parse("2026-11-05"), `${t.id} ends inside the reserve week (05/11 → 12/11)`);
+    assert.ok(t.status in counts, `${t.id}: unknown status ${t.status}`);
+    counts[t.status]++;
+    if (t.status === "done") assert.ok(Date.parse(t.end) <= Date.parse("2026-10-15"), `${t.id} is done but ends after the 15/10 steering`);
+    if (t.status === "todo") assert.ok(Date.parse(t.start) >= Date.parse("2026-10-15"), `${t.id} is pending but planned before the S3`);
+    assert.ok([1, 2, 3, 4].includes(t.dev), `${t.id}: dev must be 1, 2, 3 or 4 (PMs)`);
+    assert.equal(t.dev === 4, t.id.startsWith("10.1."), `${t.id}: only 10.1 goes to the PMs`);
+  }
+  // Cronograma-y-PERT-v5.md: 68 hechos, 2 parciales (6.5.1 y 10.1.2), 18 pendientes; 11.2.3 fuera.
+  assert.deepEqual(counts, { done: 68, wip: 2, todo: 18 });
+  assert.equal(d.tasks.length, 88);
+  assert.ok(!d.tasks.some((t) => t.id === "11.2.3"), "11.2.3 is dropped in v5");
+  // Capacidad del S3: 3 devs × 6 h × 3 semanas, sin contar lo de los PMs.
+  const s3 = d.tasks.filter((t) => t.status !== "done" && t.dev !== 4 && t.id !== "6.5.1").reduce((s, t) => s + t.hours, 0)
+    + d.tasks.find((t) => t.id === "6.5.1").hours;
+  assert.ok(s3 <= 54, `S3 load ${s3.toFixed(2)} h exceeds 54 h`);
+});
+
 // El bloque ya trabajado trae las fechas reales de Linear pegadas sobre un plan generado, y en
 // algunos casos la realidad contradice el grafo de dependencias (una tarea cerrada que depende de
 // otra sin cerrar). No se corrige acá: es una decisión de planificación. Se fija la lista para que
@@ -183,6 +222,12 @@ const KNOWN_DEP_VIOLATIONS = {
        "12.1.2<12.1.1",
        // S3 adelantado en la semana 10: SPO-262 (6.5.3) arrancó el 12/10, antes del fin de 6.5.2 en la línea base.
        "6.5.3<6.5.2"],
+  // v5 la imprime scripts/generate-v5.py. Con el S2 cerrado, las de 7.3, 12.1 y 6.5 de la v4 desaparecen
+  // (los tickets reales fijan las ventanas) y queda una nueva de ejecución real: SPO-235 (7.3.2) arrancó
+  // el 28/09, antes de que cerrara SPO-251 (7.3.1, pin arrastrable) el 03/10.
+  v5: ["10.2.1<3.2.3", "4.1.1<3.2.2", "4.1.3<4.1.2", "4.2.1<4.1.2", "5.1.2<5.1.1", "5.1.3<6.3.1",
+       "5.1.4<6.4.3", "5.2.1<5.1.2", "5.2.3<5.1.3", "5.2.4<5.1.4", "6.2.1<6.1.2", "6.2.3<6.1.3", "6.2.4<6.3.4",
+       "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "7.3.2<7.3.1", "9.1.4<3.2.3"],
 };
 
 test("Gantt: no new dependency violations creep into the schedule", () => {
@@ -193,7 +238,7 @@ test("Gantt: no new dependency violations creep into the schedule", () => {
     const found = [];
     // v4 plans in whole weeks (Thursday to Thursday): a successor may share the week in which its
     // dependency closes (the sprint plan orders the days). A violation is starting *before* that week.
-    const slack = ver === "v4" ? 7 * 86400000 : 0;
+    const slack = ver === "v4" || ver === "v5" ? 7 * 86400000 : 0;
     for (const t of d.tasks) {
       for (const dep of t.deps) {
         if (by[dep] && day(t.start) < day(by[dep].end) - slack) found.push(`${t.id}<${dep}`);
@@ -219,7 +264,8 @@ test("Gantt: no new dependency violations creep into the schedule", () => {
 
 // ── WBS ──────────────────────────────────────────────────────────────────────
 test("WBS: each version is the previous one plus its declared additions, and adds nothing twice", () => {
-  const { v1, v2, v4, V2_ADD, V4_ADD } = wbsTrees();
+  const trees = wbsTrees();
+  const { v1, v2, v4, V2_ADD, V4_ADD } = trees;
   const l1 = leaves(v1.tree), l2set = leaves(v2.tree), l4set = leaves(v4.tree);
 
   assert.deepEqual(l2set.filter((x) => !v2.added.has(x)).sort(), [...l1].sort(), "v1 leaves must survive in v2");
@@ -232,7 +278,11 @@ test("WBS: each version is the previous one plus its declared additions, and add
   assert.equal(l4set.length, l2set.length + v4.added.size, "v4 leaf count");
   assert.equal(new Set(ids(l4set)).size, l4set.length, "no duplicate leaves in v4");
 
-  for (const ADD of [V2_ADD, V4_ADD]) {
+  const l5set = leaves(trees.v5.tree);
+  assert.deepEqual(ids(l5set.filter((x) => !trees.v5.added.has(x))), ids(l4set), "v4 leaves must survive in v5");
+  assert.equal(l5set.length, l4set.length + trees.v5.added.size, "v5 leaf count");
+
+  for (const ADD of [V2_ADD, V4_ADD, trees.V5_ADD]) {
     for (const [, subName, items] of ADD) {
       const prefix = subName.split(" ")[0];
       for (const it of items) assert.ok(it.startsWith(prefix + "."), `${it} does not belong under ${subName}`);
@@ -246,11 +296,17 @@ test("WBS v4: carries exactly the packages of the WBS v4 document", () => {
   assert.equal(leaves(v4.tree).length, 118);
 });
 
+test("WBS v5: carries exactly the packages of the WBS v5 document", () => {
+  const { v5 } = wbsTrees();
+  assert.deepEqual(leaves(v5.tree).map(leafId).sort(byNum), wbsDocIds("v5"));
+  assert.equal(leaves(v5.tree).length, 131);
+});
+
 test("WBS: every package the PERT and the Gantt schedule exists in the WBS of that version", () => {
   const trees = wbsTrees();
   const pert = constant(read("leadership/pert.html"), "DATA");
   const gantt = constant(read("leadership/gantt.html"), "DATA");
-  for (const ver of ["v1", "v2", "v4"]) {
+  for (const ver of ["v1", "v2", "v4", "v5"]) {
     const wbsIds = new Set(leaves(trees[ver].tree).map(leafId));
     for (const id of Object.keys(pert[ver].tasks)) assert.ok(wbsIds.has(id), `${ver}: PERT schedules ${id}, which the WBS does not list`);
     for (const t of gantt[ver].tasks) assert.ok(wbsIds.has(t.id), `${ver}: Gantt schedules ${t.id}, which the WBS does not list`);
@@ -269,10 +325,10 @@ test("leadership pages: every inline script compiles", () => {
   }
 });
 
-test("leadership pages: the selector starts on v4 and the v4 tag text follows the version", () => {
-  assert.match(read("leadership/wbs.html"), /render\('v4'\);\s*<\/script>/);
-  assert.match(read("leadership/pert.html"), /build\('v4'\);\s*<\/script>/);
-  assert.match(read("leadership/gantt.html"), /loadVersion\("v4"\);\s*<\/script>/);
+test("leadership pages: the selector starts on v5 and the tag text follows the version", () => {
+  assert.match(read("leadership/wbs.html"), /render\('v5'\);\s*<\/script>/);
+  assert.match(read("leadership/pert.html"), /build\('v5'\);\s*<\/script>/);
+  assert.match(read("leadership/gantt.html"), /loadVersion\("v5"\);\s*<\/script>/);
   for (const page of ["leadership/pert.html", "leadership/gantt.html"]) {
     assert.doesNotMatch(read(page), /nuevo en v2/, `${page}: hardcoded 'nuevo en v2' tag`);
   }
@@ -304,7 +360,7 @@ function runPage(page) {
 
 test("Gantt runtime: both levels build rows for every version", () => {
   const evalIn = runPage("leadership/gantt.html");
-  for (const ver of ["v1", "v2", "v4"]) {
+  for (const ver of ["v1", "v2", "v4", "v5"]) {
     const l2 = evalIn(`state.level = "l2"; loadVersion("${ver}"); ({ rows: visibleRows().length, groups: groups.length, tasks: TASKS.length })`);
     const l3 = evalIn(`state.level = "l3"; rebuildTasks(); render(); ({ rows: visibleRows().length, subs: groups.reduce((n, g) => n + Object.keys(g.subs).length, 0), tasks: TASKS.length, crit: criticalSet.size })`);
     assert.equal(l2.rows, l2.groups + l2.tasks, `${ver}: level X.X rows`);
@@ -446,12 +502,12 @@ function csv(path) {
 test("Linear: el mapa cubre todos los issues y apunta a paquetes que existen", () => {
   const map = csv("docs/planning/linear-wbs-map.csv");
   const issues = csv("docs/planning/linear-issues.csv");
-  const wbs = new Set(wbsV4DocIds());
+  const wbs = new Set(wbsDocIds("v5"));
 
   const pares = new Set();
   for (const r of map) {
     assert.ok(r.wbs_id, `${r.issue}: fila sin paquete — completá el CSV o corré sync-linear.mjs`);
-    assert.ok(wbs.has(r.wbs_id), `${r.issue}: ${r.wbs_id} no existe en la WBS v4`);
+    assert.ok(wbs.has(r.wbs_id), `${r.issue}: ${r.wbs_id} no existe en la WBS v5`);
     assert.ok(["si", "no"].includes(r.fechas), `${r.issue} → ${r.wbs_id}: fechas debe ser si o no`);
     const par = `${r.issue} ${r.wbs_id}`;
     assert.ok(!pares.has(par), `fila duplicada: ${par}`);
@@ -467,7 +523,7 @@ test("Linear: el mapa cubre todos los issues y apunta a paquetes que existen", (
   for (const id of conPaquete) assert.ok(enLinear.has(id), `${id} está en el mapa pero ya no en Linear`);
 });
 
-test("Gantt: el bloque LINEAR coincide con el mapa y con los paquetes de la v4", () => {
+test("Gantt: el bloque LINEAR coincide con el mapa y con los paquetes de la WBS vigente (v5)", () => {
   const html = read("leadership/gantt.html");
   const LINEAR = constant(html, "LINEAR");
   const DATA = constant(html, "DATA");
@@ -477,9 +533,9 @@ test("Gantt: el bloque LINEAR coincide con el mapa y con los paquetes de la v4",
   );
 
   assert.ok(LINEAR.syncedAt, "el bloque nunca se sincronizó: corré scripts/sync-linear.mjs");
-  const wbs = new Set(wbsV4DocIds());
+  const wbs = new Set(wbsDocIds("v5"));
   for (const [pkg, ids] of Object.entries(LINEAR.byPkg)) {
-    assert.ok(wbs.has(pkg), `byPkg trae un paquete que no existe en la WBS v4: ${pkg}`);
+    assert.ok(wbs.has(pkg), `byPkg trae un paquete que no existe en la WBS v5: ${pkg}`);
     for (const id of ids) assert.ok(LINEAR.issues[id], `${pkg}: ${id} no está en issues`);
   }
   // Los cancelados no se muestran (decisión del plan), el resto del mapa sí.

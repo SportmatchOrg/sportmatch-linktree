@@ -133,7 +133,7 @@ MANUAL_WEEK = {
  '3.1.1': (1, 1, 3),   # stack definido en el kick-off (Infra)
  '3.1.3': (1, 1, 3),   # convenciones de ramas/PR/Linear escritas en AGENTS.md la semana del kick-off
  '10.2.1': (2, 2, 3),  # README con instalación y ejecución local, junto con la base del repo (SPO-143)
- '11.1.2': (8, 9, 3),  # web-push decidido el 24/09 e implementado con SPO-243 (mapeado a 11.2.2 y 11.1.3)
+ '11.1.2': (8, 8, 3),  # web-push, decidido el 24/09 (semana 8); la implementación es 11.1.3 y 11.2.2
 }
 # 13.0 Challenge: cerró en la semana 9 (SPO-276, SPO-277); sus tickets fijan la ventana como cualquier otro.
 FIXED_WEEK = {}
@@ -305,3 +305,70 @@ md += ['', f'PERT completo ({len(TASKS)} paquetes): camino crítico de {T_FULL:.
        f'PERT de desarrollo ({len(DEV)} paquetes): camino crítico de {T_DEV:.2f} h · ' + ' → '.join(crit_dev), '']
 (OUT / '_v5_calendario.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
 print('->', OUT / '_v5_calendario.md')
+
+# ───────────────────────── vistas de leadership: PERT y Gantt v5 ─────────────────────────
+# Escribe entre los marcadores `// v5-gen-begin` y `// v5-gen-end` de leadership/pert.html y
+# leadership/gantt.html. El resto del bloque v5 (sprints, hitos, colores) se edita a mano.
+J = lambda s: json.dumps(s, ensure_ascii=False)
+f2 = lambda x: f'{x:.2f}'
+NEW_IDS = sorted([k for k in TASKS if TASKS[k]['new_v5']], key=key)
+GROUPS = {
+ '1.1':'Planificación técnica','1.2':'Gestión del proyecto','1.3':'Comunicación','1.4':'Cierre del proyecto',
+ '2.1':'Identidad y perfiles','2.2':'Diseño de pantallas','2.3':'Modelo de datos',
+ '3.1':'Configuración técnica','3.2':'Setup del entorno','4.1':'Autenticación backend','4.2':'Auth frontend',
+ '5.1':'Backend de perfil','5.2':'Frontend de perfil','5.3':'Primer uso','6.1':'Backend de partidos','6.2':'Frontend de partidos',
+ '6.3':'Solicitudes','6.4':'Calificación','6.5':'Invitación a partido','7.1':'Motor de búsqueda',
+ '7.2':'Experiencia swipe','7.3':'Visualización en mapa','8.1':'QA manual','8.2':'Pruebas con usuarios',
+ '8.3':'QA automatizado','9.1':'Despliegue','10.1':'Docs de usuario','10.2':'Docs técnicas',
+ '11.1':'Notificaciones backend','11.2':'Notificaciones frontend','12.1':'Reportar usuario','12.2':'Panel de moderación',
+ '13.1':'Reporte de KPIs','14.1':'Fotos propias','15.1':'Asistente para crear partidos','15.2':'Imágenes generadas',
+}
+assert {l2(k) for k in TASKS} <= set(GROUPS)
+
+pert = ['    tasks: {']
+for k in sorted(TASKS, key=key):
+    r = FULL[k]
+    pert.append(f"      '{k}':{{ dur:{f2(TASKS[k]['dur'])}, es:{f2(r['ES'])}, ef:{f2(r['EF'])}, ls:{f2(r['LS'])}, lf:{f2(r['LF'])}, tf:{f2(abs(r['H']))} }},")
+pert += ['    },', '    deps: {']
+for k in sorted(TASKS, key=key):
+    pert.append(f"      '{k}': {json.dumps(sorted(TASKS[k]['deps'], key=key))},")
+pert += ['    },', '    groups: {']
+for g in sorted(GROUPS, key=key):
+    pert.append(f"      '{g}':{J(GROUPS[g])},")
+pert += ['    },', f'    newIds: {json.dumps(NEW_IDS)},']
+
+# Gantt: los 89 paquetes de desarrollo menos 11.2.3 (descartado). 10.1.x van a nombre de los PMs (dev 4)
+# en la ventana del S3, fuera del planificador.
+PM_DEV = 4
+gtasks = []
+for k in sorted(DEV, key=key):
+    if k in DROPPED: continue
+    if k in PM_OWNED:
+        sw, ew, dv, st = 11, 13, PM_DEV, ('wip' if k in WIP else 'todo')
+    else:
+        s = sched[k]; sw, ew, dv, st = s['sw'], s['ew'], s['dev'], s['status']
+    gtasks.append({'id': k, 'mod': MOD_NAME[k.split('.')[0]], 'name': DEV[k]['title'], 'dev': dv,
+                   'start': f'{wstart(sw)}', 'end': f'{wend(ew)}', 'hours': DEV[k]['dur'], 'status': st,
+                   'deps': [d for d in DEV_DEPS[k] if d not in DROPPED]})
+by = {t['id']: t for t in gtasks}
+WEEK = 7 * 86400
+ts = lambda iso: datetime.strptime(iso, '%Y-%m-%d').timestamp()
+gviol = sorted(f"{t['id']}<{d}" for t in gtasks for d in t['deps'] if d in by and ts(t['start']) < ts(by[d]['end']) - WEEK)
+gantt = ['    tasks: [']
+for t in gtasks:
+    gantt.append(f'    {{ id:"{t["id"]}", mod:{J(t["mod"])}, name:{J(t["name"])}, dev:{t["dev"]}, start:"{t["start"]}", end:"{t["end"]}", '
+                 f'hours:{t["hours"]:.2f}, status:"{t["status"]}", deps:{json.dumps(t["deps"])} }},')
+gantt += ['    ],', f'    devs: {{1:"Rudolph", 2:"Pacheco", 3:"Siaba", {PM_DEV}:"PMs"}},', f'    critical: {json.dumps(crit_dev)},',
+          f'    newIds: {json.dumps([k for k in NEW_IDS if k in by])},', f'    knownDepViolations: {json.dumps(gviol)},']
+GANTT_HOURS = sum(t['hours'] for t in gtasks)
+
+for name, lines in (('pert.html', pert), ('gantt.html', gantt)):
+    page = ROOT / 'leadership' / name
+    html = page.read_text(encoding='utf-8')
+    if '// v5-gen-begin' not in html:
+        print(f'!! {name}: sin marcadores v5-gen; no se escribe'); continue
+    a, b = html.index('    // v5-gen-begin'), html.index('    // v5-gen-end')
+    head = html[a:html.index('\n', a) + 1]
+    page.write_text(html[:a] + head + '\n'.join(lines) + '\n' + html[b:], encoding='utf-8')
+print(f'gantt v5: {len(gtasks)} tareas · {GANTT_HOURS:.2f} h · violaciones {gviol}')
+print('estados:', {s: sum(1 for t in gtasks if t["status"] == s) for s in ("done", "wip", "todo")})

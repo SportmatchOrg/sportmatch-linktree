@@ -65,7 +65,7 @@
 | 7.3.2 | Visualización de partidos en mapa | 2.47 | 21.99 | Rudolph | 24/09 | 01/10 | ✅ |
 | 7.3.3 | Detalle de partido desde mapa | 3.90 | 21.99 | Rudolph | 24/09 | 01/10 | ✅ |
 | 11.1.1 | Modelo de notificación | 2.35 | 6.12 | Siaba | 17/09 | 24/09 | ✅ |
-| 11.1.2 | Selección de proveedor de push y email | 1.63 | 6.84 | Siaba | 24/09 | 08/10 | ✅ |
+| 11.1.2 | Selección de proveedor de push y email | 1.63 | 6.84 | Siaba | 24/09 | 01/10 | ✅ |
 | 11.1.3 | Servicio de envío de notificaciones | 4.75 | -0.00 | Pacheco | 24/09 | 01/10 | ✅ |
 | 11.2.1 | Centro de notificaciones | 3.90 | 12.24 | Rudolph | 24/09 | 01/10 | ✅ |
 | 11.2.2 | Recepción de push en cliente | 4.03 | 14.46 | Siaba | 01/10 | 08/10 | ✅ |

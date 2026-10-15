@@ -237,6 +237,29 @@ const V4_ADD = [
    ["13.1.1 Instrumentación para KPIs", "13.1.2 Cálculo y persistencia de KPIs"]],
 ];
 
+/* ---- v5 = v4 + estas altas ---------------------------------------------
+   Alcance agregado al cierre del S2 (WBS-SportMatch-v5.md, 14/10): primer uso guiado,
+   imágenes personalizadas y contenido generado con IA. 11.2.3 queda descartado. */
+const V5_ADD = [
+ ["2.0 Diseño del Producto", "2.2 Diseño de pantallas",
+   ["2.2.9 Pantallas de primer uso y del asistente de IA"]],
+ ["5.0 Perfil de Usuario", "5.3 Primer uso",
+   ["5.3.1 Backend de onboarding", "5.3.2 Pantalla de onboarding", "5.3.3 Tutorial de Descubrir"]],
+ ["7.0 Sistema de Matchmaking", "7.1 Descubrimiento de partidos",
+   ["7.1.4 Recomendación con el perfil declarado"]],
+ ["8.0 QA Manual y Validación", "8.1 Planificación de pruebas manuales",
+   ["8.1.11 Prueba manual de primer uso, imágenes y asistente de IA"]],
+ ["14.0 Imágenes personalizadas", "14.1 Fotos propias",
+   ["14.1.1 Almacenamiento de imágenes", "14.1.2 Foto de perfil propia", "14.1.3 Foto del partido"]],
+ ["15.0 Contenido generado con IA", "15.1 Asistente para crear partidos",
+   ["15.1.1 Integración con proveedores de IA", "15.1.2 Interpretación de texto a partido", "15.1.3 Crear partido por texto o voz"]],
+ ["15.0 Contenido generado con IA", "15.2 Imágenes generadas",
+   ["15.2.1 Generación de imágenes con IA"]],
+];
+const V5_RENAME = {
+ "11.2.3 Preferencias de notificación": "11.2.3 Preferencias de notificación (descartado)",
+};
+
 /* Textos que cambiaron entre la v2 y la WBS v4, sin cambiar de número. */
 const V4_RENAME = {
  "2.2.8 Pantallas de reporte de usuario": "2.2.8 Pantallas de moderación",
@@ -248,6 +271,7 @@ const VER_DESC = {
   v1: "Alcance original del WBS.",
   v2: "Extensión propuesta: notificaciones, invitaciones, cancelación con motivo y moderación.",
   v4: "Lo que se construyó de verdad: entrada al producto, auth federada, deportes, mis partidos, inscripción directa, perfil público, QA automatizado y contenedores; más el panel de moderación.",
+  v5: "Alcance agregado para el S3 (14/10): primer uso guiado, imágenes personalizadas y contenido generado con IA. 11.2.3 queda descartado.",
 };
 
 /* Aplica una lista de altas sobre una copia profunda del árbol base, con renombres
@@ -267,16 +291,18 @@ function applyAdds(base, adds, renames = {}){
 }
 const buildV2 = () => applyAdds(WBS_V1, V2_ADD);
 const buildV4 = () => applyAdds(buildV2().tree, V4_ADD, V4_RENAME);
+const buildV5 = () => applyAdds(buildV4().tree, V5_ADD, V5_RENAME);
 
 const VIEWS = {
   v1: { tree: WBS_V1, newLeaves:new Set(), newSubs:new Set(), newPkgs:new Set() },
   v2: buildV2(),
   v4: buildV4(),
+  v5: buildV5(),
 };
 
 const gridEl = document.getElementById('grid');
 const btn = document.getElementById('toggle');
-let VER = 'v4';
+let VER = 'v5';
 
 function render(ver){
   VER = ver;
@@ -316,7 +342,7 @@ verSelect.innerHTML = Object.keys(VIEWS).map(v => `<option value="${v}">${v}</op
 verSelect.value = VER;
 verSelect.addEventListener('change', () => render(verSelect.value));
 
-render('v4');
+render('v5');
 </script>
 </body>
 </html>
