@@ -120,6 +120,8 @@
   .pill.completed{ background:#dcfce7; color:#15803d; }
   .pill.started{ background:#fef3c7; color:#b45309; }
   .det-note{ margin:0; font-size:12px; color:var(--muted); }
+  .weeks{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; }
+  .weeks .btn[aria-pressed="true"]{ background:var(--navy); color:#fff; border-color:var(--navy); }
   .foot{ margin-top:18px; font-size:12px; color:var(--muted); text-align:center; }
 </style>
 </head>
@@ -182,6 +184,11 @@
     <button class="btn" id="svg-dl" type="button">Descargar SVG</button>
   </div>
   <div class="chart-box" id="chart-box"><div class="tip" id="tip"></div></div>
+
+  <h3>Semana a semana</h3>
+  <div class="weeks" id="wk-pick" role="group" aria-label="Semana"></div>
+  <div class="kpis" id="wk-kpis"></div>
+  <p class="note" id="wk-read"></p>
 
   <div class="export"><button class="btn" type="button" data-export="evm-table" data-name="valor-ganado-semanal">Descargar SVG</button></div>
   <div class="table-scroll" style="margin-top:12px"><table id="evm-table"></table></div>
@@ -256,6 +263,62 @@ const STEERINGS = {
       ["R4", "El S2 usa el 80 % de la capacidad; el S3, el 75 %.", "Bajo", "12,38 h de margen en las 13 semanas, más la semana de reserva."],
     ],
   },
+  v2: {
+    name: "Steering 15/10",
+    sources: "outputs/Steering 2.xlsx · docs/planning/Cronograma-y-PERT-v4.md (§4, §10 y §11) · docs/planning/WBS-SportMatch-v4.md · Linear (sync del 12/10) · docs/challenge/ADR.md · Tablero de Estado del Proyecto",
+    weeks: ["13/08","20/08","27/08","03/09","10/09","17/09","24/09","01/10","08/10","15/10","22/10","29/10","05/11"],
+    start: "06/08",
+    cut: 10,
+    reserve: "05/11 → 12/11",
+    // 227,62 h del Cronograma v4: 78 paquetes, con 13.1 re-estimada a 6 h (Lab2, ADR-001).
+    devEffort: 227.62,
+    // SPO-262, SPO-264 y SPO-279 cerraron el 13/10 y el 14/10.
+    // Parciales: 6.5.1 (back hecho, front en Backlog) y 10.1.2 (entrega de diseño, 🟡 en el Cronograma).
+    avance: { done: [68, 193.31], wip: [2, 5.64], todo: [8, 28.67] },
+    // loe: nivel de esfuerzo. Entra en la línea base EVM con EV = PV (incidente Sem08: en el S1 faltó su valor).
+    roles: [
+      { rol: "Gestión", who: "PM, PO, Tech Lead", people: 3, hWeek: 4, rate: 20, evm: true, loe: true },
+      { rol: "Desarrollo", who: "3 devs", people: 3, hWeek: 6, rate: 10, evm: true },
+      { rol: "QA", who: "QA Lead", people: 1, hWeek: 4, rate: 20, evm: true, loe: true },
+    ],
+    // Infra e IA de las semanas 7 a 10: lo facturado coincide con el plan (confirmado el 14/10).
+    other: [
+      { name: "IA · Claude Code/ChatGPT · 3 × 20 USD/mes", byWeek: { 1: 60, 5: 60, 10: 60 } },
+      { name: "Infra · Azure B1 (back) · 13,14 USD/mes, desde el deploy del 29/08", byWeek: { 4: 13.14, 8: 13.14, 12: 13.14 } },
+      { name: "Infra · Vercel, Neon, Firebase, GitHub Actions, Google Maps y Places (plan gratuito)", byWeek: {} },
+    ],
+    contingency: 0.20,
+    actualHours: [18, 18, 18, 18, 18, 18, 18, 18, 18, 18],
+    // Semana 9: +6 h de Lab4 del challenge (workflow, alertas y ADR), por encima del nivel de esfuerzo; las cubre la contingencia.
+    loeActualHours: [16, 16, 16, 16, 16, 16, 16, 16, 22, 16],
+    acNote: "Semana 9: los leads suman 6 h de Lab4 del challenge (+120 USD de AC) por encima de su nivel de esfuerzo. El EV no cambia porque Lab4 no está en la línea base; las cubre la contingencia (1.344 → 1.224 USD).",
+    // Semanas 7 a 10: paquetes que no habían cerrado en el S1, con la fecha de cierre de Linear (tickets con fechas = si).
+    earned: [
+      { h: 5.5,   pkgs: ["3.1.1", "3.1.3"] },
+      { h: 32.71, pkgs: ["3.1.2", "3.2.1", "4.1.1", "4.1.3", "4.1.4", "4.2.1", "4.2.2", "4.2.3", "10.2.1"] },
+      { h: 8.72,  pkgs: ["3.2.2", "4.1.2", "6.1.1", "9.1.4"] },
+      { h: 30.3,  pkgs: ["3.2.3", "4.2.5", "6.1.2", "6.1.5", "6.2.3", "6.3.5", "7.2.1", "9.1.1", "9.1.2", "9.1.3"] },
+      { h: 26.29, pkgs: ["5.1.2", "5.2.1", "6.1.3", "6.2.1", "6.2.4", "6.3.1", "6.3.2", "6.3.3", "7.2.2"] },
+      { h: 20.18, pkgs: ["4.2.4", "5.1.3", "5.1.5", "5.2.4", "5.2.5", "6.2.2", "6.3.4", "6.4.1", "6.4.2"] },
+      { h: 7.83,  pkgs: ["5.2.3", "6.1.4", "6.2.5", "11.1.1"] },
+      { h: 21.14, pkgs: ["6.2.6", "7.1.1", "7.3.2", "7.3.3", "11.1.3", "11.2.1"] },
+      { h: 24.42, pkgs: ["5.1.1", "5.1.4", "6.4.3", "7.1.3", "7.3.1", "11.1.2", "11.2.2", "13.1.1", "13.1.2"] },
+      { h: 16.22, pkgs: ["5.2.2", "6.5.2", "6.5.3", "7.1.2", "12.1.1", "12.1.2"] },
+    ],
+    hitos: [
+      ["Kick-off técnico", "Principios de agosto", "13/08", "✅ Cumplido"],
+      ["MVP funcional", "Fines de octubre", "15/10, cierre del S2", "✅ S2 cerrado el 15/10, 15 días antes (10.1.2 en curso; 11.2.3 fuera de alcance)"],
+      ["Deploy del sistema", "Principios de noviembre", "Operativo desde el S1", "✅ Adelantado ~2 meses"],
+      ["Finalización del proyecto", "Fines de noviembre", "Desarrollo al 05/11; entrega final 12/11", "🟡 En plan, con el S3 adelantado ~1 semana"],
+    ],
+    riesgos: [
+      ["R1", "11.1.3 (servicio de notificaciones) en el camino crítico.", "✅ Cerrado", "El S2 arrancó por el módulo 11.0: 11.1.3 cerró en la semana 8 (SPO-226)."],
+      ["R2", "12.2.1 obliga a introducir un rol de administrador que hoy no existe en el modelo de usuario ni en el guard.", "Alto", "Resolver el rol al inicio del S3, no al final."],
+      ["R3", "7.3 (mapa) sin coordenadas en el modelo.", "✅ Cerrado", "Coordenadas sumadas en SPO-227; el mapa cerró en la semana 9."],
+      ["R4", "Capacidad del S3.", "Bajo", "Quedan 34,31 h de desarrollo para 54 h de capacidad del S3 (64 %), más la semana de reserva."],
+      ["R5", "Un nuevo challenge de la cátedra, como el de KPIs, que saque horas del plan.", "Probable · impacto desconocido", "Mismo protocolo que en la semana 9: ADR, diferir issues fuera del camino crítico y absorber con el margen del S3 y la semana de reserva."],
+    ],
+  },
 };
 
 /* ---- Actividades clave: un snapshot por semana ---------------------------
@@ -288,16 +351,37 @@ const ACTIVIDADES = {
  {"actividad": "Módulo de Autenticación", "wbs": "4.1 4.2", "estado": "Finaliz.", "avance": 100, "base": "20/08/26", "estimado": "15/09/26", "real": "15/09/26", "desvio": -26, "calc": 100, "detalle": [["SPO-149", "Modelo `User` + `PrismaService`", "Done", "completed", 2.0], ["SPO-151", "Inicializar `firebase-admin` en el back", "Done", "completed", 1.0], ["SPO-152", "`FirebaseAuthGuard` + proteger el CRUD", "Done", "completed", 2.0], ["SPO-153", "SDK `firebase` + `AuthProvider`", "Done", "completed", 1.0], ["SPO-154", "Cliente API con el ID token", "Done", "completed", 2.0], ["SPO-155", "Módulo `users`: module + controller + service + repository", "Done", "completed", 1.0], ["SPO-157", "`GET /users/me` con upsert desde Firebase", "Done", "completed", 1.0], ["SPO-158", "Login y signup con email/password", "Done", "completed", 2.0], ["SPO-159", "Login con Google", "Done", "completed", 1.0], ["SPO-165", "Layout privado con tab bar", "Done", "completed", 2.0], ["SPO-177", "Ordenar el router y sacar el template de Next", "Done", "completed", 1.0], ["SPO-192", "Landing pública en `/` + splash al entrar a la app", "Done", "completed", 2.0]]},
  {"actividad": "Backend de partidos", "wbs": "6.1.1 6.1.2 6.1.3 6.1.5", "estado": "Finaliz.", "avance": 100, "base": "26/08/26", "estimado": "07/09/26", "real": "07/09/26", "desvio": -12, "calc": 100, "detalle": [["SPO-163", "Modelo `Partido` + migración + seed", "Done", "completed", 1.0], ["SPO-164", "Módulo `partidos`: CRUD en 4 capas", "Done", "completed", 2.0], ["SPO-169", "Módulo `deportes`: `GET /deportes`", "Done", "completed", 1.0], ["SPO-170", "`deporte` anidado y `estoy_anotado` en las respuestas de partidos", "Done", "completed", 2.0], ["SPO-182", "Participantes de un partido en `GET /partidos/:id`", "Done", "completed", 2.0], ["SPO-183", "Deportes desde la API, no hardcodeados", "Done", "completed", 1.0], ["SPO-186", "`GET /partidos` excluye los que organizo, los que ya tengo y los llenos", "Done", "completed", 1.0]]},
  {"actividad": "CI/CD y Deploy", "wbs": "9.1 8.3", "estado": "Finaliz.", "avance": 100, "base": "15/10/26", "estimado": "06/09/26", "real": "06/09/26", "desvio": 39, "calc": 100, "detalle": [["SPO-135", "Instalar el paquete de agentes de IA en el repo", "Done", "completed", 1.0], ["SPO-161", "`Dockerfile` de producción del back", "Done", "completed", 2.0], ["SPO-167", "Publicar la imagen del back en GHCR en cada merge a `dev`", "Done", "completed", 1.0], ["SPO-173", "Conectar los entornos a Neon + variables de producción", "Done", "completed", 1.0], ["SPO-175", "Deploy del back en Azure Web App (dev y main) con redeploy automático", "Done", "completed", 1.0], ["SPO-176", "Deploy del front en Vercel + checklist de smoke test", "Done", "completed", 1.0], ["SPO-181", "Activar el QA PR Review Agent en `sportmatch`", "Done", "completed", 1.0], ["SPO-195", "Instalar el harness e2e y reemplazar los workflows de agentes en sportmatch", "Done", "completed", 1.0]]},
- {"actividad": "Perfil de usuario", "wbs": "5.1 5.2", "estado": "En curso", "avance": 94, "base": "01/10/26", "estimado": "15/10/26", "real": "", "desvio": null, "calc": 94, "detalle": [["SPO-142", "Pantalla de perfil con los datos del usuario", "Done", "completed", 2.0], ["SPO-149", "Modelo `User` + `PrismaService`", "Done", "completed", 2.0], ["SPO-155", "Módulo `users`: module + controller + service + repository", "Done", "completed", 1.0], ["SPO-157", "`GET /users/me` con upsert desde Firebase", "Done", "completed", 1.0], ["SPO-172", "`GET /partidos/mios`: los que organizo y los que juego", "Done", "completed", 2.0], ["SPO-185", "Autorización en `users` y `partidos`: guard \"es mi cuenta\" y reglas del organizador", "Done", "completed", 2.0], ["SPO-187", "Historial: `jugados` en `GET /partidos/mios`", "Done", "completed", 1.0], ["SPO-191", "Perfil (pantalla 12): \"Partidos jugados\" y \"Partidos recientes\" con datos reales", "Done", "completed", 2.0], ["SPO-209", "Historial completo de partidos jugados: \"Ver todos\" en el perfil propio y en el ajeno", "Done", "completed", 2.0], ["SPO-212", "Estadísticas del perfil (puntaje, partidos, semanas) + perfil público de otro jugador", "Done", "completed", 2.0], ["SPO-213", "`GET /partidos/mios`: `requested` (solicitudes pendientes) + `rating_pending` en los partidos", "Done", "completed", 1.0], ["SPO-216", "Perfil de otro jugador (pantalla 12) + \"Ver perfil\" funcionando", "Done", "completed", 2.0], ["SPO-218", "Aviso de partidos sin calificar en el perfil", "Done", "completed", 1.0], ["SPO-234", "Puntaje con faltas y bajas tarde", "Done", "completed", 1.0], ["SPO-236", "Suspensión por reincidencia (7 días, 6 meses y 403) + seed para probar faltas, bajas tarde y suspensión", "Done", "completed", 2.0], ["SPO-242", "Usuarios en el back: ciudad en el perfil editable + `GET /users/search` por nombre", "Done", "completed", 1.0], ["SPO-244", "Ajustes (pantalla 13)", "Done", "completed", 1.0], ["SPO-245", "Editar perfil (pantalla 14)", "Done", "completed", 1.0], ["SPO-253", "Puntaje de varios usuarios en una sola pasada (`getScores`) + una sola consulta de reportes de faltas", "Done", "completed", 2.0], ["SPO-278", "Deportes y nivel del usuario en el back (`User.level` + deportes en `GET`/`PATCH /users`)", "Todo", "unstarted", 1.0], ["SPO-279", "Deportes y nivel en Editar perfil y en el perfil (propio y ajeno)", "Todo", "unstarted", 1.0]]},
+ {"actividad": "Perfil de usuario", "wbs": "5.1 5.2", "estado": "En curso", "avance": 94, "base": "01/10/26", "estimado": "15/10/26", "real": "", "desvio": null, "calc": 94, "detalle": [["SPO-142", "Pantalla de perfil con los datos del usuario", "Done", "completed", 2.0], ["SPO-149", "Modelo `User` + `PrismaService`", "Done", "completed", 2.0], ["SPO-155", "Módulo `users`: module + controller + service + repository", "Done", "completed", 1.0], ["SPO-157", "`GET /users/me` con upsert desde Firebase", "Done", "completed", 1.0], ["SPO-172", "`GET /partidos/mios`: los que organizo y los que juego", "Done", "completed", 2.0], ["SPO-185", "Autorización en `users` y `partidos`: guard \"es mi cuenta\" y reglas del organizador", "Done", "completed", 2.0], ["SPO-187", "Historial: `jugados` en `GET /partidos/mios`", "Done", "completed", 1.0], ["SPO-191", "Perfil (pantalla 12): \"Partidos jugados\" y \"Partidos recientes\" con datos reales", "Done", "completed", 2.0], ["SPO-209", "Historial completo de partidos jugados: \"Ver todos\" en el perfil propio y en el ajeno", "Done", "completed", 2.0], ["SPO-212", "Estadísticas del perfil (puntaje, partidos, semanas) + perfil público de otro jugador", "Done", "completed", 2.0], ["SPO-213", "`GET /partidos/mios`: `requested` (solicitudes pendientes) + `rating_pending` en los partidos", "Done", "completed", 1.0], ["SPO-216", "Perfil de otro jugador (pantalla 12) + \"Ver perfil\" funcionando", "Done", "completed", 2.0], ["SPO-218", "Aviso de partidos sin calificar en el perfil", "Done", "completed", 1.0], ["SPO-234", "Puntaje con faltas y bajas tarde", "Done", "completed", 1.0], ["SPO-236", "Suspensión por reincidencia (7 días, 6 meses y 403) + seed para probar faltas, bajas tarde y suspensión", "Done", "completed", 2.0], ["SPO-242", "Usuarios en el back: ciudad en el perfil editable + `GET /users/search` por nombre", "Done", "completed", 1.0], ["SPO-244", "Ajustes (pantalla 13)", "Done", "completed", 1.0], ["SPO-245", "Editar perfil (pantalla 14)", "Done", "completed", 1.0], ["SPO-253", "Puntaje de varios usuarios en una sola pasada (`getScores`) + una sola consulta de reportes de faltas", "Done", "completed", 2.0], ["SPO-278", "Deportes y nivel del usuario en el back (`User.level` + deportes en `GET`/`PATCH /users`)", "In Review", "started", 1.0], ["SPO-279", "Deportes y nivel en Editar perfil y en el perfil (propio y ajeno)", "Todo", "unstarted", 1.0]]},
  {"actividad": "Frontend de partidos", "wbs": "6.2.1 6.2.2 6.2.3 6.2.4", "estado": "Finaliz.", "avance": 100, "base": "05/11/26", "estimado": "12/09/26", "real": "12/09/26", "desvio": 54, "calc": 100, "detalle": [["SPO-166", "Crear partido: formulario + `POST /partidos`", "Done", "completed", 2.0], ["SPO-179", "Detalle de partido + \"Unirme\" / \"Salirme\"", "Done", "completed", 2.0], ["SPO-180", "Pantalla \"Tus partidos\" (pantalla 11)", "Done", "completed", 2.0], ["SPO-189", "Wizard de crear partido, 5 pasos (pantallas 06–10)", "Done", "completed", 2.0], ["SPO-219", "Editar un partido: el wizard en modo edición (`PATCH /partidos/:id`)", "Done", "completed", 2.0]]},
  {"actividad": "Experiencia swipe", "wbs": "7.2", "estado": "Finaliz.", "avance": 100, "base": "03/09/26", "estimado": "10/09/26", "real": "10/09/26", "desvio": -7, "calc": 100, "detalle": [["SPO-178", "Descubrir: mazo de tarjetas con swipe (pantalla 04)", "Done", "completed", 2.0], ["SPO-179", "Detalle de partido + \"Unirme\" / \"Salirme\"", "Done", "completed", 2.0], ["SPO-198", "Pedir sumarse y ver el estado de la solicitud (pantallas 04 y 05)", "Done", "completed", 1.0]]},
  {"actividad": "Solicitudes de unión a partidos", "wbs": "6.3", "estado": "Finaliz.", "avance": 100, "base": "24/09/26", "estimado": "16/09/26", "real": "16/09/26", "desvio": 8, "calc": 100, "detalle": [["SPO-168", "Modelo `Participante` + unirse a un partido", "Done", "completed", 2.0], ["SPO-171", "Bajarse de un partido: `DELETE /partidos/:id/participantes/me`", "Done", "completed", 1.0], ["SPO-196", "Modelo `JoinRequest` + pedir sumarse a un partido", "Done", "completed", 2.0], ["SPO-197", "El organizador acepta o rechaza solicitudes", "Done", "completed", 1.0], ["SPO-198", "Pedir sumarse y ver el estado de la solicitud (pantallas 04 y 05)", "Done", "completed", 1.0], ["SPO-199", "Panel de solicitudes del organizador con aceptar y rechazar", "Done", "completed", 1.0], ["SPO-213", "`GET /partidos/mios`: `requested` (solicitudes pendientes) + `rating_pending` en los partidos", "Done", "completed", 1.0], ["SPO-217", "Solicitudes: el panel muestra solo pendientes + \"Esperando respuesta\" en Tus partidos", "Done", "completed", 1.0]]},
  {"actividad": "Motor de búsqueda de partidos", "wbs": "7.1", "estado": "En curso", "avance": 83, "base": "29/10/26", "estimado": "15/10/26", "real": "", "desvio": null, "calc": 83, "detalle": [["SPO-186", "`GET /partidos` excluye los que organizo, los que ya tengo y los llenos", "Done", "completed", 1.0], ["SPO-232", "Filtros de búsqueda en `GET /matches`", "Done", "completed", 1.0], ["SPO-238", "Descubrir ordenado por compatibilidad", "Done", "completed", 1.0], ["SPO-239", "Filtros del Mapa: chips de día, nivel y \"Cerca\"", "Done", "completed", 2.0], ["SPO-240", "Hoja \"Filtros\" (deporte y nivel), \"Buscá en esta zona\" y búsqueda de lugares cerca del jugador", "Todo", "unstarted", 1.0]]},
  {"actividad": "Calificaciones sobre jugadores", "wbs": "6.4", "estado": "Finaliz.", "avance": 100, "base": "29/09/26", "estimado": "06/10/26", "real": "06/10/26", "desvio": -7, "calc": 100, "detalle": [["SPO-207", "Modelo `Rating` + a quién me toca calificar en un partido jugado", "Done", "completed", 2.0], ["SPO-208", "Detalle de un partido jugado: sin inscripción, \"Hora\" en vez de \"Arranca\"", "Done", "completed", 1.0], ["SPO-211", "`POST /partidos/:id/ratings`: enviar las calificaciones de un partido", "Done", "completed", 1.0], ["SPO-215", "Modal de calificación: puntuar a los 3 compañeros de un partido jugado", "Done", "completed", 2.0], ["SPO-218", "Aviso de partidos sin calificar en el perfil", "Done", "completed", 1.0], ["SPO-228", "Faltas: modelo `NoShowReport` y marcarlas en el envío de la calificación", "Done", "completed", 1.0], ["SPO-231", "Falta confirmada, ventana de cierre de 48 h y descarte de estrellas", "Done", "completed", 2.0], ["SPO-241", "Faltas en la app: \"¿Faltó alguien?\", suspensión en los CTAs y en el perfil", "Done", "completed", 2.0], ["SPO-253", "Puntaje de varios usuarios en una sola pasada (`getScores`) + una sola consulta de reportes de faltas", "Done", "completed", 2.0]]},
  {"actividad": "Visualización en mapa interactivo", "wbs": "7.3", "estado": "Finaliz.", "avance": 100, "base": "05/11/26", "estimado": "03/10/26", "real": "03/10/26", "desvio": 33, "calc": 100, "detalle": [["SPO-227", "Proveedor de mapa (Google Maps + `BaseMap`) y coordenadas en `Match`", "Done", "completed", 3.0], ["SPO-229", "Paso \"Lugar\" con autocompletado de direcciones y pin arrastrable", "Done", "completed", 2.0], ["SPO-235", "Mapa (pantalla 03): partidos disponibles como pines", "Done", "completed", 2.0], ["SPO-237", "El Mapa como inicio: ubicación del jugador, header y tab bar", "Done", "completed", 1.0], ["SPO-251", "Al arrastrar el pin del lugar, la dirección se actualiza + documentar la configuración de Google Maps", "Done", "completed", 2.0]]},
- {"actividad": "Cancelación/invitación a partidos", "wbs": "6.5 6.1.4 6.2.5 6.2.6", "estado": "En curso", "avance": 33, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 33, "detalle": [["SPO-222", "Cancelar partido en el back: `status` + razón obligatoria en texto y `PATCH /matches/:id/cancel`", "Done", "completed", 2.0], ["SPO-224", "Cancelar partido como organizador: dropdown de razón + partido cancelado en Tus partidos", "Done", "completed", 1.0], ["SPO-226", "Disparadores de notificaciones: los 6 eventos de partidos y solicitudes", "Done", "completed", 2.0], ["SPO-258", "`GET /public/matches/:id`: el partido sin sesión", "Todo", "unstarted", 1.0], ["SPO-259", "Detalle público del partido, \"Compartir\" y vista previa del link", "Backlog", "backlog", 3.0], ["SPO-261", "Invitar a un jugador: origen \"invitación\" en la solicitud + `POST /matches/:id/invitations`", "Todo", "unstarted", 2.0], ["SPO-262", "Aceptar o rechazar una invitación", "Todo", "unstarted", 1.0], ["SPO-263", "Invitar jugadores desde el detalle del partido", "Todo", "unstarted", 2.0], ["SPO-264", "Recibir una invitación: aviso, aceptar o rechazar y \"Invitaciones\" en Tus partidos", "Todo", "unstarted", 1.0]]},
+ {"actividad": "Cancelación/invitación a partidos", "wbs": "6.5 6.1.4 6.2.5 6.2.6", "estado": "En curso", "avance": 33, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 33, "detalle": [["SPO-222", "Cancelar partido en el back: `status` + razón obligatoria en texto y `PATCH /matches/:id/cancel`", "Done", "completed", 2.0], ["SPO-224", "Cancelar partido como organizador: dropdown de razón + partido cancelado en Tus partidos", "Done", "completed", 1.0], ["SPO-226", "Disparadores de notificaciones: los 6 eventos de partidos y solicitudes", "Done", "completed", 2.0], ["SPO-258", "`GET /public/matches/:id`: el partido sin sesión", "Todo", "unstarted", 1.0], ["SPO-259", "Detalle público del partido, \"Compartir\" y vista previa del link", "Backlog", "backlog", 3.0], ["SPO-261", "Invitar a un jugador: origen \"invitación\" en la solicitud + `POST /matches/:id/invitations`", "In Review", "started", 2.0], ["SPO-262", "Aceptar o rechazar una invitación", "Todo", "unstarted", 1.0], ["SPO-263", "Invitar jugadores desde el detalle del partido", "Todo", "unstarted", 2.0], ["SPO-264", "Recibir una invitación: aviso, aceptar o rechazar y \"Invitaciones\" en Tus partidos", "Todo", "unstarted", 1.0]]},
  {"actividad": "Notificaciones", "wbs": "11.1 11.2", "estado": "En curso", "avance": 80, "base": "05/11/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 80, "detalle": [["SPO-221", "Notificaciones in-app: modelo `Notification` + módulo `notifications` (listar, no leídas, marcar leída)", "Done", "completed", 3.0], ["SPO-226", "Disparadores de notificaciones: los 6 eventos de partidos y solicitudes", "Done", "completed", 2.0], ["SPO-230", "Campanita con contador de no leídas", "Done", "completed", 2.0], ["SPO-233", "Centro de notificaciones: pantalla `/notificaciones`", "Done", "completed", 1.0], ["SPO-243", "Push PWA en el back: suscripciones y envío con `web-push`", "Done", "completed", 2.0], ["SPO-246", "Push PWA en el front: manifest, service worker y \"Activar notificaciones\"", "Done", "completed", 2.0], ["SPO-265", "Recordatorio 24 h antes del partido", "Backlog", "backlog", 3.0]]},
  {"actividad": "Reportes sobre jugadores", "wbs": "12.1", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "05/11/26", "real": "", "desvio": null, "calc": 0, "detalle": [["SPO-267", "Reportes: modelo `Report` + `POST /reports`", "Todo", "unstarted", 1.0], ["SPO-268", "Reportar a un jugador desde su perfil y desde el partido", "Backlog", "backlog", 2.0]]},
+ {"actividad": "Moderación y métricas", "wbs": "12.2", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "05/11/26", "real": "", "desvio": null, "calc": 0, "detalle": [["SPO-266", "Rol de administrador (`role` en `User` + `AdminGuard`)", "Backlog", "backlog", 1.0], ["SPO-269", "Panel de reportes en el back: listar y resolver", "Backlog", "backlog", 2.0], ["SPO-270", "Panel de reportes para administradores (`/admin/reportes`)", "Backlog", "backlog", 3.0], ["SPO-271", "Bloquear una cuenta desde el back (7 días, 30 días o permanente)", "Backlog", "backlog", 3.0], ["SPO-272", "Bloquear desde el panel y pantalla de cuenta bloqueada", "Backlog", "backlog", 1.0], ["SPO-273", "Historial de moderación por jugador", "Backlog", "backlog", 3.0]]},
+ {"actividad": "Documentación final", "wbs": "10.1 10.2", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 0, "detalle": [["SPO-274", "Documentación de la API con Swagger", "Backlog", "backlog", 2.0]]},
+ {"actividad": "Validación con usuarios", "wbs": "8.2", "estado": "Pend.", "avance": 0, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 0, "detalle": []},
+ {"actividad": "Challenge: reporte de KPIs", "wbs": "13", "estado": "Finaliz.", "avance": 100, "base": "14/10/26", "estimado": "06/10/26", "real": "06/10/26", "desvio": 8, "calc": 100, "detalle": [["SPO-276", "Instrumentación para KPIs: `Match.filledAt` y actividad diaria (`UserActivityDay`)", "Done", "completed", 1.0], ["SPO-277", "`POST /kpis/snapshots`: cálculo y persistencia de los 7 KPIs de negocio", "Done", "completed", 1.0]]}
+],
+"2026-10-15": [
+ {"actividad": "Capacitación", "wbs": "3.1", "estado": "Finaliz.", "avance": 100, "base": "13/08/26", "estimado": "16/08/26", "real": "16/08/26", "desvio": -3, "calc": 100, "detalle": [["SPO-113", "Capacitación: feature \"Partidos\" end-to-end", "Done", "completed", 5.0], ["SPO-114", "Capacitación: feature \"Partidos\" end-to-end", "Done", "completed", 5.0], ["SPO-115", "Capacitación: feature \"Partidos\" end-to-end", "Done", "completed", 5.0], ["SPO-116", "1. Levantar el entorno local con Docker", "Done", "completed", 1.0], ["SPO-118", "2. Modelo Partido: schema de Prisma + migración + seed", "Done", "completed", 2.0], ["SPO-119", "3. CRUD de /partidos en NestJS + tests", "Done", "completed", 3.0], ["SPO-120", "4. Vista /partidos con cards tipo swipe", "Done", "completed", 3.0], ["SPO-122", "1. Levantar el entorno local con Docker", "Done", "completed", 1.0], ["SPO-124", "2. Modelo Partido: schema de Prisma + migración + seed", "Done", "completed", 2.0], ["SPO-125", "3. CRUD de /partidos en NestJS + tests", "Done", "completed", 3.0], ["SPO-126", "4. Vista /partidos con cards tipo swipe", "Done", "completed", 3.0]]},
+ {"actividad": "Setup de repositorios", "wbs": "3.2", "estado": "Finaliz.", "avance": 100, "base": "17/08/26", "estimado": "29/08/26", "real": "29/08/26", "desvio": -12, "calc": 100, "detalle": [["SPO-143", "Estructura base del repo + Postgres local", "Done", "completed", 2.0], ["SPO-144", "`front/` — Next.js + Tailwind + shadcn", "Done", "completed", 1.0], ["SPO-145", "`back/` — NestJS + config base", "Done", "completed", 1.0], ["SPO-146", "`back/` — Prisma 7 conectado a Postgres", "Done", "completed", 2.0], ["SPO-147", "Hook pre-push con Husky", "Done", "completed", 1.0], ["SPO-148", "Pipeline de CI en GitHub Actions", "Done", "completed", 1.0], ["SPO-163", "Modelo `Partido` + migración + seed", "Done", "completed", 1.0], ["SPO-174", "Workflow orquestador único para PRs y merges", "Done", "completed", 2.0]]},
+ {"actividad": "Módulo de Autenticación", "wbs": "4.1 4.2", "estado": "Finaliz.", "avance": 100, "base": "20/08/26", "estimado": "15/09/26", "real": "15/09/26", "desvio": -26, "calc": 100, "detalle": [["SPO-149", "Modelo `User` + `PrismaService`", "Done", "completed", 2.0], ["SPO-151", "Inicializar `firebase-admin` en el back", "Done", "completed", 1.0], ["SPO-152", "`FirebaseAuthGuard` + proteger el CRUD", "Done", "completed", 2.0], ["SPO-153", "SDK `firebase` + `AuthProvider`", "Done", "completed", 1.0], ["SPO-154", "Cliente API con el ID token", "Done", "completed", 2.0], ["SPO-155", "Módulo `users`: module + controller + service + repository", "Done", "completed", 1.0], ["SPO-157", "`GET /users/me` con upsert desde Firebase", "Done", "completed", 1.0], ["SPO-158", "Login y signup con email/password", "Done", "completed", 2.0], ["SPO-159", "Login con Google", "Done", "completed", 1.0], ["SPO-165", "Layout privado con tab bar", "Done", "completed", 2.0], ["SPO-177", "Ordenar el router y sacar el template de Next", "Done", "completed", 1.0], ["SPO-192", "Landing pública en `/` + splash al entrar a la app", "Done", "completed", 2.0]]},
+ {"actividad": "Backend de partidos", "wbs": "6.1.1 6.1.2 6.1.3 6.1.5", "estado": "Finaliz.", "avance": 100, "base": "26/08/26", "estimado": "07/09/26", "real": "07/09/26", "desvio": -12, "calc": 100, "detalle": [["SPO-163", "Modelo `Partido` + migración + seed", "Done", "completed", 1.0], ["SPO-164", "Módulo `partidos`: CRUD en 4 capas", "Done", "completed", 2.0], ["SPO-169", "Módulo `deportes`: `GET /deportes`", "Done", "completed", 1.0], ["SPO-170", "`deporte` anidado y `estoy_anotado` en las respuestas de partidos", "Done", "completed", 2.0], ["SPO-182", "Participantes de un partido en `GET /partidos/:id`", "Done", "completed", 2.0], ["SPO-183", "Deportes desde la API, no hardcodeados", "Done", "completed", 1.0], ["SPO-186", "`GET /partidos` excluye los que organizo, los que ya tengo y los llenos", "Done", "completed", 1.0]]},
+ {"actividad": "CI/CD y Deploy", "wbs": "9.1 8.3", "estado": "Finaliz.", "avance": 100, "base": "15/10/26", "estimado": "06/09/26", "real": "06/09/26", "desvio": 39, "calc": 100, "detalle": [["SPO-135", "Instalar el paquete de agentes de IA en el repo", "Done", "completed", 1.0], ["SPO-161", "`Dockerfile` de producción del back", "Done", "completed", 2.0], ["SPO-167", "Publicar la imagen del back en GHCR en cada merge a `dev`", "Done", "completed", 1.0], ["SPO-173", "Conectar los entornos a Neon + variables de producción", "Done", "completed", 1.0], ["SPO-175", "Deploy del back en Azure Web App (dev y main) con redeploy automático", "Done", "completed", 1.0], ["SPO-176", "Deploy del front en Vercel + checklist de smoke test", "Done", "completed", 1.0], ["SPO-181", "Activar el QA PR Review Agent en `sportmatch`", "Done", "completed", 1.0], ["SPO-195", "Instalar el harness e2e y reemplazar los workflows de agentes en sportmatch", "Done", "completed", 1.0]]},
+ {"actividad": "Perfil de usuario", "wbs": "5.1 5.2", "estado": "Finaliz.", "avance": 100, "base": "01/10/26", "estimado": "13/10/26", "real": "13/10/26", "desvio": -12, "calc": 100, "detalle": [["SPO-142", "Pantalla de perfil con los datos del usuario", "Done", "completed", 2.0], ["SPO-149", "Modelo `User` + `PrismaService`", "Done", "completed", 2.0], ["SPO-155", "Módulo `users`: module + controller + service + repository", "Done", "completed", 1.0], ["SPO-157", "`GET /users/me` con upsert desde Firebase", "Done", "completed", 1.0], ["SPO-172", "`GET /partidos/mios`: los que organizo y los que juego", "Done", "completed", 2.0], ["SPO-185", "Autorización en `users` y `partidos`: guard \"es mi cuenta\" y reglas del organizador", "Done", "completed", 2.0], ["SPO-187", "Historial: `jugados` en `GET /partidos/mios`", "Done", "completed", 1.0], ["SPO-191", "Perfil (pantalla 12): \"Partidos jugados\" y \"Partidos recientes\" con datos reales", "Done", "completed", 2.0], ["SPO-209", "Historial completo de partidos jugados: \"Ver todos\" en el perfil propio y en el ajeno", "Done", "completed", 2.0], ["SPO-212", "Estadísticas del perfil (puntaje, partidos, semanas) + perfil público de otro jugador", "Done", "completed", 2.0], ["SPO-213", "`GET /partidos/mios`: `requested` (solicitudes pendientes) + `rating_pending` en los partidos", "Done", "completed", 1.0], ["SPO-216", "Perfil de otro jugador (pantalla 12) + \"Ver perfil\" funcionando", "Done", "completed", 2.0], ["SPO-218", "Aviso de partidos sin calificar en el perfil", "Done", "completed", 1.0], ["SPO-234", "Puntaje con faltas y bajas tarde", "Done", "completed", 1.0], ["SPO-236", "Suspensión por reincidencia (7 días, 6 meses y 403) + seed para probar faltas, bajas tarde y suspensión", "Done", "completed", 2.0], ["SPO-242", "Usuarios en el back: ciudad en el perfil editable + `GET /users/search` por nombre", "Done", "completed", 1.0], ["SPO-244", "Ajustes (pantalla 13)", "Done", "completed", 1.0], ["SPO-245", "Editar perfil (pantalla 14)", "Done", "completed", 1.0], ["SPO-253", "Puntaje de varios usuarios en una sola pasada (`getScores`) + una sola consulta de reportes de faltas", "Done", "completed", 2.0], ["SPO-278", "Deportes y nivel del usuario en el back (`User.level` + deportes en `GET`/`PATCH /users`)", "Done", "completed", 1.0], ["SPO-279", "Deportes y nivel en Editar perfil y en el perfil (propio y ajeno)", "Done", "completed", 1.0]]},
+ {"actividad": "Frontend de partidos", "wbs": "6.2.1 6.2.2 6.2.3 6.2.4", "estado": "Finaliz.", "avance": 100, "base": "05/11/26", "estimado": "12/09/26", "real": "12/09/26", "desvio": 54, "calc": 100, "detalle": [["SPO-166", "Crear partido: formulario + `POST /partidos`", "Done", "completed", 2.0], ["SPO-179", "Detalle de partido + \"Unirme\" / \"Salirme\"", "Done", "completed", 2.0], ["SPO-180", "Pantalla \"Tus partidos\" (pantalla 11)", "Done", "completed", 2.0], ["SPO-189", "Wizard de crear partido, 5 pasos (pantallas 06–10)", "Done", "completed", 2.0], ["SPO-219", "Editar un partido: el wizard en modo edición (`PATCH /partidos/:id`)", "Done", "completed", 2.0]]},
+ {"actividad": "Experiencia swipe", "wbs": "7.2", "estado": "Finaliz.", "avance": 100, "base": "03/09/26", "estimado": "10/09/26", "real": "10/09/26", "desvio": -7, "calc": 100, "detalle": [["SPO-178", "Descubrir: mazo de tarjetas con swipe (pantalla 04)", "Done", "completed", 2.0], ["SPO-179", "Detalle de partido + \"Unirme\" / \"Salirme\"", "Done", "completed", 2.0], ["SPO-198", "Pedir sumarse y ver el estado de la solicitud (pantallas 04 y 05)", "Done", "completed", 1.0]]},
+ {"actividad": "Solicitudes de unión a partidos", "wbs": "6.3", "estado": "Finaliz.", "avance": 100, "base": "24/09/26", "estimado": "16/09/26", "real": "16/09/26", "desvio": 8, "calc": 100, "detalle": [["SPO-168", "Modelo `Participante` + unirse a un partido", "Done", "completed", 2.0], ["SPO-171", "Bajarse de un partido: `DELETE /partidos/:id/participantes/me`", "Done", "completed", 1.0], ["SPO-196", "Modelo `JoinRequest` + pedir sumarse a un partido", "Done", "completed", 2.0], ["SPO-197", "El organizador acepta o rechaza solicitudes", "Done", "completed", 1.0], ["SPO-198", "Pedir sumarse y ver el estado de la solicitud (pantallas 04 y 05)", "Done", "completed", 1.0], ["SPO-199", "Panel de solicitudes del organizador con aceptar y rechazar", "Done", "completed", 1.0], ["SPO-213", "`GET /partidos/mios`: `requested` (solicitudes pendientes) + `rating_pending` en los partidos", "Done", "completed", 1.0], ["SPO-217", "Solicitudes: el panel muestra solo pendientes + \"Esperando respuesta\" en Tus partidos", "Done", "completed", 1.0]]},
+ {"actividad": "Motor de búsqueda de partidos", "wbs": "7.1", "estado": "Finaliz.", "avance": 100, "base": "29/10/26", "estimado": "12/10/26", "real": "12/10/26", "desvio": 17, "calc": 100, "detalle": [["SPO-186", "`GET /partidos` excluye los que organizo, los que ya tengo y los llenos", "Done", "completed", 1.0], ["SPO-232", "Filtros de búsqueda en `GET /matches`", "Done", "completed", 1.0], ["SPO-238", "Descubrir ordenado por compatibilidad", "Done", "completed", 1.0], ["SPO-239", "Filtros del Mapa: chips de día, nivel y \"Cerca\"", "Done", "completed", 2.0], ["SPO-240", "Hoja \"Filtros\" (deporte y nivel), \"Buscá en esta zona\" y búsqueda de lugares cerca del jugador", "Done", "completed", 1.0]]},
+ {"actividad": "Calificaciones sobre jugadores", "wbs": "6.4", "estado": "Finaliz.", "avance": 100, "base": "29/09/26", "estimado": "06/10/26", "real": "06/10/26", "desvio": -7, "calc": 100, "detalle": [["SPO-207", "Modelo `Rating` + a quién me toca calificar en un partido jugado", "Done", "completed", 2.0], ["SPO-208", "Detalle de un partido jugado: sin inscripción, \"Hora\" en vez de \"Arranca\"", "Done", "completed", 1.0], ["SPO-211", "`POST /partidos/:id/ratings`: enviar las calificaciones de un partido", "Done", "completed", 1.0], ["SPO-215", "Modal de calificación: puntuar a los 3 compañeros de un partido jugado", "Done", "completed", 2.0], ["SPO-218", "Aviso de partidos sin calificar en el perfil", "Done", "completed", 1.0], ["SPO-228", "Faltas: modelo `NoShowReport` y marcarlas en el envío de la calificación", "Done", "completed", 1.0], ["SPO-231", "Falta confirmada, ventana de cierre de 48 h y descarte de estrellas", "Done", "completed", 2.0], ["SPO-241", "Faltas en la app: \"¿Faltó alguien?\", suspensión en los CTAs y en el perfil", "Done", "completed", 2.0], ["SPO-253", "Puntaje de varios usuarios en una sola pasada (`getScores`) + una sola consulta de reportes de faltas", "Done", "completed", 2.0]]},
+ {"actividad": "Visualización en mapa interactivo", "wbs": "7.3", "estado": "Finaliz.", "avance": 100, "base": "05/11/26", "estimado": "03/10/26", "real": "03/10/26", "desvio": 33, "calc": 100, "detalle": [["SPO-227", "Proveedor de mapa (Google Maps + `BaseMap`) y coordenadas en `Match`", "Done", "completed", 3.0], ["SPO-229", "Paso \"Lugar\" con autocompletado de direcciones y pin arrastrable", "Done", "completed", 2.0], ["SPO-235", "Mapa (pantalla 03): partidos disponibles como pines", "Done", "completed", 2.0], ["SPO-237", "El Mapa como inicio: ubicación del jugador, header y tab bar", "Done", "completed", 1.0], ["SPO-251", "Al arrastrar el pin del lugar, la dirección se actualiza + documentar la configuración de Google Maps", "Done", "completed", 2.0]]},
+ {"actividad": "Cancelación/invitación a partidos", "wbs": "6.5 6.1.4 6.2.5 6.2.6", "estado": "En curso", "avance": 80, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 80, "detalle": [["SPO-222", "Cancelar partido en el back: `status` + razón obligatoria en texto y `PATCH /matches/:id/cancel`", "Done", "completed", 2.0], ["SPO-224", "Cancelar partido como organizador: dropdown de razón + partido cancelado en Tus partidos", "Done", "completed", 1.0], ["SPO-226", "Disparadores de notificaciones: los 6 eventos de partidos y solicitudes", "Done", "completed", 2.0], ["SPO-258", "`GET /public/matches/:id`: el partido sin sesión", "Done", "completed", 1.0], ["SPO-259", "Detalle público del partido, \"Compartir\" y vista previa del link", "Backlog", "backlog", 3.0], ["SPO-261", "Invitar a un jugador: origen \"invitación\" en la solicitud + `POST /matches/:id/invitations`", "Done", "completed", 2.0], ["SPO-262", "Aceptar o rechazar una invitación", "Done", "completed", 1.0], ["SPO-263", "Invitar jugadores desde el detalle del partido", "Done", "completed", 2.0], ["SPO-264", "Recibir una invitación: aviso, aceptar o rechazar y \"Invitaciones\" en Tus partidos", "Done", "completed", 1.0]]},
+ {"actividad": "Notificaciones", "wbs": "11.1 11.2", "estado": "En curso", "avance": 80, "base": "05/11/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 80, "detalle": [["SPO-221", "Notificaciones in-app: modelo `Notification` + módulo `notifications` (listar, no leídas, marcar leída)", "Done", "completed", 3.0], ["SPO-226", "Disparadores de notificaciones: los 6 eventos de partidos y solicitudes", "Done", "completed", 2.0], ["SPO-230", "Campanita con contador de no leídas", "Done", "completed", 2.0], ["SPO-233", "Centro de notificaciones: pantalla `/notificaciones`", "Done", "completed", 1.0], ["SPO-243", "Push PWA en el back: suscripciones y envío con `web-push`", "Done", "completed", 2.0], ["SPO-246", "Push PWA en el front: manifest, service worker y \"Activar notificaciones\"", "Done", "completed", 2.0], ["SPO-265", "Recordatorio 24 h antes del partido", "Backlog", "backlog", 3.0]]},
+ {"actividad": "Reportes sobre jugadores", "wbs": "12.1", "estado": "En curso", "avance": 33, "base": "05/11/26", "estimado": "05/11/26", "real": "", "desvio": null, "calc": 33, "detalle": [["SPO-267", "Reportes: modelo `Report` + `POST /reports`", "Done", "completed", 1.0], ["SPO-268", "Reportar a un jugador desde su perfil y desde el partido", "Backlog", "backlog", 2.0]]},
  {"actividad": "Moderación y métricas", "wbs": "12.2", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "05/11/26", "real": "", "desvio": null, "calc": 0, "detalle": [["SPO-266", "Rol de administrador (`role` en `User` + `AdminGuard`)", "Backlog", "backlog", 1.0], ["SPO-269", "Panel de reportes en el back: listar y resolver", "Backlog", "backlog", 2.0], ["SPO-270", "Panel de reportes para administradores (`/admin/reportes`)", "Backlog", "backlog", 3.0], ["SPO-271", "Bloquear una cuenta desde el back (7 días, 30 días o permanente)", "Backlog", "backlog", 3.0], ["SPO-272", "Bloquear desde el panel y pantalla de cuenta bloqueada", "Backlog", "backlog", 1.0], ["SPO-273", "Historial de moderación por jugador", "Backlog", "backlog", 3.0]]},
  {"actividad": "Documentación final", "wbs": "10.1 10.2", "estado": "Pend.", "avance": 0, "base": "05/11/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 0, "detalle": [["SPO-274", "Documentación de la API con Swagger", "Backlog", "backlog", 2.0]]},
  {"actividad": "Validación con usuarios", "wbs": "8.2", "estado": "Pend.", "avance": 0, "base": "29/10/26", "estimado": "29/10/26", "real": "", "desvio": null, "calc": 0, "detalle": []},
@@ -313,23 +397,28 @@ const cumulative = (a) => { let s = 0; return a.map((x) => (s += x)); };
 function compute(d) {
   const n = d.weeks.length, c = d.cut;
   const other = (w) => sum(d.other.map((o) => o.byWeek[w + 1] || 0));
-  const devRole = d.roles.find((r) => r.evm);
+  const devRole = d.roles.find((r) => r.evm && !r.loe);
   const devWeek = devRole.people * devRole.hWeek;
-  const pvWeek = Array.from({ length: n }, (_, w) => devWeek * devRole.rate + other(w));
-  const pv = cumulative(pvWeek);
-  const bac = pv[n - 1];
+  // Nivel de esfuerzo (loe): entra en PV y AC, y su EV es igual a su PV.
+  const loe = d.roles.filter((r) => r.evm && r.loe);
+  const loeWeekH = sum(loe.map((r) => r.people * r.hWeek)), loeWeek = sum(loe.map((r) => r.people * r.hWeek * r.rate));
+  const loeRate = loeWeekH ? loeWeek / loeWeekH : 0;
+  const devPv = cumulative(Array.from({ length: n }, (_, w) => devWeek * devRole.rate + other(w)));
+  const pv = devPv.map((v, w) => v + loeWeek * (w + 1));
+  const bac = pv[n - 1], bacDev = devPv[n - 1];
   const evH = cumulative(d.earned.map((e) => e.h));
-  const ev = evH.map((h) => (h / d.devEffort) * bac);          // % completo × BAC
-  const ac = cumulative(d.actualHours.map((h, w) => h * devRole.rate + other(w)));
+  const ev = evH.map((h, w) => (h / d.devEffort) * bacDev + loeWeek * (w + 1));   // % completo × BAC desarrollo + PV loe
+  const loeAct = d.loeActualHours || [];
+  const ac = cumulative(d.actualHours.map((h, w) => h * devRole.rate + other(w) + (loeAct[w] || 0) * loeRate));
   const PV = pv[c - 1], EV = ev[c - 1], AC = ac[c - 1];
   const spi = EV / PV, cpi = EV / AC, eac = bac / cpi;
   const labor = d.roles.map((r) => ({ ...r, hh: r.people * r.hWeek * n, cost: r.people * r.hWeek * n * r.rate }));
   const otherTotal = sum(d.other.map((o) => sum(Object.values(o.byWeek))));
   const subtotal = sum(labor.map((r) => r.cost)) + otherTotal;
   return {
-    n, c, pv, ev, ac, evH, bac, PV, EV, AC, spi, cpi, eac,
+    n, c, pv, ev, ac, evH, bac, bacDev, PV, EV, AC, spi, cpi, eac,
     etc: eac - AC, vac: bac - eac, tcpi: (bac - EV) / (bac - AC),
-    devWeek, labor, otherTotal, subtotal, contingency: subtotal * d.contingency,
+    devWeek, loeWeek, loeWeekH, spiDev: (EV - loeWeek * c) / devPv[c - 1], labor, otherTotal, subtotal, contingency: subtotal * d.contingency,
     total: subtotal * (1 + d.contingency), hh: sum(labor.map((r) => r.hh)),
   };
 }
@@ -349,46 +438,37 @@ const head = (cols) => `<thead><tr>${cols.map(([t, cls]) => `<th${cls ? ` class=
 /* ---- Curva S ----------------------------------------------------------- */
 // Devuelve el SVG como texto, con la leyenda adentro y sin fondo, para mostrarlo y para descargarlo.
 function curveSvg(d, m) {
-  const W = 900, H = 370, pad = { l: 56, r: 112, t: 48, b: 38 };
+  const W = 900, H = 370, pad = { l: 56, r: 24, t: 48, b: 38 };
   const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
-  const yMax = Math.ceil(m.bac / 500) * 500;
+  const step = m.bac > 4000 ? 1000 : 500;
+  const yMax = Math.ceil(m.bac / step) * step;
   const x = (i) => pad.l + (iw * i) / (m.n - 1), y = (v) => pad.t + ih - (ih * v) / yMax;
   const o = [];
   const el = (tag, a, text) => o.push(`<${tag} ${Object.entries(a).map(([k, v]) => `${k}="${v}"`).join(" ")}${text == null ? "/>" : `>${text}</${tag}>`}`);
-  const eacColor = m.vac >= 0 ? "#16a34a" : "#dc2626";
-  [["PV · planificado", "#334155", "6 5"], ["EV · ganado", "#2a78d6"], ["AC · costo real", "#eb6834"], ["EAC · proyección", eacColor, "2 4"]].forEach(([label, c, dash], i) => {
-    const lx = pad.l + i * 150, a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
+  // Leyenda alineada a la izquierda: cada entrada empieza a la misma distancia del final de la anterior.
+  // El ancho del texto se mide con canvas, igual que en tableSvg, con la misma fuente del SVG.
+  const ctx = document.createElement("canvas").getContext("2d");
+  ctx.font = `400 12.5px -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif`;
+  let lx = pad.l;
+  [["PV · plan", "#334155", "6 5"], ["EV · valor terminado", "#2a78d6"], ["AC · costo real", "#eb6834"]].forEach(([label, c, dash]) => {
+    const a = { x1: lx, x2: lx + 22, y1: 16, y2: 16, stroke: c, "stroke-width": 2 };
     if (dash) a["stroke-dasharray"] = dash;
     el("line", a);
     el("text", { x: lx + 28, y: 20, "font-size": 12.5, fill: "#0f172a" }, label);
+    lx += 28 + ctx.measureText(label).width + 32;
   });
-  for (let v = 0; v <= yMax; v += 500) {
+  for (let v = 0; v <= yMax; v += step) {
     el("line", { x1: pad.l, x2: W - pad.r, y1: y(v), y2: y(v), stroke: v === 0 ? "#94a3b8" : "#e2e8f0", "stroke-width": 1 });
     el("text", { x: pad.l - 8, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#64748b" }, usd(v));
   }
   d.weeks.forEach((w, i) => el("text", { x: x(i), y: H - pad.b + 18, "text-anchor": "middle", "font-size": 11, fill: "#64748b" }, w));
-  const k = m.c - 1;
-  el("line", { x1: x(k), x2: x(k), y1: pad.t, y2: pad.t + ih, stroke: "#cbd5e1", "stroke-width": 1, "stroke-dasharray": "3 3" });
-  el("text", { x: x(k) + 6, y: pad.t + 12, "font-size": 11, fill: "#64748b" }, "Corte " + d.weeks[k]);
+  // Sólo PV, EV y AC, con un punto por semana. EV y AC llegan hasta el corte; PV sigue hasta el final.
   const path = (arr) => arr.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
   const line = { fill: "none", "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" };
-  el("path", { d: path(m.ac), stroke: "#eb6834", ...line });
-  el("path", { d: path(m.pv), stroke: "#334155", ...line, "stroke-dasharray": "6 5" });
-  el("path", { d: path(m.ev), stroke: "#2a78d6", ...line });
-  const acLabel = Math.abs(m.AC - m.PV) < 0.005 ? "AC = PV " : "AC ";
-  [[m.ev, "#2a78d6", "EV " + usd(m.EV), -12, -8, "end"], [m.ac, "#eb6834", acLabel + usd(m.AC), 24, 10, "start"]].forEach(([arr, c, label, dy, dx, anchor]) => {
-    el("circle", { cx: x(k), cy: y(arr[k]), r: 4.5, fill: c, stroke: "#fff", "stroke-width": 2 });
-    el("text", { x: x(k) + dx, y: y(arr[k]) + dy, "text-anchor": anchor, "font-size": 12, "font-weight": 700, fill: "#0f172a" }, label);
+  [[m.pv, "#334155", "6 5"], [m.ac, "#eb6834"], [m.ev, "#2a78d6"]].forEach(([arr, c, dash]) => {
+    el("path", { d: path(arr), stroke: c, ...line, ...(dash ? { "stroke-dasharray": dash } : {}) });
+    arr.forEach((v, i) => el("circle", { cx: x(i).toFixed(1), cy: y(v).toFixed(1), r: 3.5, fill: c }));
   });
-  // Proyección: desde el costo real al corte hasta el EAC en la última semana. Es un pronóstico,
-  // no una curva medida, así que va punteada y con su propio color según caiga bajo o sobre la base.
-  el("path", { d: `M${x(k).toFixed(1)} ${y(m.AC).toFixed(1)} L${x(m.n - 1).toFixed(1)} ${y(m.eac).toFixed(1)}`, stroke: eacColor, ...line, "stroke-dasharray": "2 4" });
-  el("circle", { cx: x(m.n - 1), cy: y(m.eac), r: 4, fill: eacColor, stroke: "#fff", "stroke-width": 2 });
-  // La línea base no es "el BAC" a secas: el BAC del proyecto incluye gestión, QA y contingencia.
-  el("text", { x: W - pad.r + 8, y: y(m.bac) - 3, "font-size": 10, "font-weight": 600, fill: "#64748b" }, "Línea base EVM");
-  el("text", { x: W - pad.r + 8, y: y(m.bac) + 11, "font-size": 12.5, "font-weight": 700, fill: "#0f172a" }, usd(m.bac));
-  el("text", { x: W - pad.r + 8, y: y(m.eac) - 3, "font-size": 10, "font-weight": 600, fill: eacColor }, "EAC");
-  el("text", { x: W - pad.r + 8, y: y(m.eac) + 11, "font-size": 12.5, "font-weight": 700, fill: eacColor }, usd(m.eac));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Curva S: PV, EV y AC acumulados por semana">\n${o.join("\n")}\n</svg>\n`;
   return { svg, geo: { W, pad, iw } };
 }
@@ -426,26 +506,26 @@ function render(ver) {
     kpi("BAC del proyecto", usd(m.total), `subtotal + ${d.contingency * 100} % de contingencia`, true) +
     kpi("HH totales", m.hh, m.labor.map((r) => `${r.hh} ${r.rol.toLowerCase()}`).join(" · ")) +
     kpi("Contingencia", usd(m.contingency), `${d.contingency * 100} % del subtotal`) +
-    kpi("Línea base EVM", usd(m.bac), "desarrollo + infra + IA");
+    kpi("Línea base EVM", usd(m.bac), m.loeWeek ? "desarrollo + leads + infra + IA" : "desarrollo + infra + IA");
   $("pres-note").innerHTML = `<b>Semana de reserva (${d.reserve}):</b> no lleva trabajo planificado y absorbe atrasos antes de la entrega final. Es reserva de gestión, así que queda fuera del BAC.`;
 
   // Valor ganado
   const k = m.c - 1;
-  $("evm-lead").textContent = `Al corte de la semana ${m.c} (${d.weeks[k]}), sobre la línea base de desarrollo más infra e IA: ${usd(m.bac, 2)} en ${m.n} semanas.`;
+  $("evm-lead").textContent = `Al corte de la semana ${m.c} (${d.weeks[k]}), sobre la línea base de desarrollo${m.loeWeek ? ", leads," : " más"} infra e IA: ${usd(m.bac, 2)} en ${m.n} semanas.`;
   $("evm-kpis-1").innerHTML =
-    kpi("PV", usd(m.PV), `${m.devWeek * m.c} h planificadas · ${pct(m.PV / m.bac)} del BAC`) +
-    kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas · ${pct(m.EV / m.bac)} del BAC`, true) +
-    kpi("AC", usd(m.AC), `${sum(d.actualHours)} h de dedicación pactada`);
+    kpi("PV", usd(m.PV), `${(m.devWeek + m.loeWeekH) * m.c} h planificadas · ${pct(m.PV / m.bac)} de la línea base`) +
+    kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas${m.loeWeek ? " + leads" : ""} · ${pct(m.EV / m.bac)} de la línea base`, true) +
+    kpi("AC", usd(m.AC), `${sum(d.actualHours) + sum(d.loeActualHours || [])} h de dedicación pactada`);
   $("evm-kpis-2").innerHTML =
     kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
-    kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo")) +
-    kpi("ETC", usd(m.etc), "costo para terminar") +
-    kpi("EAC", usd(m.eac), `vs línea base ${usd(m.bac)} · ${m.vac >= 0 ? `<span class="up">ahorro ${usd(m.vac)}</span>` : `<span class="down">sobrecosto ${usd(-m.vac)}</span>`}`, true);
+    kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
   $("evm-formula").innerHTML = [
     `SV = EV − PV = ${signed(m.EV - m.PV)}`, `CV = EV − AC = ${signed(m.EV - m.AC)}`,
-    "EV = % completo × BAC", "EAC = BAC / CPI", "ETC = EAC − AC", `VAC = BAC − EAC = ${signed(m.vac)}`, `TCPI = ${num(m.tcpi)}`,
+    m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC", "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${num(m.tcpi)}`,
   ].map((f) => `<span>${f}</span>`).join("");
-  $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.`;
+  $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.` +
+    (m.loeWeek ? ` Ese % se aplica al BAC de desarrollo (${usd(m.bacDev, 2)}). Los leads (${m.loeWeekH} h/sem) son nivel de esfuerzo: su trabajo no se cierra por paquetes, así que su EV es igual a su PV.` : "") +
+    (d.acNote ? ` ${d.acNote}` : "");
 
   const { svg, geo } = curveSvg(d, m);
   const box = $("chart-box"), tip = $("tip");
@@ -471,6 +551,35 @@ function render(ver) {
   svgEl.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
   $("svg-dl").onclick = () => download(svg, `SportMatch-Steering-${ver}-curva-s.svg`);
 
+  // Semana a semana: la foto de cualquier semana hasta el corte, con los mismos datos de la tabla.
+  const showGlobal = () => {
+    $("wk-pick").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", j === 0));
+    $("wk-kpis").innerHTML =
+      kpi("Línea base EVM", usd(m.bac), `BAC del proyecto ${usd(m.total)} con ${d.contingency * 100} % de contingencia`) +
+      kpi("EV", usd(m.EV), `${pct(m.EV / m.bac)} de la línea base ganado`, true) +
+      kpi("AC", usd(m.AC), `${pct(m.AC / m.bac)} de la línea base gastado`) +
+      kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
+      kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
+    $("wk-read").innerHTML = `<b>Lectura:</b> en ${m.c} de ${m.n} semanas (${pct(m.c / m.n)} del calendario) el equipo ganó el ${pct(m.EV / m.bac)} de la línea base EVM (${usd(m.bac)}) ` +
+      `y gastó el ${pct(m.AC / m.bac)}. `+
+      `Quedan ${num(d.devEffort - m.evH[k])} h de WBS por cerrar.`;
+  };
+  const showWeek = (i) => {
+    const spi = m.ev[i] / m.pv[i], cpi = m.ev[i] / m.ac[i];
+    $("wk-pick").querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", j === i + 1));
+    $("wk-kpis").innerHTML =
+      kpi(`PV · semana ${i + 1}`, usd(m.pv[i]), `al ${d.weeks[i]}`) + kpi("EV", usd(m.ev[i]), `${num(m.evH[i])} h de WBS cerradas`, true) +
+      kpi("AC", usd(m.ac[i]), "costo real acumulado") +
+      kpi("SPI", num(spi), trend(spi, "adelantados", "atrasados")) + kpi("CPI", num(cpi), trend(cpi, "eficientes", "sobre costo"));
+    $("wk-read").innerHTML = `<b>Lectura:</b> al ${d.weeks[i]} el trabajo terminado vale ${usd(m.ev[i])} contra ${usd(m.pv[i])} planificados ` +
+      `(${signed(m.ev[i] - m.pv[i])}) y costó ${usd(m.ac[i])} (${signed(m.ev[i] - m.ac[i])} de diferencia con lo ganado). ` +
+      `Esa semana cierran: ${d.earned[i].pkgs.join(", ") || "ningún paquete"}.`;
+  };
+  $("wk-pick").innerHTML = `<button class="btn" type="button" aria-pressed="false">Global</button>` +
+    d.earned.map((_, i) => `<button class="btn" type="button" aria-pressed="false">Sem ${i + 1}</button>`).join("");
+  $("wk-pick").querySelectorAll("button").forEach((b, j) => (b.onclick = () => (j ? showWeek(j - 1) : showGlobal())));
+  showGlobal();
+
   $("evm-table").innerHTML = head([["Sem."], ["Cierre"], ["PV acum.", "num"], ["EV acum.", "num"], ["AC acum.", "num"], ["Horas ganadas", "num"], ["SPI", "num"], ["CPI", "num"], ["Paquetes cerrados"]]) + "<tbody>" +
     d.earned.map((e, i) => row([td(i + 1), td(d.weeks[i]), td(usd(m.pv[i]), "num"), td(usd(m.ev[i]), "num"), td(usd(m.ac[i]), "num"), td(num(e.h) + " h", "num"), td(num(m.ev[i] / m.pv[i]), "num"), td(num(m.ev[i] / m.ac[i]), "num"), td(e.pkgs.join(", "), "ids")], i === k ? "cut" : "")).join("") + "</tbody>";
 
@@ -479,15 +588,16 @@ function render(ver) {
   $("pres-recalcar").innerHTML = li([
     `<b>BAC = línea base de costos:</b> el costo del trabajo más la <b>contingencia</b> (${d.contingency * 100} %), que cubre riesgos ya identificados. La reserva de gestión, para imprevistos, queda fuera: por eso la semana de reserva no suma.`,
     "Presupuestamos por <b>esfuerzo</b> (HH × tarifa), no por calendario. Por eso el presupuesto se compara directo con el avance.",
-    `El <b>valor ganado se ancla en desarrollo</b> más infra e IA (${usd(m.bac)}): es donde hay entregables medibles. Gestión y QA son nivel de esfuerzo y quedan en el BAC del proyecto.`,
+    m.loeWeek
+      ? `La <b>línea base EVM incluye a los leads</b> (${usd(m.bac)}): desarrollo se mide por paquetes cerrados de la WBS; gestión y QA son nivel de esfuerzo, con EV = PV. En el Steering 1 la base era solo desarrollo y su valor no aparecía.`
+      : `El <b>valor ganado se ancla en desarrollo</b> más infra e IA (${usd(m.bac)}): es donde hay entregables medibles. Gestión y QA son nivel de esfuerzo y quedan en el BAC del proyecto.`,
     "La <b>PV no es lineal</b>: los costos mensuales de IA y de Azure generan escalones en la curva.",
   ]);
   const weak = d.earned.map((_, i) => i).filter((i) => m.ev[i] / m.pv[i] < 1);
-  const eacAtip = m.AC + m.bac - m.EV;
   $("evm-recalcar").innerHTML = li([
-    Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
+    Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek + m.loeWeekH} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
+    m.loeWeek && `<b>Los leads acercan los índices a 1:</b> como su EV es igual a su PV, diluyen el desvío. Midiendo solo desarrollo, infra e IA, el SPI da <b>${num(m.spiDev)}</b>.`,
     `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
-    `<b>Dos EAC posibles:</b> el típico (BAC / CPI = ${usd(m.eac)}) supone que la eficiencia se mantiene; el atípico (AC + BAC − EV = ${usd(eacAtip)}) supone que lo que falta sale según el plan. ${Math.max(m.eac, eacAtip) <= m.bac ? "Los dos quedan dentro del BAC." : "Uno de los dos supera el BAC."}`,
     `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
     weak.length && `<b>Semanas con SPI &lt; 1:</b> ${weak.map((i) => `semana ${i + 1} (${num(m.ev[i] / m.pv[i])})`).join(", ")}. El EV sube cuando cierra un paquete, no mientras se trabaja: las semanas en que cierran paquetes grandes compensan a las anteriores.`,
   ]);

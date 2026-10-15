@@ -1,6 +1,6 @@
 # Reglas de negocio — SportMatch
 
-Decisiones de producto del PO para el Sprint 2, tomadas el 24/09/2026 y ampliadas el 30/09/2026. Son la referencia de los tickets de
+Decisiones de producto del PO para el Sprint 2, tomadas el 24/09/2026 y ampliadas el 30/09/2026 y el 08/10/2026 (§14, cupo). Son la referencia de los tickets de
 las semanas 8 a 10 y de lo que se demuestra en el Steering 2. El vocabulario está definido en
 [`CONTEXT.md`](./CONTEXT.md).
 
@@ -171,7 +171,16 @@ Canal actual: **solo in-app** (campanita). **Push PWA** en las últimas semanas 
 - **24 h antes** del partido, un solo aviso, para los anotados y el organizador, en la app y como push.
 - Un partido creado con menos de 24 h de anticipación **no** tiene recordatorio.
 
-## 14. Fuera de alcance (S2)
+## 14. Cupo
+
+- El cupo es la cantidad de **jugadores totales del partido, incluido el organizador**. Un pádel de 4 es el
+  organizador más 3 anotados.
+- Un partido está **lleno** cuando los anotados más el organizador llegan al cupo. Desde ese momento no
+  aparece en Descubrir ni en el Mapa, y no entra nadie más por solicitud ni por invitación.
+- Cupo mínimo: **2** (el organizador más 1). Máximo: **30**.
+- Al editar el partido, el cupo no puede quedar por debajo de los anotados más el organizador.
+
+## 15. Fuera de alcance (S2)
 
 - Mail y preferencias de notificación.
 - Recordatorio para partidos creados con menos de 24 h de anticipación.

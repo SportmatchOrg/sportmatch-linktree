@@ -1,9 +1,11 @@
 // Historial de /api/status.
 //
-// POST: lo llama cron-job.org cada 5 min con `Authorization: Bearer
-// $STATUS_CRON_SECRET`. Una vez cada 30 min corre los mismos probes que la
-// página y guarda una fila por target en `status_checks`; el resto de las
-// llamadas vuelve sin tocar nada.
+// POST: lo llama cron-job.org cada 30 min con `Authorization: Bearer
+// $STATUS_CRON_SECRET`. Corre los mismos probes que la página y guarda una
+// fila por target en `status_checks`.
+// No bajar el intervalo del cron: `/health` hace un `select 1` y Neon apaga la
+// compute tras 5 min sin uso; un probe cada 5 min dejaba prod y dev prendidas
+// 24/7 y agotaba las horas de CPU del plan gratis.
 // GET ?range=day|week|month|year: devuelve, por target, una barra por intervalo
 // con cuántos checks hubo y cuántos dieron el status esperado.
 //
@@ -54,19 +56,7 @@ function isCron(request) {
   return supplied.length === expected.length && timingSafeEqual(supplied, expected);
 }
 
-// `/health` hace un `select 1` y Neon apaga la compute tras 5 min sin uso: un
-// probe cada 5 min dejaba prod y dev prendidas 24/7 y agotaba las horas de
-// CPU del plan gratis. Cada tick de 5 min cae en una sola ventana [0, 5).
-const RECORD_EVERY_MINUTES = 30;
-const CRON_TICK_MINUTES = 5;
-
-function isRecordTick(now = new Date()) {
-  return now.getUTCMinutes() % RECORD_EVERY_MINUTES < CRON_TICK_MINUTES;
-}
-
 async function record(response) {
-  if (!isRecordTick()) return json(response, 200, { recorded: 0, skipped: true });
-
   const results = await Promise.all(live.TARGETS.map(live.probe));
   await database()`
     insert into public.status_checks (target, ok, status, ms)
@@ -157,4 +147,4 @@ export default async function handler(request, response) {
   }
 }
 
-export const testing = { RANGES, BUCKET_ORIGIN, isRecordTick };
+export const testing = { RANGES, BUCKET_ORIGIN };

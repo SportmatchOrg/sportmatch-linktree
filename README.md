@@ -70,11 +70,12 @@ idempotently seeds the 75 resources that were previously embedded in the page.
 
 `/status` charts uptime by day, week, month and year from the `status_checks`
 table (`005_status_checks.sql`). A cron-job.org job records one row per service
-every 5 minutes:
+every 30 minutes:
 
 - URL: `https://<deployment>/api/status-history`, method `POST`
 - Header: `Authorization: Bearer <STATUS_CRON_SECRET>`
-- Schedule: every 5 minutes
+- Schedule: every 30 minutes (don't go lower: each probe wakes the Neon
+  computes, and a 5-minute schedule kept them on 24/7 and burned the free CPU hours)
 
 `STATUS_CRON_SECRET` must be set in the Vercel project; without it the endpoint
 answers 503 and records nothing.

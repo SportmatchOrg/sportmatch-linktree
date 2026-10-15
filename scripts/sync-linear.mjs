@@ -4,6 +4,8 @@
  *
  *   node --env-file=.env.local scripts/sync-linear.mjs           revisa, reporta y actualiza el repo
  *   node --env-file=.env.local scripts/sync-linear.mjs --push     además escribe en Linear
+ *   node --env-file=.env.local scripts/sync-linear.mjs --corte    Todo, In Progress e In Review cuentan como Done
+ *                                                                  (sólo en el repo, para el corte semanal)
  *
  * Entradas
  *   docs/planning/linear-wbs-map.csv          issue -> paquete de la WBS (a mano)
@@ -28,6 +30,7 @@ const WBS_MD = new URL('docs/planning/WBS-SportMatch-v4.md', root);
 const TEAM = 'SPO';
 const PROJECT_NAME = 'SportMatch';
 const PUSH = process.argv.includes('--push');
+const CORTE = process.argv.includes('--corte');
 
 // Épica -> nombre y fecha objetivo del milestone. Las épicas 1 y 2 no llevan (decisión 4).
 const MILESTONES = {
@@ -131,6 +134,14 @@ const wbsIds = new Set([...readFileSync(WBS_MD, 'utf8').matchAll(/^\*\*(\d+\.\d+
 const epicOf = (wbsId) => Number(wbsId.split('.')[0]);
 
 const issues = await fetchIssues();
+if (CORTE) {
+  const now = new Date().toISOString();
+  for (const i of issues.filter((i) => ['Todo', 'In Progress', 'In Review'].includes(i.state.name))) {
+    i.state = { name: 'Done', type: 'completed' };
+    i.startedAt ??= now;
+    i.completedAt ??= now;
+  }
+}
 const project = await fetchProject();
 const byId = new Map(issues.map((i) => [i.identifier, i]));
 
@@ -158,10 +169,7 @@ add('wbs_id que no existe en la WBS v4', map.filter((r) => r.wbs_id && !wbsIds.h
 add('en el CSV pero ya no en Linear', [...rowsOf.keys()].filter((id) => !byId.has(id)));
 add('sin proyecto', issues.filter((i) => !i.project).map((i) => i.identifier));
 add('sin estimate', issues.filter((i) => i.estimate == null && i.state.type !== 'canceled').map((i) => i.identifier));
-add(
-  'paquete en épica 1 o 2: sin milestone',
-  map.filter((r) => r.wbs_id && epicOf(r.wbs_id) <= 2).map((r) => `${r.issue}→${r.wbs_id}`),
-);
+// Los paquetes de las épicas 1 y 2 no llevan milestone a propósito (decisión 4): no es un aviso.
 
 // Milestone puesto a mano que no coincide con el CSV: se reporta y no se toca (decisión 5).
 const mismatched = [];

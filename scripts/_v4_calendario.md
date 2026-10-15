@@ -46,7 +46,7 @@
 | 9.1.4 | Contenedorización del backend y registro de imágenes | 3.50 | 29.14 | Siaba | 20/08 | 27/08 | ✅ |
 | 10.2.1 | README del proyecto | 1.50 | 31.14 | Siaba | 13/08 | 20/08 | ✅ |
 
-### S2 — 61.53 h
+### S2 — 63.53 h
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
@@ -71,21 +71,21 @@
 | 11.2.1 | Centro de notificaciones | 3.90 | 12.24 | Pache | 24/09 | 01/10 | ⬜ |
 | 11.2.2 | Recepción de push en cliente | 4.03 | 14.46 | Siaba | 01/10 | 08/10 | ⬜ |
 | 11.2.3 | Preferencias de notificación | 1.63 | 12.24 | Siaba | 01/10 | 08/10 | ⬜ |
-| 13.1.1 | Instrumentación para KPIs | 1.50 | 16.12 | Rudolph | 01/10 | 08/10 | 🟡 |
-| 13.1.2 | Cálculo y persistencia de KPIs | 2.50 | 16.12 | Rudolph | 01/10 | 15/10 | 🟡 |
+| 13.1.1 | Instrumentación para KPIs | 3.00 | 14.12 | Rudolph | 01/10 | 08/10 | 🟡 |
+| 13.1.2 | Cálculo y persistencia de KPIs | 3.00 | 14.12 | Rudolph | 01/10 | 15/10 | 🟡 |
 
 ### S3 — 40.39 h
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
-| 6.5.1 | Link compartible de partido | 2.47 | 32.93 | Pache | 15/10 | 22/10 | ⬜ |
-| 6.5.2 | Invitación directa a un usuario | 3.90 | 0.00 | Rudolph | 15/10 | 22/10 | ⬜ |
-| 6.5.3 | Aceptación de invitación | 3.00 | 0.00 | Rudolph | 22/10 | 29/10 | ⬜ |
+| 6.5.1 | Link compartible de partido | 2.47 | 32.93 | Pache | 08/10 | 22/10 | ⬜ |
+| 6.5.2 | Invitación directa a un usuario | 3.90 | 0.00 | Rudolph | 01/10 | 22/10 | ⬜ |
+| 6.5.3 | Aceptación de invitación | 3.00 | 0.00 | Rudolph | 08/10 | 29/10 | ⬜ |
 | 10.1.1 | Manual de uso y descripción de funcionalidades | 6.00 | 15.29 | Siaba | 22/10 | 29/10 | ⬜ |
 | 10.2.2 | Documentación de APIs | 1.50 | 5.40 | Siaba | 15/10 | 22/10 | ⬜ |
 | 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Rudolph | 22/10 | 29/10 | ⬜ |
-| 12.1.1 | Modelo de reporte | 2.35 | 5.84 | Siaba | 15/10 | 22/10 | ⬜ |
-| 12.1.2 | Endpoint de creación de reporte | 1.63 | 5.84 | Siaba | 15/10 | 22/10 | ⬜ |
+| 12.1.1 | Modelo de reporte | 2.35 | 5.84 | Siaba | 08/10 | 22/10 | ⬜ |
+| 12.1.2 | Endpoint de creación de reporte | 1.63 | 5.84 | Siaba | 08/10 | 22/10 | ⬜ |
 | 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Pache | 29/10 | 05/11 | ⬜ |
 | 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Pache | 22/10 | 29/10 | ⬜ |
 | 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Rudolph | 29/10 | 05/11 | ⬜ |

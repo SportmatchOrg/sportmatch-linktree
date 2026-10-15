@@ -178,7 +178,11 @@ const KNOWN_DEP_VIOLATIONS = {
        "6.3.5<6.3.1", "7.2.1<7.1.1", "7.2.2<6.3.2", "9.1.4<3.2.3",
        // Ejecución real, no plan: SPO-235 cubre 7.3.2 y 7.3.3 a la vez, así que el detalle
        // arrancó en la misma semana que el mapa del que depende.
-       "7.3.3<7.3.2"],
+       "7.3.3<7.3.2",
+       // Igual con SPO-267: modelo y endpoint de reporte (12.1.1 y 12.1.2) en un solo ticket.
+       "12.1.2<12.1.1",
+       // S3 adelantado en la semana 10: SPO-262 (6.5.3) arrancó el 12/10, antes del fin de 6.5.2 en la línea base.
+       "6.5.3<6.5.2"],
 };
 
 test("Gantt: no new dependency violations creep into the schedule", () => {
