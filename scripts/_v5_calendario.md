@@ -73,42 +73,40 @@
 | 13.1.1 | Instrumentación para KPIs | 1.50 | 16.12 | Rudolph | 01/10 | 08/10 | ✅ |
 | 13.1.2 | Cálculo y persistencia de KPIs | 2.50 | 16.12 | Rudolph | 01/10 | 08/10 | ✅ |
 
-### S3 — 69.55 h · 49.50 h pendientes de desarrollo
+### S3 — 60.38 h · 49.50 h pendientes de desarrollo
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
-| 5.3.1 🔷 | Backend de onboarding | 1.58 | 8.75 | Pacheco | 15/10 | 22/10 | ⬜ |
-| 5.3.2 🔷 | Pantalla de onboarding | 3.00 | 8.11 | Rudolph | 29/10 | 05/11 | ⬜ |
-| 5.3.3 🔷 | Tutorial de Descubrir | 1.00 | 29.41 | Siaba | 29/10 | 05/11 | ⬜ |
-| 6.5.1 | Link compartible de partido | 2.47 | 32.93 | Rudolph | 08/10 | 29/10 | 🟡 |
+| 5.3.1 🔷 | Backend de onboarding | 1.58 | 8.75 | Siaba | 15/10 | 22/10 | ⬜ |
+| 5.3.2 🔷 | Pantalla de onboarding | 3.00 | 8.11 | Rudolph | 22/10 | 29/10 | ⬜ |
+| 5.3.3 🔷 | Tutorial de Descubrir | 1.00 | 29.41 | Rudolph | 15/10 | 22/10 | ⬜ |
+| 6.5.1 | Link compartible de partido | 2.47 | 32.93 | Rudolph | 08/10 | 22/10 | 🟡 |
 | 6.5.2 | Invitación directa a un usuario | 3.90 | 0.00 | Pacheco | 01/10 | 15/10 | ✅ |
 | 6.5.3 | Aceptación de invitación | 3.00 | 0.00 | Pacheco | 08/10 | 15/10 | ✅ |
-| 7.1.4 🔷 | Recomendación con el perfil declarado | 1.50 | 9.41 | Pacheco | 22/10 | 29/10 | ⬜ |
-| 10.1.1 | Manual de uso y descripción de funcionalidades | 6.00 | — | PMs | 15/10 | 05/11 | ⬜ |
-| 10.1.2 | Entrega final de diseño UX/UI | 3.17 | — | PMs | 15/10 | 05/11 | 🟡 |
-| 10.2.2 | Documentación de APIs | 1.50 | 5.40 | Siaba | 29/10 | 05/11 | ⬜ |
-| 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Pacheco | 29/10 | 05/11 | ⬜ |
+| 7.1.4 🔷 | Recomendación con el perfil declarado | 1.50 | 9.41 | Siaba | 15/10 | 22/10 | ⬜ |
+| 10.2.2 | Documentación de APIs | 1.50 | 5.40 | Pacheco | 29/10 | 05/11 | ⬜ |
+| 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Rudolph | 15/10 | 22/10 | ⬜ |
 | 12.1.1 | Modelo de reporte | 2.35 | 5.84 | Pacheco | 08/10 | 15/10 | ✅ |
 | 12.1.2 | Endpoint de creación de reporte | 1.63 | 5.84 | Pacheco | 08/10 | 15/10 | ✅ |
-| 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Rudolph | 29/10 | 05/11 | ⬜ |
-| 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Rudolph | 15/10 | 22/10 | ⬜ |
-| 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Pacheco | 22/10 | 29/10 | ⬜ |
-| 12.2.3 | Historial de moderación | 3.12 | 6.75 | Rudolph | 22/10 | 29/10 | ⬜ |
-| 14.1.1 🔷 | Almacenamiento de imágenes | 3.00 | 18.31 | Siaba | 15/10 | 22/10 | ⬜ |
+| 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Rudolph | 15/10 | 22/10 | ⬜ |
+| 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Pacheco | 15/10 | 22/10 | ⬜ |
+| 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Rudolph | 22/10 | 29/10 | ⬜ |
+| 12.2.3 | Historial de moderación | 3.12 | 6.75 | Rudolph | 29/10 | 05/11 | ⬜ |
+| 14.1.1 🔷 | Almacenamiento de imágenes | 3.00 | 18.31 | Siaba | 22/10 | 29/10 | ⬜ |
 | 14.1.2 🔷 | Foto de perfil propia | 2.08 | 5.45 | Siaba | 22/10 | 29/10 | ⬜ |
-| 14.1.3 🔷 | Foto del partido | 3.00 | 18.31 | Siaba | 15/10 | 22/10 | ⬜ |
-| 15.1.1 🔷 | Integración con proveedores de IA | 1.67 | 20.64 | Pacheco | 15/10 | 22/10 | ⬜ |
-| 15.1.2 🔷 | Interpretación de texto a partido | 2.58 | 20.64 | Pacheco | 15/10 | 22/10 | ⬜ |
-| 15.1.3 🔷 | Crear partido por texto o voz | 3.00 | 20.64 | Siaba | 29/10 | 05/11 | ⬜ |
-| 15.2.1 🔷 | Generación de imágenes con IA | 3.58 | 5.45 | Siaba | 22/10 | 29/10 | ⬜ |
+| 14.1.3 🔷 | Foto del partido | 3.00 | 18.31 | Siaba | 29/10 | 05/11 | ⬜ |
+| 15.1.1 🔷 | Integración con proveedores de IA | 1.67 | 20.64 | Pacheco | 22/10 | 29/10 | ⬜ |
+| 15.1.2 🔷 | Interpretación de texto a partido | 2.58 | 20.64 | Pacheco | 22/10 | 29/10 | ⬜ |
+| 15.1.3 🔷 | Crear partido por texto o voz | 3.00 | 20.64 | Rudolph | 29/10 | 05/11 | ⬜ |
+| 15.2.1 🔷 | Generación de imágenes con IA | 3.58 | 5.45 | Pacheco | 29/10 | 05/11 | ⬜ |
 
 ## Calendario semana a semana
 
 | Sem | Ventana | Sprint | Rudolph (Front) | Pacheco (Back) | Siaba (Back y Front) | Carga |
 |---|---|---|---|---|---|---:|
-| 11 | 15/10 → 22/10 | S3 | 12.2.1 Panel de revisión de reportes | 5.3.1 🔷 Backend de onboarding<br>15.1.1 🔷 Integración con proveedores de IA<br>15.1.2 🔷 Interpretación de texto a partido | 14.1.1 🔷 Almacenamiento de imágenes<br>14.1.3 🔷 Foto del partido | 18.1 / 18 h |
-| 12 | 22/10 → 29/10 | S3 | 6.5.1 Link compartible de partido<br>12.2.3 Historial de moderación | 7.1.4 🔷 Recomendación con el perfil declarado<br>12.2.2 Suspensión de usuario | 14.1.2 🔷 Foto de perfil propia<br>15.2.1 🔷 Generación de imágenes con IA | 16.8 / 18 h |
-| 13 | 29/10 → 05/11 | S3 | 5.3.2 🔷 Pantalla de onboarding<br>12.1.3 Interfaz de reporte | 11.1.4 Job de recordatorio pre-partido | 5.3.3 🔷 Tutorial de Descubrir<br>10.2.2 Documentación de APIs<br>15.1.3 🔷 Crear partido por texto o voz | 14.6 / 18 h |
+| 11 | 15/10 → 22/10 | S3 | 5.3.3 🔷 Tutorial de Descubrir<br>6.5.1 Link compartible de partido<br>11.1.4 Job de recordatorio pre-partido<br>12.1.3 Interfaz de reporte | 12.2.1 Panel de revisión de reportes | 5.3.1 🔷 Backend de onboarding<br>7.1.4 🔷 Recomendación con el perfil declarado | 18.9 / 18 h |
+| 12 | 22/10 → 29/10 | S3 | 5.3.2 🔷 Pantalla de onboarding<br>12.2.2 Suspensión de usuario | 15.1.1 🔷 Integración con proveedores de IA<br>15.1.2 🔷 Interpretación de texto a partido | 14.1.1 🔷 Almacenamiento de imágenes<br>14.1.2 🔷 Foto de perfil propia | 16.4 / 18 h |
+| 13 | 29/10 → 05/11 | S3 | 12.2.3 Historial de moderación<br>15.1.3 🔷 Crear partido por texto o voz | 10.2.2 Documentación de APIs<br>15.2.1 🔷 Generación de imágenes con IA | 14.1.3 🔷 Foto del partido | 14.2 / 18 h |
 | 14 | 05/11 → 12/11 | reserva | — | — | — | 0.0 / 18 h |
 
 ## Holguras del S3 (PERT de desarrollo)

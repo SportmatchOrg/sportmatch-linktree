@@ -149,7 +149,7 @@ DONE_S2 = set(S2) - {'11.2.3'} | {'6.5.2', '6.5.3', '12.1.1', '12.1.2'}
 DONE = DONE_S1 | DONE_S2
 DROPPED = {'11.2.3'}                       # descartado en la v5: no se planifica
 # Documentación funcional: la hacen los PMs (regla del S2: lo que no es código no descuenta capacidad de los devs).
-# Queda en el S3 pero fuera del planificador, como 1.x, 2.x y 8.x.
+# Fuera del cronograma (15/10): no se planifican ni se muestran, como 1.x, 2.x y 8.x.
 PM_OWNED = {'10.1.1', '10.1.2'}
 WIP = {'6.5.1', '10.1.2'}                  # 6.5.1: el back cerró (SPO-258), falta el front · 10.1.2: de los PMs, arrastre del S2
 NEW_V5 = ['5.3.1','5.3.2','5.3.3','7.1.4','14.1.1','14.1.2','14.1.3','15.1.1','15.1.2','15.1.3','15.2.1']
@@ -213,8 +213,27 @@ def urgent(k):
         _urg[k] = DEVCPM[k]['H'] < 1e-6 or any(urgent(s) for s in SUCC[k])
     return _urg[k]
 prio = lambda k: (SPRINT_WEEKS[SPRINT_OF[k]][0], not urgent(k), -rank(k), key(k))
+# Plan de ejecución del S3 acordado el 15/10, igual a Linear (vence el 22/10, el 29/10 y el 05/11).
+# Balanceado entre semanas y entre devs: 12 · 13 · 14 SP por semana y 13 SP por dev, 4 o 5 por dev y semana.
+# La semana 13 junta lo recortable: 15.2.1 → 14.1.3 → 12.2.3 → 10.2.2 (y el health, SPO-257, sin paquete).
+# Cada paquete cae en una sola semana y con un solo dev; el planificador de abajo sólo toma lo que no esté acá.
+PLAN_S3 = {  # paquete: (semana, dev) · tickets de Linear
+ '11.1.4': (11, 1), '12.1.3': (11, 1), '6.5.1': (11, 1), '5.3.3': (11, 1),       # SPO-265, 268, 259, 290
+ '12.2.1': (11, 2),                                                               # SPO-266/269/270
+ '5.3.1': (11, 3), '7.1.4': (11, 3),                                              # SPO-285, 286
+ '12.2.2': (12, 1), '5.3.2': (12, 1),                                             # SPO-271/272, 289
+ '15.1.1': (12, 2), '15.1.2': (12, 2), '14.1.1': (12, 3), '14.1.2': (12, 3),      # SPO-288, 293, 287, 291
+ '15.1.3': (13, 1), '12.2.3': (13, 1),                                            # SPO-294, 273
+ '15.2.1': (13, 2), '10.2.2': (13, 2), '14.1.3': (13, 3),                         # SPO-295, 274, 292
+}
+for t, (w, dv) in PLAN_S3.items():
+    cap[dv][w] -= DEV[t]['dur']
+    st = sched.setdefault(t, {'sw': w})
+    st['sw'] = min(st['sw'], w); st['ew'] = w; st['dev'] = dv; st['psw'] = w
+    st['status'] = 'wip' if t in WIP else 'todo'
+pending = [k for k in pending if k not in PLAN_S3]
 overflow = []
-placed = set(DONE) | DROPPED | PM_OWNED
+placed = set(DONE) | DROPPED | PM_OWNED | set(PLAN_S3)
 while pending:
     ready = [k for k in pending if all(d in placed or d not in DEV for d in DEV_DEPS[k])]
     assert ready, pending
@@ -273,7 +292,7 @@ DNAME = {1: 'Rudolph', 2: 'Pacheco', 3: 'Siaba'}
 md = []
 for s in ('S1', 'S2', 'S3'):
     ids = sorted([k for k, v in SPRINT_OF.items() if v == s], key=key)
-    hs = sum(DEV[k]["dur"] for k in ids if k not in DROPPED)
+    hs = sum(DEV[k]["dur"] for k in ids if k not in DROPPED | PM_OWNED)
     pend = sum(DEV[k]["dur"] for k in ids if k not in DROPPED | DONE | PM_OWNED)
     md += [f'### {s} — {hs:.2f} h' + (f' · {pend:.2f} h pendientes de desarrollo' if pend else ''), '',
            '| ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |', '|---|---|---:|---:|---|---|---|:---:|']
@@ -281,8 +300,7 @@ for s in ('S1', 'S2', 'S3'):
         nv = ' 🔷' if DEV[k]['new_v5'] else ''
         if k in DROPPED:
             md.append(f'| {k} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | — | — | — | — | ❌ |'); continue
-        if k in PM_OWNED:
-            md.append(f'| {k} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | — | PMs | 15/10 | 05/11 | {"🟡" if k in WIP else "⬜"} |'); continue
+        if k in PM_OWNED: continue
         x = sched[k]
         md.append(f'| {k}{nv} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | {DEVCPM[k]["H"]:.2f} | {DNAME[x["dev"]]} | '
                   f'{wstart(x["sw"]):%d/%m} | {wend(x["ew"]):%d/%m} | {ST[x["status"]]} |')
@@ -337,16 +355,11 @@ for g in sorted(GROUPS, key=key):
     pert.append(f"      '{g}':{J(GROUPS[g])},")
 pert += ['    },', f'    newIds: {json.dumps(NEW_IDS)},']
 
-# Gantt: los 89 paquetes de desarrollo menos 11.2.3 (descartado). 10.1.x van a nombre de los PMs (dev 4)
-# en la ventana del S3, fuera del planificador.
-PM_DEV = 4
+# Gantt: los 89 paquetes de desarrollo menos 11.2.3 (descartado) y 10.1.x (de los PMs, fuera del cronograma).
 gtasks = []
 for k in sorted(DEV, key=key):
-    if k in DROPPED: continue
-    if k in PM_OWNED:
-        sw, ew, dv, st = 11, 13, PM_DEV, ('wip' if k in WIP else 'todo')
-    else:
-        s = sched[k]; sw, ew, dv, st = s['sw'], s['ew'], s['dev'], s['status']
+    if k in DROPPED | PM_OWNED: continue
+    s = sched[k]; sw, ew, dv, st = s['sw'], s['ew'], s['dev'], s['status']
     gtasks.append({'id': k, 'mod': MOD_NAME[k.split('.')[0]], 'name': DEV[k]['title'], 'dev': dv,
                    'start': f'{wstart(sw)}', 'end': f'{wend(ew)}', 'hours': DEV[k]['dur'], 'status': st,
                    'deps': [d for d in DEV_DEPS[k] if d not in DROPPED]})
@@ -358,7 +371,7 @@ gantt = ['    tasks: [']
 for t in gtasks:
     gantt.append(f'    {{ id:"{t["id"]}", mod:{J(t["mod"])}, name:{J(t["name"])}, dev:{t["dev"]}, start:"{t["start"]}", end:"{t["end"]}", '
                  f'hours:{t["hours"]:.2f}, status:"{t["status"]}", deps:{json.dumps(t["deps"])} }},')
-gantt += ['    ],', f'    devs: {{1:"Rudolph", 2:"Pacheco", 3:"Siaba", {PM_DEV}:"PMs"}},', f'    critical: {json.dumps(crit_dev)},',
+gantt += ['    ],', '    devs: {1:"Rudolph", 2:"Pacheco", 3:"Siaba"},', f'    critical: {json.dumps(crit_dev)},',
           f'    newIds: {json.dumps([k for k in NEW_IDS if k in by])},', f'    knownDepViolations: {json.dumps(gviol)},']
 GANTT_HOURS = sum(t['hours'] for t in gtasks)
 

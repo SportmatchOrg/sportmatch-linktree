@@ -178,7 +178,7 @@ test("Gantt v4: Thursday-to-Thursday weeks, nothing in the reserve week, statuse
   assert.ok(d.milestones.some((m) => m.date === "2026-11-12" && m.type === "delivery"), "Entrega 3 on 12/11");
 });
 
-test("Gantt v5: S2 closed with real dates, S3 planned inside the sprint, 11.2.3 dropped, 10.1 with the PMs", () => {
+test("Gantt v5: S2 closed with real dates, S3 one package per week as in Linear, 11.2.3 and 10.1 out", () => {
   const DATA = constant(read("leadership/gantt.html"), "DATA");
   const d = DATA.v5;
   assert.equal(d.weekly, true, "v5 must declare weekly dates");
@@ -192,16 +192,16 @@ test("Gantt v5: S2 closed with real dates, S3 planned inside the sprint, 11.2.3 
     counts[t.status]++;
     if (t.status === "done") assert.ok(Date.parse(t.end) <= Date.parse("2026-10-15"), `${t.id} is done but ends after the 15/10 steering`);
     if (t.status === "todo") assert.ok(Date.parse(t.start) >= Date.parse("2026-10-15"), `${t.id} is pending but planned before the S3`);
-    assert.ok([1, 2, 3, 4].includes(t.dev), `${t.id}: dev must be 1, 2, 3 or 4 (PMs)`);
-    assert.equal(t.dev === 4, t.id.startsWith("10.1."), `${t.id}: only 10.1 goes to the PMs`);
+    assert.ok([1, 2, 3].includes(t.dev), `${t.id}: dev must be 1, 2 or 3`);
+    // Plan del S3 del 15/10: cada paquete pendiente cae en una sola semana (6.5.1 arrastra el back del S2).
+    if (t.status === "todo") assert.equal(Date.parse(t.end) - Date.parse(t.start), 7 * 864e5, `${t.id} spans more than one week`);
   }
-  // Cronograma-y-PERT-v5.md: 68 hechos, 2 parciales (6.5.1 y 10.1.2), 18 pendientes; 11.2.3 fuera.
-  assert.deepEqual(counts, { done: 68, wip: 2, todo: 18 });
-  assert.equal(d.tasks.length, 88);
-  assert.ok(!d.tasks.some((t) => t.id === "11.2.3"), "11.2.3 is dropped in v5");
-  // Capacidad del S3: 3 devs × 6 h × 3 semanas, sin contar lo de los PMs.
-  const s3 = d.tasks.filter((t) => t.status !== "done" && t.dev !== 4 && t.id !== "6.5.1").reduce((s, t) => s + t.hours, 0)
-    + d.tasks.find((t) => t.id === "6.5.1").hours;
+  // 68 hechos, 6.5.1 parcial, 17 pendientes; 11.2.3 descartado y 10.1 (de los PMs) fuera del cronograma.
+  assert.deepEqual(counts, { done: 68, wip: 1, todo: 17 });
+  assert.equal(d.tasks.length, 86);
+  assert.ok(!d.tasks.some((t) => t.id === "11.2.3" || t.id.startsWith("10.1.")), "11.2.3 and 10.1 are out of v5");
+  // Capacidad del S3: 3 devs × 6 h × 3 semanas.
+  const s3 = d.tasks.filter((t) => t.status !== "done").reduce((s, t) => s + t.hours, 0);
   assert.ok(s3 <= 54, `S3 load ${s3.toFixed(2)} h exceeds 54 h`);
 });
 

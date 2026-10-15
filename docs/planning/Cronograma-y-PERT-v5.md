@@ -10,13 +10,15 @@ la que se mide lo que pasó hasta acá.
 - **El S3 suma 11 paquetes de desarrollo (25,99 h)** del alcance agregado en la WBS v5: primer uso guiado,
   imágenes personalizadas y contenido generado con IA.
 - **11.2.3 se descarta** (preferencias de notificación, fuera de alcance desde el 24/09).
-- **La documentación funcional (10.1.1 y 10.1.2) sale del planificador de desarrollo**: la hacen los PMs,
-  como el resto de lo que no es código.
+- **La documentación funcional (10.1.1 y 10.1.2) sale del cronograma**: la hacen los PMs, como el resto de
+  lo que no es código, y no se planifica acá.
 - **Las lanes son las del S2**: desde el 24/09 cada dev pasó por otro rol (Rudolph → Front, Pacheco → Back,
   Siaba → Back y Front).
+- **El S3 sigue el plan de ejecución del 15/10, cargado en Linear**: cada paquete cae en una sola semana y con
+  un solo dev (§6), en lugar de que el planificador lo reparta en las tres.
 
-Los datos salen de la WBS v5 y del export de Linear por `scripts/generate-v5.py`. Las vistas de
-`leadership/` (WBS, PERT, Gantt y steering) siguen en la v4.
+Los datos salen de la WBS v5 y del export de Linear por `scripts/generate-v5.py`, que también escribe la v5
+de `leadership/pert.html` y `leadership/gantt.html`.
 
 ---
 
@@ -25,7 +27,7 @@ Los datos salen de la WBS v5 y del export de Linear por `scripts/generate-v5.py`
 Los mismos de la v4, con cuatro cambios:
 
 - **Alcance:** módulos **3.0 a 15.0 excepto el 8.0**: 89 paquetes y 251,61 h. Del S3 quedan fuera del
-  planificador 10.1.1 y 10.1.2 (de los PMs, 9,17 h) y 11.2.3 (descartado, 1,63 h).
+  cronograma 10.1.1 y 10.1.2 (de los PMs, 9,17 h) y 11.2.3 (descartado, 1,63 h).
 - **Lo hecho lleva fechas reales:** la semana del primer ticket empezado y la del último cerrado en Linear.
   Los paquetes del S2 y lo del S3 que se adelantó en la semana 10 (6.5.2, 6.5.3, 12.1.1, 12.1.2) están ✅.
 - **Lo pendiente se planifica desde la semana 11**, con la misma regla de la v4: un dev puede encadenar una
@@ -59,9 +61,9 @@ reserva, que sigue sin nada planificado.
 
 | Entregable | Paquetes | Horas | Semanas |
 |---|---|---:|---|
-| Primer uso guiado | 5.3.1 · 5.3.2 · 5.3.3 · 7.1.4 | 7,08 | 11 a 13 |
-| Imágenes personalizadas | 14.1.1 · 14.1.2 · 14.1.3 | 8,08 | 11 y 12 |
-| Contenido generado con IA | 15.1.1 · 15.1.2 · 15.1.3 · 15.2.1 | 10,83 | 11 a 13 |
+| Primer uso guiado | 5.3.1 · 5.3.2 · 5.3.3 · 7.1.4 | 7,08 | 11 y 12 |
+| Imágenes personalizadas | 14.1.1 · 14.1.2 · 14.1.3 | 8,08 | 12 y 13 |
+| Contenido generado con IA | 15.1.1 · 15.1.2 · 15.1.3 · 15.2.1 | 10,83 | 12 y 13 |
 | **Total de desarrollo** | **11 paquetes** | **25,99** | |
 
 Fuera del modelo de desarrollo: **2.2.9** (diseño de las pantallas nuevas, de los PMs, 3,17 h) y **8.1.11**
@@ -100,34 +102,32 @@ El S1 no cambia respecto de la v4 (§4 de ese documento). 🔷 = paquete nuevo e
 | 13.1.1 | Instrumentación para KPIs | 1.50 | 16.12 | Rudolph | 01/10 | 08/10 | ✅ |
 | 13.1.2 | Cálculo y persistencia de KPIs | 2.50 | 16.12 | Rudolph | 01/10 | 08/10 | ✅ |
 
-### S3 — 69.55 h · 49.50 h pendientes de desarrollo
+### S3 — 60.38 h · 49.50 h pendientes de desarrollo
 
 | ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |
 |---|---|---:|---:|---|---|---|:---:|
-| 5.3.1 🔷 | Backend de onboarding | 1.58 | 8.75 | Pacheco | 15/10 | 22/10 | ⬜ |
-| 5.3.2 🔷 | Pantalla de onboarding | 3.00 | 8.11 | Rudolph | 29/10 | 05/11 | ⬜ |
-| 5.3.3 🔷 | Tutorial de Descubrir | 1.00 | 29.41 | Siaba | 29/10 | 05/11 | ⬜ |
-| 6.5.1 | Link compartible de partido | 2.47 | 32.93 | Rudolph | 08/10 | 29/10 | 🟡 |
+| 5.3.1 🔷 | Backend de onboarding | 1.58 | 8.75 | Siaba | 15/10 | 22/10 | ⬜ |
+| 5.3.2 🔷 | Pantalla de onboarding | 3.00 | 8.11 | Rudolph | 22/10 | 29/10 | ⬜ |
+| 5.3.3 🔷 | Tutorial de Descubrir | 1.00 | 29.41 | Rudolph | 15/10 | 22/10 | ⬜ |
+| 6.5.1 | Link compartible de partido | 2.47 | 32.93 | Rudolph | 08/10 | 22/10 | 🟡 |
 | 6.5.2 | Invitación directa a un usuario | 3.90 | 0.00 | Pacheco | 01/10 | 15/10 | ✅ |
 | 6.5.3 | Aceptación de invitación | 3.00 | 0.00 | Pacheco | 08/10 | 15/10 | ✅ |
-| 7.1.4 🔷 | Recomendación con el perfil declarado | 1.50 | 9.41 | Pacheco | 22/10 | 29/10 | ⬜ |
-| 10.1.1 | Manual de uso y descripción de funcionalidades | 6.00 | — | PMs | 15/10 | 05/11 | ⬜ |
-| 10.1.2 | Entrega final de diseño UX/UI | 3.17 | — | PMs | 15/10 | 05/11 | 🟡 |
-| 10.2.2 | Documentación de APIs | 1.50 | 5.40 | Siaba | 29/10 | 05/11 | ⬜ |
-| 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Pacheco | 29/10 | 05/11 | ⬜ |
+| 7.1.4 🔷 | Recomendación con el perfil declarado | 1.50 | 9.41 | Siaba | 15/10 | 22/10 | ⬜ |
+| 10.2.2 | Documentación de APIs | 1.50 | 5.40 | Pacheco | 29/10 | 05/11 | ⬜ |
+| 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Rudolph | 15/10 | 22/10 | ⬜ |
 | 12.1.1 | Modelo de reporte | 2.35 | 5.84 | Pacheco | 08/10 | 15/10 | ✅ |
 | 12.1.2 | Endpoint de creación de reporte | 1.63 | 5.84 | Pacheco | 08/10 | 15/10 | ✅ |
-| 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Rudolph | 29/10 | 05/11 | ⬜ |
-| 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Rudolph | 15/10 | 22/10 | ⬜ |
-| 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Pacheco | 22/10 | 29/10 | ⬜ |
-| 12.2.3 | Historial de moderación | 3.12 | 6.75 | Rudolph | 22/10 | 29/10 | ⬜ |
-| 14.1.1 🔷 | Almacenamiento de imágenes | 3.00 | 18.31 | Siaba | 15/10 | 22/10 | ⬜ |
+| 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Rudolph | 15/10 | 22/10 | ⬜ |
+| 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Pacheco | 15/10 | 22/10 | ⬜ |
+| 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Rudolph | 22/10 | 29/10 | ⬜ |
+| 12.2.3 | Historial de moderación | 3.12 | 6.75 | Rudolph | 29/10 | 05/11 | ⬜ |
+| 14.1.1 🔷 | Almacenamiento de imágenes | 3.00 | 18.31 | Siaba | 22/10 | 29/10 | ⬜ |
 | 14.1.2 🔷 | Foto de perfil propia | 2.08 | 5.45 | Siaba | 22/10 | 29/10 | ⬜ |
-| 14.1.3 🔷 | Foto del partido | 3.00 | 18.31 | Siaba | 15/10 | 22/10 | ⬜ |
-| 15.1.1 🔷 | Integración con proveedores de IA | 1.67 | 20.64 | Pacheco | 15/10 | 22/10 | ⬜ |
-| 15.1.2 🔷 | Interpretación de texto a partido | 2.58 | 20.64 | Pacheco | 15/10 | 22/10 | ⬜ |
-| 15.1.3 🔷 | Crear partido por texto o voz | 3.00 | 20.64 | Siaba | 29/10 | 05/11 | ⬜ |
-| 15.2.1 🔷 | Generación de imágenes con IA | 3.58 | 5.45 | Siaba | 22/10 | 29/10 | ⬜ |
+| 14.1.3 🔷 | Foto del partido | 3.00 | 18.31 | Siaba | 29/10 | 05/11 | ⬜ |
+| 15.1.1 🔷 | Integración con proveedores de IA | 1.67 | 20.64 | Pacheco | 22/10 | 29/10 | ⬜ |
+| 15.1.2 🔷 | Interpretación de texto a partido | 2.58 | 20.64 | Pacheco | 22/10 | 29/10 | ⬜ |
+| 15.1.3 🔷 | Crear partido por texto o voz | 3.00 | 20.64 | Rudolph | 29/10 | 05/11 | ⬜ |
+| 15.2.1 🔷 | Generación de imágenes con IA | 3.58 | 5.45 | Pacheco | 29/10 | 05/11 | ⬜ |
 
 ---
 
@@ -147,7 +147,7 @@ El S1 no cambia respecto de la v4 (§4 de ese documento). 🔷 = paquete nuevo e
 
 ### Contra la línea base de la v4
 
-- **Todos los paquetes del S2 cerraron**, salvo 11.2.3 (descartado) y 10.1.2 (de los PMs, pasa al S3).
+- **Todos los paquetes del S2 cerraron**, salvo 11.2.3 (descartado) y 10.1.2 (de los PMs, sale del cronograma).
 - **Atrasados una semana y recuperados dentro del sprint:** 6.4.3 (no-show) y 7.1.1 (búsqueda).
 - **Adelantados:** 6.2.6 (de la semana 10 a la 8) y, del S3, **6.5.2, 6.5.3, 12.1.1, 12.1.2 y el back de 6.5.1**:
   unas 11 h de las 40,39 h del S3 de la línea base, cerca del **27 %**, más el back del link compartible.
@@ -161,27 +161,41 @@ El S1 no cambia respecto de la v4 (§4 de ese documento). 🔷 = paquete nuevo e
 
 ## 6. Calendario semana a semana
 
-Qué hace cada dev en cada semana del S3. 🔷 = paquete nuevo en la v5. Un paquete de más de 6 h aparece en
-dos semanas seguidas. La carga suma las horas planificadas contra las 18 h de capacidad.
+Plan de ejecución del S3 acordado el 15/10 y cargado en Linear. 🔷 = paquete nuevo en la v5.
 
-**Para crear los tickets de una semana:** el `dueDate` es el jueves de cierre de esa semana, el paquete de la
-WBS es la referencia del ticket y sus horas son el techo de los SP de sus tickets. El orden día por día lo
-fija el plan de sprint.
+- **Balanceado entre semanas y entre devs:** 12, 13 y 14 SP por semana y 13 SP por dev, con 4 o 5 SP por
+  dev y semana. Cada uno queda en su lane: el front va a Rudolph y el back a Pacheco.
+- **Semana 11:** lo que destraba el resto: el rol de admin y el panel, el back del onboarding, el reporte y
+  el recordatorio.
+- **Semana 12:** el bloqueo, que usa el rol de admin de la semana 11, y la base de imágenes e IA. Cada cadena
+  queda en manos de un solo dev (Pacheco: 15.1.1 → 15.1.2 · Siaba: 14.1.1 → 14.1.2).
+- **Semana 13:** el front de la IA (15.1.3) y lo recortable, en este orden si la validación con usuarios
+  (8.2) trae ajustes: 15.2.1 → 14.1.3 → 12.2.3 → 10.2.2 → health (SPO-257).
+
+| Semana | Rudolph | Pacheco | Siaba | SP |
+|---|---|---|---|---:|
+| 11 | SPO-259, 265, 268, 290 | SPO-266, 269, 270 | SPO-282, 285, 286 | 12 |
+| 12 | SPO-271, 272, 289 | SPO-288, 293 | SPO-287, 291 | 13 |
+| 13 | SPO-273, 294 | SPO-274, 295 | SPO-257, 292 | 14 |
+| **Total** | **13** | **13** | **13** | **39** |
+
+La carga de la tabla de abajo está en horas de la WBS contra las 18 h de capacidad de la semana.
 
 | Sem | Ventana | Sprint | Rudolph (Front) | Pacheco (Back) | Siaba (Back y Front) | Carga |
 |---|---|---|---|---|---|---:|
-| 11 | 15/10 → 22/10 | S3 | 12.2.1 Panel de revisión de reportes | 5.3.1 🔷 Backend de onboarding<br>15.1.1 🔷 Integración con proveedores de IA<br>15.1.2 🔷 Interpretación de texto a partido | 14.1.1 🔷 Almacenamiento de imágenes<br>14.1.3 🔷 Foto del partido | 18.1 / 18 h |
-| 12 | 22/10 → 29/10 | S3 | 6.5.1 Link compartible de partido<br>12.2.3 Historial de moderación | 7.1.4 🔷 Recomendación con el perfil declarado<br>12.2.2 Suspensión de usuario | 14.1.2 🔷 Foto de perfil propia<br>15.2.1 🔷 Generación de imágenes con IA | 16.8 / 18 h |
-| 13 | 29/10 → 05/11 | S3 | 5.3.2 🔷 Pantalla de onboarding<br>12.1.3 Interfaz de reporte | 11.1.4 Job de recordatorio pre-partido | 5.3.3 🔷 Tutorial de Descubrir<br>10.2.2 Documentación de APIs<br>15.1.3 🔷 Crear partido por texto o voz | 14.6 / 18 h |
+| 11 | 15/10 → 22/10 | S3 | 5.3.3 🔷 Tutorial de Descubrir<br>6.5.1 Link compartible de partido<br>11.1.4 Job de recordatorio pre-partido<br>12.1.3 Interfaz de reporte | 12.2.1 Panel de revisión de reportes | 5.3.1 🔷 Backend de onboarding<br>7.1.4 🔷 Recomendación con el perfil declarado | 18.9 / 18 h |
+| 12 | 22/10 → 29/10 | S3 | 5.3.2 🔷 Pantalla de onboarding<br>12.2.2 Suspensión de usuario | 15.1.1 🔷 Integración con proveedores de IA<br>15.1.2 🔷 Interpretación de texto a partido | 14.1.1 🔷 Almacenamiento de imágenes<br>14.1.2 🔷 Foto de perfil propia | 16.4 / 18 h |
+| 13 | 29/10 → 05/11 | S3 | 12.2.3 Historial de moderación<br>15.1.3 🔷 Crear partido por texto o voz | 10.2.2 Documentación de APIs<br>15.2.1 🔷 Generación de imágenes con IA | 14.1.3 🔷 Foto del partido | 14.2 / 18 h |
 | 14 | 05/11 → 12/11 | reserva | — | — | — | 0.0 / 18 h |
 
 **Lo que tienen que tener listo los PMs, por semana:**
 
 | Antes de | Qué | Para |
 |---|---|---|
-| 15/10 (semana 11) | Elegir los proveedores de IA (texto e imágenes) y conseguir las claves | 15.1.1 y 15.1.2 |
-| 29/10 (semana 13) | Diseño 2.2.9: onboarding, tutorial y campo de IA en el wizard | 5.3.2, 5.3.3 y 15.1.3 |
-| 05/11 | Manual de uso (10.1.1) y diseño final (10.1.2) | entrega final del 12/11 |
+| 22/10 (semana 12) | Elegir los proveedores de IA (texto e imágenes) y conseguir las claves | 15.1.1 y 15.1.2 |
+| 15/10 (semana 11) | Diseño 2.2.9 del tutorial de Descubrir, o plan B con los componentes existentes | 5.3.3 |
+| 22/10 (semana 12) | Diseño 2.2.9 de la pantalla de onboarding | 5.3.2 |
+| 29/10 (semana 13) | Diseño 2.2.9 del campo de IA en el wizard | 15.1.3 |
 
 ---
 
@@ -224,8 +238,10 @@ Los de menos holgura son **11.1.4 (3,78 h)**, la cadena de moderación **12.2.x 
 | # | Riesgo | Impacto | Mitigación |
 |---|---|---|---|
 | R5 | **El S3 queda al 92 %.** Si la validación con usuarios (8.2) trae ajustes, no hay lugar para hacerlos sin sacar algo. | Alto | Orden de corte acordado antes de empezar: primero 15.2.1 (imágenes con IA, 3,58 h), después 14.1.3 (foto del partido, 3 h). Ninguno es prerrequisito de otro paquete del S3. |
-| R6 | **Los proveedores de IA no están elegidos** y 15.1.1 arranca la semana 11. | Alto | Decidir el 15/10. Si no está, Pacheco arranca por 7.1.4 y 11.1.4, y 15.1.x se corre a la semana 12 (holgura de 20,64 h). |
-| R7 | **El onboarding, el tutorial y el campo de IA no tienen diseño** (2.2.9). | Medio | Los PMs lo cierran antes del 29/10. Plan B: se arman con los componentes de Editar perfil y del wizard, sin pantallas nuevas. |
+| R9 | **La moderación se reparte en dos semanas y dos devs:** el bloqueo (Rudolph, semana 12) usa el rol de admin y el panel (Pacheco, semana 11). | Medio | SPO-266 (rol de admin) es lo primero de la semana 11. El historial (12.2.3) queda en la 13 y es recortable. |
+| R6 | **Los proveedores de IA no están elegidos** y 15.1.1 arranca la semana 12. | Alto | Decidir antes del 22/10. Si no está, 15.1.x se corre a la semana 13 (holgura de 20,64 h) y 15.2.1 sale del S3 (R5). |
+| R7 | **El onboarding, el tutorial y el campo de IA no tienen diseño** (2.2.9). | Medio | Los PMs lo cierran por semana (§6). Plan B: se arman con los componentes de Editar perfil y del wizard, sin pantallas nuevas. El tutorial (semana 11) ya va con el plan B. |
+| R10 | **15.2.1 (semana 13, Pacheco) usa 14.1.3**, que Siaba hace esa misma semana. | Bajo | La foto de perfil generada con IA sale sola; la del partido se suma al final. 15.2.1 es el primero a cortar (R5). |
 | R8 | **Imágenes subidas y generadas por usuarios.** Contenido inapropiado y costo de almacenamiento. | Medio | Validar tipo y tamaño en 14.1.1; las fotos quedan dentro de los reportes de moderación (12.1); límite de uso por usuario en 15.1.1. |
 | R2 | **El rol de administrador** (12.2.1) sigue sin existir. | Medio | Primer ticket de la moderación en la semana 11 (SPO-266). |
 
