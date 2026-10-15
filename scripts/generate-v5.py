@@ -1,0 +1,307 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Genera las tablas del Cronograma v5 (§4 plan por sprint, §9 calendario semana a semana y §8 holguras).
+
+Igual que generate-v4.py, pero sobre la WBS v5 (131 paquetes) y con el S2 cerrado: lo que está en Done en
+Linear al 15/10 lleva sus fechas reales y lo pendiente se planifica en el S3 (semanas 11 a 13).
+
+Entradas
+  docs/planning/WBS-SportMatch-v5.md        131 paquetes: título, dependencias, horas PERT
+  docs/planning/linear-wbs-map.csv          issue de Linear -> paquete de la WBS (a mano)
+  docs/planning/linear-issues.csv           estado y fechas reales por ticket
+
+Salida (intermedia; se pega a mano en el doc, no se commitea)
+  scripts/_v5_calendario.md
+
+No escribe en leadership/: las vistas WBS, PERT, Gantt y steering siguen generándose con generate-v4.py.
+
+Calendario: semanas de jueves a jueves, cierre a las 18 h. La semana 1 abre el 06/08.
+S1 = semanas 1–6 (cierra 17/09) · S2 = 7–10 (15/10) · S3 = 11–13 (05/11) · semana 14 = reserva.
+Lanes desde el 24/09 (rotación del S2): 1 Front = Rudolph · 2 Back = Pacheco · 3 Back y Front = Siaba.
+"""
+import csv, io, json, re
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+WBS = ROOT / 'docs' / 'planning' / 'WBS-SportMatch-v5.md'
+MAP = ROOT / 'docs' / 'planning' / 'linear-wbs-map.csv'
+ISSUES = ROOT / 'docs' / 'planning' / 'linear-issues.csv'
+OUT = ROOT / 'scripts'
+
+# ───────────────────────── calendario ─────────────────────────
+WEEK1 = date(2026, 8, 6)                  # jueves que abre la semana 1
+N_WEEKS = 14
+RESERVE_WEEK = 14                         # 05/11 → 12/11: sin trabajo planificado
+SPRINT_WEEKS = {'S1': (1, 6), 'S2': (7, 10), 'S3': (11, 13)}
+CAP_PER_DEV = 6.0                         # h por dev y semana
+MIN_CHUNK = 3.0                           # h mínimas libres en la semana en que arranca una tarea
+TAIL = 0.5                                # cola máxima que una semana absorbe por encima de las 6 h
+DEVS = (1, 2, 3)                          # 1 Front (Rudolph) · 2 Back (Pacheco) · 3 Back y Front (Siaba)
+
+def wstart(n): return WEEK1 + timedelta(days=7 * (n - 1))
+def wend(n):   return WEEK1 + timedelta(days=7 * n)
+def week_of(ts_utc):
+    """Semana a la que pertenece un instante de Linear: cierra el jueves a las 18 h (ART)."""
+    t = ts_utc - timedelta(hours=3)
+    for n in range(1, N_WEEKS + 1):
+        if t <= datetime.combine(wend(n), datetime.min.time()).replace(hour=18):
+            return n
+    raise ValueError(ts_utc)
+def sprint_of_week(n):
+    for s, (a, b) in SPRINT_WEEKS.items():
+        if a <= n <= b: return s
+    return 'reserva'
+
+# ───────────────────────── WBS v5 ─────────────────────────
+txt = io.open(WBS, encoding='utf-8').read()
+PKG_RE = re.compile(r'^\*\*(\d+\.\d+\.\d+)\*\*([^\n]*?)— ([^\n:]+?)[:.] [^\n]*\n<br>\*Dependencias:\* ([^·]+)· \*Estimación:\* ([0-9.]+) h', re.M)
+TASKS = {}
+for m in PKG_RE.finditer(txt):
+    tid, mark, title, deps, est = m.groups()
+    deps = [] if deps.strip().startswith('—') else [d.strip() for d in deps.split(',') if d.strip()]
+    TASKS[tid] = {'title': title.strip(), 'deps': deps, 'dur': float(est), 'new_v5': '🔷' in mark}
+assert len(TASKS) == 131, len(TASKS)
+
+MODULES = dict(re.findall(r'^## (\d+)\.0 ([^\n]+?)(?: — \*\*NUEVO\*\*)?$', txt, re.M))          # '4' -> 'Autenticación'
+SUBS = dict(re.findall(r'^### (\d+\.\d+) ([^\n]+?)(?: — \*\*NUEVO\*\*)?$', txt, re.M))          # '4.1' -> 'Backend de autenticación'
+MOD_NAME = {k: f'{k}.0 {v}' for k, v in MODULES.items()}
+key = lambda s: tuple(int(p) for p in s.split('.'))
+l2 = lambda s: '.'.join(s.split('.')[:2])
+
+# Dependencias blandas que conserva el modelo de desarrollo (mismas que en v2 y en pert_v4.py).
+SOFT = {'3.2.1': ['3.1.3'], '4.1.1': ['3.1.2']}
+for k, v in SOFT.items():
+    TASKS[k]['deps'] = sorted(set(TASKS[k]['deps'] + v), key=key)
+
+# ───────────────────────── CPM ─────────────────────────
+def cpm(scope):
+    """scope: dict id -> {'deps','dur'}; deps fuera del scope se ignoran. Devuelve ES/EF/LS/LF/H."""
+    deps = {k: [d for d in v['deps'] if d in scope] for k, v in scope.items()}
+    order, seen = [], {}
+    def visit(n):
+        if seen.get(n) == 2: return
+        assert seen.get(n) != 1, 'ciclo en ' + n
+        seen[n] = 1
+        for d in deps[n]: visit(d)
+        seen[n] = 2; order.append(n)
+    for n in scope: visit(n)
+    r = {}
+    for n in order:
+        es = max([r[d]['EF'] for d in deps[n]] or [0.0])
+        r[n] = {'ES': es, 'EF': es + scope[n]['dur']}
+    T = max(v['EF'] for v in r.values())
+    succ = defaultdict(list)
+    for n, ds in deps.items():
+        for d in ds: succ[d].append(n)
+    for n in reversed(order):
+        lf = min([r[s]['LS'] for s in succ[n]] or [T])
+        r[n]['LF'] = lf; r[n]['LS'] = lf - scope[n]['dur']
+        r[n]['H'] = round(r[n]['LS'] - r[n]['ES'], 2)
+    return r, deps, T
+
+FULL, FULL_DEPS, T_FULL = cpm(TASKS)
+DEV_SCOPE = {'3', '4', '5', '6', '7', '9', '10', '11', '12', '13', '14', '15'}
+DEV = {k: v for k, v in TASKS.items() if k.split('.')[0] in DEV_SCOPE}
+DEVCPM, DEV_DEPS, T_DEV = cpm(DEV)
+assert len(DEV) == 89, len(DEV)
+crit_full = sorted([n for n in FULL if abs(FULL[n]['H']) < 1e-6], key=lambda n: FULL[n]['ES'])
+crit_dev  = sorted([n for n in DEVCPM if abs(DEVCPM[n]['H']) < 1e-6], key=lambda n: DEVCPM[n]['ES'])
+
+# ───────────────────────── Linear ─────────────────────────
+DONE_STATUSES = {'Done'}
+ASSIGNEE_DEV = {'jrudolph': 1, 'ipacheco': 2, 'jfsiaba': 3}
+TICKETS = {}
+with io.open(ISSUES, encoding='utf-8') as f:
+    for r in csv.DictReader(f):
+        n = int(r['issue'].split('-')[1])
+        P = lambda s: datetime.strptime(s[:19], '%Y-%m-%dT%H:%M:%S') if s else None
+        TICKETS[n] = {'status': r['status'], 'started': P(r['started']), 'completed': P(r['completed']),
+                      'dev': ASSIGNEE_DEV.get(r['assignee']), 'type': r['type'], 'pts': float(r['estimate'] or 0)}
+
+# Paquete -> tickets que fijan su ventana de fechas, desde docs/planning/linear-wbs-map.csv.
+# Sólo las filas con fechas='si': los hotfix y los arreglos posteriores al cierre del paquete van
+# con 'no' porque no son alcance del paquete y estiraban su ventana. Ver docs/planning/plan-linear.md.
+PKG_TICKETS = defaultdict(list)
+with io.open(MAP, encoding='utf-8') as f:
+    for r in csv.DictReader(f):
+        if r['fechas'] == 'si':
+            PKG_TICKETS[r['wbs_id']].append(int(r['issue'].split('-')[1]))
+# Paquetes hechos sin ticket propio: semana (inicio, fin) fijada a mano.
+MANUAL_WEEK = {
+ '3.1.1': (1, 1, 3),   # stack definido en el kick-off (Infra)
+ '3.1.3': (1, 1, 3),   # convenciones de ramas/PR/Linear escritas en AGENTS.md la semana del kick-off
+ '10.2.1': (2, 2, 3),  # README con instalación y ejecución local, junto con la base del repo (SPO-143)
+ '11.1.2': (8, 9, 3),  # web-push decidido el 24/09 e implementado con SPO-243 (mapeado a 11.2.2 y 11.1.3)
+}
+# 13.0 Challenge: cerró en la semana 9 (SPO-276, SPO-277); sus tickets fijan la ventana como cualquier otro.
+FIXED_WEEK = {}
+# Estado al 15/10, cierre del S2 (Cronograma-y-PERT-v5.md §5). S1: los 43 de la v4.
+DONE_S1 = {'3.1.1','3.1.2','3.1.3','3.2.1','3.2.2','3.2.3','4.1.1','4.1.2','4.1.3','4.1.4','4.2.1','4.2.2',
+        '4.2.3','4.2.4','4.2.5','5.1.2','5.1.3','5.1.5','5.2.1','5.2.4','5.2.5','6.1.1','6.1.2','6.1.3',
+        '6.1.5','6.2.1','6.2.2','6.2.3','6.2.4','6.3.1','6.3.2','6.3.3','6.3.4','6.3.5','6.4.1','7.2.1',
+        '6.4.2','7.2.2','9.1.1','9.1.2','9.1.3','9.1.4','10.2.1'}
+S2 = ['5.1.1','5.1.4','5.2.2','5.2.3','6.1.4','6.2.5','6.2.6','6.4.3','7.1.1','7.1.2','7.1.3',
+      '7.3.1','7.3.2','7.3.3','11.1.1','11.1.2','11.1.3','11.2.1','11.2.2','11.2.3','13.1.1','13.1.2']
+# Cerrados en el S2: todo el S2 salvo 11.2.3 (descartado), más lo del S3 que se adelantó en la semana 10.
+DONE_S2 = set(S2) - {'11.2.3'} | {'6.5.2', '6.5.3', '12.1.1', '12.1.2'}
+DONE = DONE_S1 | DONE_S2
+DROPPED = {'11.2.3'}                       # descartado en la v5: no se planifica
+# Documentación funcional: la hacen los PMs (regla del S2: lo que no es código no descuenta capacidad de los devs).
+# Queda en el S3 pero fuera del planificador, como 1.x, 2.x y 8.x.
+PM_OWNED = {'10.1.1', '10.1.2'}
+WIP = {'6.5.1', '10.1.2'}                  # 6.5.1: el back cerró (SPO-258), falta el front · 10.1.2: de los PMs, arrastre del S2
+NEW_V5 = ['5.3.1','5.3.2','5.3.3','7.1.4','14.1.1','14.1.2','14.1.3','15.1.1','15.1.2','15.1.3','15.2.1']
+SPRINT_OF = {}
+for k in DONE_S1: SPRINT_OF[k] = 'S1'
+for k in S2: SPRINT_OF[k] = 'S2'
+for k in ['6.5.1','6.5.2','6.5.3','10.1.1','10.1.2','10.2.2','11.1.4','12.1.1','12.1.2','12.1.3','12.2.1','12.2.2','12.2.3'] + NEW_V5:
+    SPRINT_OF[k] = 'S3'                    # 10.1.2 pasa del S2 al S3: no se cerró
+assert set(SPRINT_OF) == set(DEV), set(DEV) ^ set(SPRINT_OF)
+assert len(DONE) == 43 + 25, len(DONE)
+
+# Dev preferido para lo pendiente, por naturaleza del paquete. El scheduler puede dárselo a otro
+# dev si así termina antes: Siaba (3) tomó tickets de front en los sprints 4 y 5.
+DEV_PREF = {}
+for k in SPRINT_OF:
+    if k in DONE or k in DROPPED or k in PM_OWNED: continue
+    mod, sub = k.split('.')[0], l2(k)
+    if k in ('10.1.1', '10.1.2', '10.2.2') or sub in ('14.1',) or k == '15.2.1': DEV_PREF[k] = 3
+    elif sub in ('5.2', '6.2', '7.2', '7.3', '11.2') or k in ('6.5.1', '12.1.3', '12.2.1', '5.3.2', '5.3.3', '15.1.3'): DEV_PREF[k] = 1
+    else: DEV_PREF[k] = 2
+
+# ───────────────────────── fechas de lo hecho ─────────────────────────
+sched = {}   # id -> {'sw','ew','dev','status'}
+for k in DEV:
+    if k in FIXED_WEEK:
+        sw, ew, dev = FIXED_WEEK[k]; sched[k] = {'sw': sw, 'ew': ew, 'dev': dev, 'psw': sw, 'status': 'wip'}
+        continue
+    # Sólo los tickets ya cerrados fijan la ventana. Si al paquete no le cerró ninguno todavía,
+    # queda para el planificador de más abajo.
+    ts = [TICKETS[n] for n in PKG_TICKETS.get(k, []) if TICKETS[n]['status'] in DONE_STATUSES]
+    if ts:
+        starts = [week_of(t['started']) if t['started'] else 6 for t in ts]
+        ends = [week_of(t['completed']) if t['completed'] else 6 for t in ts]
+        devs = [t['dev'] for t in ts if t['dev']]
+        dev = max(set(devs), key=devs.count) if devs else 3
+        sched[k] = {'sw': min(starts), 'ew': max(ends), 'dev': dev}
+    elif k in MANUAL_WEEK:
+        sw, ew, dev = MANUAL_WEEK[k]; sched[k] = {'sw': sw, 'ew': ew, 'dev': dev}
+    if k in DONE:
+        assert k in sched, k
+        assert sched[k]['ew'] <= 10, (k, sched[k])
+        sched[k]['status'] = 'done'
+
+# ───────────────────────── planificación de lo pendiente ─────────────────────────
+cap = {d: {w: CAP_PER_DEV for w in range(1, N_WEEKS + 1)} for d in DEVS}
+pending = [k for k in DEV if k not in DONE and k not in DROPPED and k not in PM_OWNED and k not in FIXED_WEEK]
+# Prioridad: sprint, después la cadena más larga que queda por delante dentro del mismo sprint
+# (para que un dev tome el bloque completo y no se pierda una semana en cada cambio de manos), después id.
+SUCC = defaultdict(list)
+for k, ds in DEV_DEPS.items():
+    for d in ds: SUCC[d].append(k)
+_rank = {}
+def rank(k):
+    if k not in _rank:
+        _rank[k] = DEV[k]['dur'] + max([rank(s) for s in SUCC[k] if SPRINT_OF[s] == SPRINT_OF[k]] or [0.0])
+    return _rank[k]
+# Las tareas del camino crítico del PERT, y las que las preceden, van primero dentro de su sprint.
+_urg = {}
+def urgent(k):
+    if k not in _urg:
+        _urg[k] = DEVCPM[k]['H'] < 1e-6 or any(urgent(s) for s in SUCC[k])
+    return _urg[k]
+prio = lambda k: (SPRINT_WEEKS[SPRINT_OF[k]][0], not urgent(k), -rank(k), key(k))
+overflow = []
+placed = set(DONE) | DROPPED | PM_OWNED
+while pending:
+    ready = [k for k in pending if all(d in placed or d not in DEV for d in DEV_DEPS[k])]
+    assert ready, pending
+    t = min(ready, key=prio); pending.remove(t); placed.add(t)
+    s_a, s_b = SPRINT_WEEKS[SPRINT_OF[t]]
+    # Un mismo dev puede encadenar una dependencia dentro de la semana (la ordena el plan de sprint);
+    # entre devs distintos, el sucesor arranca la semana siguiente.
+    # Una tarea arranca en una semana donde el dev tiene lugar para al menos MIN_CHUNK h (o la tarea
+    # entera si es más corta): así una tarea de 1,5 h no queda regada en migajas de varias semanas.
+    # Fuera de su área un dev paga penalidad: Siaba (3) es flexible y toma front o back si eso
+    # ahorra una semana; Pache y Rudolph sólo cruzan de área si ahorra dos.
+    best = None
+    for dv in DEVS:
+        w = max([sched[d]['ew'] + (0 if sched[d]['dev'] == dv else 1) for d in DEV_DEPS[t] if d in sched] + [s_a])
+        need = min(DEV[t]['dur'], MIN_CHUNK)
+        while w <= N_WEEKS and cap[dv][w] < need - 1e-9: w += 1
+        rem, sw, ew = DEV[t]['dur'], w, w
+        while rem > 1e-9 and ew <= N_WEEKS:
+            take = min(rem, cap[dv][ew]); rem -= take
+            if rem <= TAIL: rem = 0          # una cola de hasta TAIL h se absorbe en la misma semana
+            if rem > 1e-9: ew += 1
+        pen = 0 if dv == DEV_PREF[t] else (0.5 if dv == 3 else 1.5)
+        cand = (ew > s_b, ew + pen, sw, dv)  # desbordar el sprint es el peor costo posible
+        if best is None or cand < best[0]: best = (cand, sw, ew, dv)
+    _, sw, ew, dv = best
+    rem = DEV[t]['dur']
+    for w in range(sw, ew + 1):
+        take = min(rem, cap[dv][w]) if w < ew else rem
+        cap[dv][w] -= take; rem -= take
+    if ew > s_b: overflow.append((t, SPRINT_OF[t], sw, ew))
+    st = sched.setdefault(t, {'sw': sw})
+    st['sw'] = min(st['sw'], sw); st['ew'] = ew; st['dev'] = dv; st['psw'] = sw   # psw: semana en que se planifican las horas
+    st['status'] = 'wip' if t in WIP else 'todo'
+
+# ───────────────────────── checks ─────────────────────────
+print(f'paquetes: {len(TASKS)} · desarrollo: {len(DEV)} ({sum(v["dur"] for v in DEV.values()):.2f} h)')
+print(f'CPM completo: {T_FULL:.2f} h · crítico: {" → ".join(crit_full)}')
+print(f'CPM desarrollo: {T_DEV:.2f} h · crítico: {" → ".join(crit_dev)}')
+if overflow: print('!! DESBORDE DE SPRINT:', overflow)
+if any(v['ew'] >= RESERVE_WEEK for v in sched.values()): print('!! hay trabajo en la semana de reserva')
+# Sólo puede haber violaciones donde hay fechas reales: sucesor hecho o parcial, o dependencia hecha.
+viol = sorted(f'{t}<{d}' for t in DEV if t in sched for d in DEV_DEPS[t] if d in sched and sched[t]['sw'] < sched[d]['ew'] and (t in DONE or t in WIP or d in DONE))
+print('violaciones de dependencia por fechas reales:', viol)
+for s, (a, b) in SPRINT_WEEKS.items():
+    hs = sum(DEV[k]['dur'] for k, v in SPRINT_OF.items() if v == s and k not in DROPPED)
+    pend = sum(DEV[k]['dur'] for k, v in SPRINT_OF.items() if v == s and k not in DROPPED | DONE | PM_OWNED)
+    print(f'   pendiente de devs: {pend:.2f} h') if pend else None
+    print(f'{s}: {sum(1 for v in SPRINT_OF.values() if v == s)} paquetes · {hs:.2f} h / {(b - a + 1) * 18} h')
+for w in range(11, N_WEEKS + 1):
+    load = {d: round(CAP_PER_DEV - cap[d][w], 2) for d in DEVS}
+    print(f'  sem {w:2d} ({wstart(w):%d/%m}→{wend(w):%d/%m}) ' + '  '.join(f'D{d} {load[d]:4.1f}h' for d in DEVS))
+
+# ───────────────────────── salida markdown ─────────────────────────
+ST = {'done': '✅', 'wip': '🟡', 'todo': '⬜'}
+DNAME = {1: 'Rudolph', 2: 'Pacheco', 3: 'Siaba'}
+md = []
+for s in ('S1', 'S2', 'S3'):
+    ids = sorted([k for k, v in SPRINT_OF.items() if v == s], key=key)
+    hs = sum(DEV[k]["dur"] for k in ids if k not in DROPPED)
+    pend = sum(DEV[k]["dur"] for k in ids if k not in DROPPED | DONE | PM_OWNED)
+    md += [f'### {s} — {hs:.2f} h' + (f' · {pend:.2f} h pendientes de desarrollo' if pend else ''), '',
+           '| ID | Paquete | Dur (h) | Holgura | Dev | Inicio | Fin | Estado |', '|---|---|---:|---:|---|---|---|:---:|']
+    for k in ids:
+        nv = ' 🔷' if DEV[k]['new_v5'] else ''
+        if k in DROPPED:
+            md.append(f'| {k} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | — | — | — | — | ❌ |'); continue
+        if k in PM_OWNED:
+            md.append(f'| {k} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | — | PMs | 15/10 | 05/11 | {"🟡" if k in WIP else "⬜"} |'); continue
+        x = sched[k]
+        md.append(f'| {k}{nv} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | {DEVCPM[k]["H"]:.2f} | {DNAME[x["dev"]]} | '
+                  f'{wstart(x["sw"]):%d/%m} | {wend(x["ew"]):%d/%m} | {ST[x["status"]]} |')
+    md.append('')
+md += ['## Calendario semana a semana', '',
+       '| Sem | Ventana | Sprint | Rudolph (Front) | Pacheco (Back) | Siaba (Back y Front) | Carga |', '|---|---|---|---|---|---|---:|']
+for w in range(11, N_WEEKS + 1):
+    cells = []
+    for d in DEVS:
+        items = [k for k in sorted(DEV, key=key) if k in sched and sched[k]['dev'] == d and sched[k]['status'] != 'done' and sched[k]['psw'] <= w <= sched[k]['ew']]
+        cells.append('<br>'.join(f'{k}{" 🔷" if DEV[k]["new_v5"] else ""} {DEV[k]["title"]}' for k in items) or '—')
+    load = sum(CAP_PER_DEV - cap[d][w] for d in DEVS)
+    md.append(f'| {w} | {wstart(w):%d/%m} → {wend(w):%d/%m} | {sprint_of_week(w)} | ' + ' | '.join(cells) + f' | {load:.1f} / 18 h |')
+md += ['', '## Holguras del S3 (PERT de desarrollo)', '',
+       '| ID | Paquete | Dur (h) | ES | EF | LS | LF | Holgura |', '|---|---|---:|---:|---:|---:|---:|---:|']
+for k in sorted([k for k, v in SPRINT_OF.items() if v == 'S3' and k not in DONE | PM_OWNED], key=key):
+    r = DEVCPM[k]
+    md.append(f'| {k}{" 🔷" if DEV[k]["new_v5"] else ""} | {DEV[k]["title"]} | {DEV[k]["dur"]:.2f} | {r["ES"]:.2f} | {r["EF"]:.2f} | {r["LS"]:.2f} | {r["LF"]:.2f} | {r["H"]:.2f} |')
+md += ['', f'PERT completo ({len(TASKS)} paquetes): camino crítico de {T_FULL:.2f} h · ' + ' → '.join(crit_full),
+       f'PERT de desarrollo ({len(DEV)} paquetes): camino crítico de {T_DEV:.2f} h · ' + ' → '.join(crit_dev), '']
+(OUT / '_v5_calendario.md').write_text('\n'.join(md) + '\n', encoding='utf-8')
+print('->', OUT / '_v5_calendario.md')
