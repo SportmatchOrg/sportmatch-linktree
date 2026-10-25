@@ -100,7 +100,7 @@
   var StopGlyph = function (s) { return lucideGlyph('<rect x="6" y="6" width="12" height="12" rx="2"/>', s); };
   var AlertGlyph = function (s) { return lucideGlyph('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>', s); };
 
-  var AI_EXAMPLE = 'Fútbol 5 el sábado a las 19 en River Courts, faltan 3, nivel intermedio';
+  var AI_EXAMPLE = 'Fútbol 5 el sábado a las 19 en River Courts, nivel intermedio';
   var AI_ERRORS = {
     422: 'No pudimos armar el partido con eso. Probá contando deporte, día y hora.',
     429: 'Ya usaste los 20 borradores de hoy. Seguí paso a paso o probá mañana.',
@@ -130,7 +130,6 @@
     d.place = PLACES.find(function (p) { return t.indexOf(p.toLowerCase()) >= 0; });
     if ((m = /f[uú]tbol (\d{1,2})\b/.exec(t))) d.players = +m[1] * 2;
     else if ((m = /(?:somos|para) (\d{1,2})\b|(\d{1,2}) jugadores/.exec(t))) d.players = +(m[1] || m[2]);
-    if ((m = /faltan? (\d{1,2})\b/.exec(t))) d.note = 'Faltan ' + m[1] + (m[1] === '1' ? ' jugador' : ' jugadores');
     if (/principiante|casual|tranqui/.test(t)) d.level = 'casual';
     else if (/intermedio/.test(t)) d.level = 'intermediate';
     else if (/avanzado|competitivo/.test(t)) d.level = 'advanced';
@@ -147,7 +146,6 @@
     if (d.dayKey == null || d.hour == null) missing.when = true;
     if (d.players) patch.players = d.players;
     if (d.level) patch.level = d.level;
-    if (d.note) patch.description = d.note;
     return { patch: patch, missing: missing };
   }
 
@@ -199,7 +197,7 @@
         h(Question, { key: 'q' }, 'Contanos el partido'),
         h('div', { key: 'sub', style: { color: 'var(--ink-64)', fontSize: 16, lineHeight: 1.45, margin: '-12px 0 22px' } },
           phase === 'listening' ? 'Escuchando… tocá el micrófono para terminar.'
-            : 'En una frase: deporte, día, hora, lugar y cuántos faltan.'),
+            : 'En una frase: deporte, día, hora, lugar y nivel.'),
         h('textarea', {
           key: 'ta', value: text, rows: 4, disabled: busy, autoFocus: !start,
           placeholder: 'Ej. pádel mañana a las 8 de la noche en Club Víbora',
@@ -279,7 +277,7 @@
       setForm(function (f) { return Object.assign({}, f, r.patch, { fromAi: true }); });
       setAiMissing(r.missing); setAiOpen(false); setStep(STEPS.length - 1);
     };
-    React.useEffect(function () { if (forcedAi === 'review') aiDone(draftToForm(mockDraft('Fútbol 5 el sábado a las 19, faltan 3, nivel intermedio'))); }, []);
+    React.useEffect(function () { if (forcedAi === 'review') aiDone(draftToForm(mockDraft('Fútbol 5 el sábado a las 19, nivel intermedio'))); }, []);
     var MISSING_STEP = { sport: 0, place: 1, when: 2 };
     var firstMissing = ['sport', 'place', 'when'].find(function (k) { return aiMissing[k]; });
     var fix = function (k) {
@@ -328,10 +326,10 @@
 
     var bodyChildren = [h(Hint, { key: 'hint' }, 'Paso ' + (step + 1) + ' \u00B7 ' + STEPS[step])];
 
-    if (form.fromAi && last) {
+    if (form.fromAi && last && firstMissing) {
       bodyChildren.push(h('div', { key: 'aipill', style: { display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, padding: '6px 10px', borderRadius: 99, background: 'var(--accent-tint)', color: 'var(--accent)', fontSize: 13, fontWeight: 600 } }, [
         React.cloneElement(SparklesGlyph(14), { key: 'g' }),
-        firstMissing ? 'Completá lo que falta' : 'Revisá antes de publicar'
+        'Completá lo que falta'
       ]));
     }
 
