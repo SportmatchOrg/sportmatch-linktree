@@ -67,7 +67,7 @@
     for (var i = 0; i < 14; i++) {
       var d = new Date(now); d.setDate(now.getDate() + i);
       var label = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : wd[d.getDay()] + ' ' + d.getDate();
-      out.push({ key: i, weekday: wd[d.getDay()], dayNum: d.getDate(), label: label });
+      out.push({ key: i, weekday: wd[d.getDay()], dow: d.getDay(), dayNum: d.getDate(), label: label });
     }
     return out;
   }
@@ -87,6 +87,175 @@
     return h('div', { style: { font: 'var(--text-caption)', color: 'var(--ink-46)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 } }, props.children);
   }
 
+  /* =====================================================================
+     Asistente de IA del wizard (WBS 2.2.9 · SPO-294): el botón redondo del
+     pie abre una pantalla para escribir o dictar el partido en una frase, y
+     Completar lleva directo a Revisión con lo que falte marcado.
+     La interpretación es un mock local. ?ai=open|listening|thinking abre la
+     pantalla en ese estado, ?ai=review muestra Revisión con el lugar
+     faltante y ?ai=422|429|503 fuerza ese error al completar.
+     ===================================================================== */
+  var SparklesGlyph = function (s) { return lucideGlyph('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>', s); };
+  var MicGlyph = function (s) { return lucideGlyph('<path d="M12 19v3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><rect x="9" y="2" width="6" height="13" rx="3"/>', s); };
+  var StopGlyph = function (s) { return lucideGlyph('<rect x="6" y="6" width="12" height="12" rx="2"/>', s); };
+  var AlertGlyph = function (s) { return lucideGlyph('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>', s); };
+
+  var AI_EXAMPLE = 'Fútbol 5 el sábado a las 19 en River Courts, faltan 3, nivel intermedio';
+  var AI_ERRORS = {
+    422: 'No pudimos armar el partido con eso. Probá contando deporte, día y hora.',
+    429: 'Ya usaste los 20 borradores de hoy. Seguí paso a paso o probá mañana.',
+    503: 'El asistente no está disponible ahora. Podés armarlo paso a paso.'
+  };
+  var AI_EXAMPLES = [AI_EXAMPLE, 'Pádel mañana a las 8 de la noche en Club Víbora', 'Básquet el jueves a las 21, somos 6, tranqui'];
+  var PLACES = ['River Courts', 'Club Víbora', 'The Cage', 'Parque Sur'];
+
+  // ponytail: regex en lugar del modelo, alcanza para mostrar el flujo; el real es POST /ai/match-draft (SPO-293).
+  function mockDraft(text) {
+    var t = text.toLowerCase(), m, d = {};
+    if (/f[uú]tbol|picado/.test(t)) d.sport = ['Fútbol', 'football'];
+    else if (/b[aá]squet|basket/.test(t)) d.sport = ['Básquet', 'basketball'];
+    else if (/p[aá]del/.test(t)) d.sport = ['Pádel', 'padel'];
+    else if (/tenis/.test(t)) d.sport = ['Tenis', 'tennis'];
+    if (/\bhoy\b/.test(t)) d.dayKey = 0;
+    else if (/\bmañana\b/.test(t) && !/a la mañana/.test(t)) d.dayKey = 1;
+    else ['domingo', 'lunes', 'martes', 'mi[eé]rcoles', 'jueves', 'viernes', 's[aá]bado'].some(function (re, dow) {
+      if (!new RegExp('\\b' + re + '\\b').test(t)) return false;
+      var day = DAYS.find(function (x) { return x.key > 0 && x.dow === dow; });
+      d.dayKey = day.key; return true;
+    });
+    if ((m = /a las (\d{1,2})(?:[:.](\d{2}))?/.exec(t))) {
+      var hr = +m[1]; if (hr < 12 && /tarde|noche/.test(t)) hr += 12;
+      d.hour = Math.min(23, Math.max(6, hr)); d.minute = m[2] ? Math.round(+m[2] / 5) * 5 % 60 : 0;
+    }
+    d.place = PLACES.find(function (p) { return t.indexOf(p.toLowerCase()) >= 0; });
+    if ((m = /f[uú]tbol (\d{1,2})\b/.exec(t))) d.players = +m[1] * 2;
+    else if ((m = /(?:somos|para) (\d{1,2})\b|(\d{1,2}) jugadores/.exec(t))) d.players = +(m[1] || m[2]);
+    if ((m = /faltan? (\d{1,2})\b/.exec(t))) d.note = 'Faltan ' + m[1] + (m[1] === '1' ? ' jugador' : ' jugadores');
+    if (/principiante|casual|tranqui/.test(t)) d.level = 'casual';
+    else if (/intermedio/.test(t)) d.level = 'intermediate';
+    else if (/avanzado|competitivo/.test(t)) d.level = 'advanced';
+    return d.sport || d.dayKey != null || d.hour != null || d.place ? d : null;
+  }
+
+  // Lo que el wizard recibe del asistente: los campos entendidos y cuáles faltan.
+  function draftToForm(d) {
+    var patch = {}, missing = {};
+    if (d.sport) { patch.sport = d.sport[0]; patch.sportKey = d.sport[1]; } else missing.sport = true;
+    if (d.place) patch.place = d.place; else { patch.place = ''; missing.place = true; }
+    if (d.dayKey != null) { patch.dayKey = d.dayKey; patch.day = DAYS[d.dayKey].label; }
+    if (d.hour != null) { patch.hour = d.hour; patch.minute = d.minute; patch.time = pad2(d.hour) + ':' + pad2(d.minute); }
+    if (d.dayKey == null || d.hour == null) missing.when = true;
+    if (d.players) patch.players = d.players;
+    if (d.level) patch.level = d.level;
+    if (d.note) patch.description = d.note;
+    return { patch: patch, missing: missing };
+  }
+
+  // Pantalla propia del asistente: se abre desde el botón redondo del pie del wizard y, al
+  // completar, lleva directo a Revisión. Errores debajo del campo; cerrar vuelve al paso a paso.
+  function AiScreen(props) {
+    var DS = window.SportMatchDesignSystem_7eff40 || {};
+    var Button = DS.Button, IconButton = DS.IconButton;
+    var forced = aiParam();
+    var start = forced === 'listening' || forced === 'thinking' ? forced : null;
+    var ts = React.useState(start ? AI_EXAMPLE : ''); var text = ts[0], setText = ts[1];
+    // idle · listening · thinking · error
+    var ps = React.useState(start || 'idle'); var phase = ps[0], setPhase = ps[1];
+    var es = React.useState(null); var err = es[0], setErr = es[1];
+    var timer = React.useRef(null);
+    React.useEffect(function () { return function () { clearInterval(timer.current); clearTimeout(timer.current); }; }, []);
+
+    // Dictado simulado: escribe la frase de ejemplo como si llegara del reconocimiento de voz.
+    function toggleMic() {
+      if (phase === 'listening') { clearInterval(timer.current); setPhase('idle'); return; }
+      setErr(null); setText(''); setPhase('listening');
+      var i = 0;
+      timer.current = setInterval(function () {
+        i += 2; setText(AI_EXAMPLE.slice(0, i));
+        if (i >= AI_EXAMPLE.length) { clearInterval(timer.current); setPhase('idle'); }
+      }, 45);
+    }
+    function complete() {
+      if (text.trim().length < 3) return;
+      setErr(null); setPhase('thinking');
+      timer.current = setTimeout(function () {
+        var code = AI_ERRORS[forced] ? forced : null, d = code ? null : mockDraft(text);
+        if (!d) { setErr(code || 422); setPhase('error'); return; }
+        props.onDone(draftToForm(d));
+      }, 1100);
+    }
+
+    var busy = phase === 'listening' || phase === 'thinking';
+    var canGo = !busy && text.trim().length >= 3;
+    return h('div', { style: { position: 'absolute', inset: 0, background: 'var(--bg-base)', zIndex: 90 } }, [
+      h('style', { key: 'kf' }, '@keyframes smAiPulse{0%{box-shadow:0 0 0 0 rgba(78,168,255,.55)}100%{box-shadow:0 0 0 16px rgba(78,168,255,0)}}@keyframes smAiShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}'),
+      h('div', { key: 'top', style: { position: 'absolute', top: 60, left: 20, right: 20, zIndex: 3, display: 'flex', alignItems: 'center' } },
+        h(IconButton, { icon: 'x', variant: 'glass', size: 'sm', 'aria-label': 'Volver al paso a paso', onClick: props.onClose })),
+      h('div', { key: 'body', style: { position: 'absolute', top: 120, left: 0, right: 0, bottom: 120, overflowY: 'auto', padding: '20px 24px' } }, [
+        h('div', { key: 'hint', style: { display: 'flex', alignItems: 'center', gap: 6, color: 'var(--accent)', marginBottom: 14 } }, [
+          React.cloneElement(SparklesGlyph(14), { key: 'g' }),
+          h('span', { key: 't', style: { font: 'var(--weight-bold) 11px/1 var(--font-text)', letterSpacing: 'var(--tracking-overline)', textTransform: 'uppercase' } }, 'Asistente')
+        ]),
+        h(Question, { key: 'q' }, 'Contanos el partido'),
+        h('div', { key: 'sub', style: { color: 'var(--ink-64)', fontSize: 16, lineHeight: 1.45, margin: '-12px 0 22px' } },
+          phase === 'listening' ? 'Escuchando… tocá el micrófono para terminar.'
+            : 'En una frase: deporte, día, hora, lugar y cuántos faltan.'),
+        h('textarea', {
+          key: 'ta', value: text, rows: 4, disabled: busy, autoFocus: !start,
+          placeholder: 'Ej. pádel mañana a las 8 de la noche en Club Víbora',
+          onChange: function (e) { setText(e.target.value); if (phase === 'error') { setPhase('idle'); setErr(null); } },
+          style: {
+            width: '100%', boxSizing: 'border-box', resize: 'none', border: 0, outline: 'none',
+            borderRadius: 'var(--radius-md)', background: 'var(--glass)',
+            boxShadow: phase === 'listening' ? '0 0 0 1.5px var(--accent)' : phase === 'error' ? '0 0 0 1.5px var(--danger)' : 'var(--ring-glass)',
+            color: '#fff', fontFamily: 'var(--font-text)', fontSize: 18, fontWeight: 500, lineHeight: 1.45,
+            padding: '16px 18px', minHeight: 140
+          }
+        }),
+        phase === 'error' ? h('div', { key: 'err', role: 'alert', style: { display: 'flex', gap: 8, alignItems: 'flex-start', marginTop: 12, padding: '12px 14px', borderRadius: 'var(--radius-sm)', background: 'var(--danger-tint)', color: 'var(--danger)', fontSize: 14, lineHeight: 1.4 } }, [
+          React.cloneElement(AlertGlyph(18), { key: 'g' }),
+          h('span', { key: 't', style: { color: '#fff' } }, AI_ERRORS[err])
+        ]) : null,
+        !busy ? h('div', { key: 'ex', style: { marginTop: 22 } }, [
+          h(FieldLabel, { key: 'l' }, 'Ejemplos'),
+          h('div', { key: 'c', style: { display: 'flex', flexDirection: 'column', gap: 10 } }, AI_EXAMPLES.map(function (ex) {
+            return h('button', {
+              key: ex, onClick: function () { setText(ex); setErr(null); setPhase('idle'); },
+              style: { textAlign: 'left', padding: '12px 14px', border: 0, cursor: 'pointer', borderRadius: 'var(--radius-sm)', background: 'var(--glass)', boxShadow: 'var(--ring-glass)', color: 'var(--ink-80)', fontSize: 15, lineHeight: 1.4 }
+            }, '“' + ex + '”');
+          }))
+        ]) : null
+      ]),
+      h('div', { key: 'foot', style: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: '16px 24px calc(20px + var(--safe-bottom))', background: 'linear-gradient(to top, var(--bg-base) 60%, rgba(0,0,0,0))', zIndex: 5, display: 'flex', gap: 12, alignItems: 'center' } }, [
+        h('button', {
+          key: 'mic', onClick: toggleMic, disabled: phase === 'thinking',
+          'aria-label': phase === 'listening' ? 'Terminar dictado' : 'Dictar el partido',
+          style: Object.assign(roundBtn(), phase === 'listening' ? {
+            background: 'var(--accent)', color: 'var(--accent-ink)', boxShadow: 'none', animation: 'smAiPulse 1.2s ease-out infinite'
+          } : null)
+        }, phase === 'listening' ? StopGlyph(20) : MicGlyph(22)),
+        h(Button, {
+          key: 'go', size: 'lg', variant: 'primary', iconLeft: phase === 'thinking' ? null : SparklesGlyph(20),
+          disabled: !canGo, onClick: complete,
+          style: Object.assign({ flex: 1 }, phase === 'thinking' ? {
+            backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 50%, rgba(255,255,255,0) 100%)',
+            backgroundSize: '200% 100%', animation: 'smAiShimmer 1.2s linear infinite'
+          } : !canGo ? { opacity: 0.45 } : null)
+        }, phase === 'thinking' ? 'Interpretando…' : 'Completar')
+      ])
+    ]);
+  }
+
+  // Botón redondo de 56 px, a la altura del CTA grande del pie.
+  function roundBtn() {
+    return {
+      width: 56, height: 56, flex: 'none', borderRadius: '50%', border: 0, cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--glass-strong)', color: '#fff', boxShadow: 'var(--ring-glass)'
+    };
+  }
+  function aiParam() { try { return new URLSearchParams(location.search).get('ai'); } catch (e) { return null; } }
+
   function CreateMatch(props) {
     var DS = window.SportMatchDesignSystem_7eff40 || {};
     var FilterChip = DS.FilterChip, Input = DS.Input, Button = DS.Button,
@@ -101,8 +270,29 @@
     var setTime = function (hour, minute) {
       setForm(function (f) { return Object.assign({}, f, { hour: hour, minute: minute, time: pad2(hour) + ':' + pad2(minute) }); });
     };
+    var forcedAi = aiParam();
+    var ao = React.useState(['open', 'listening', 'thinking'].indexOf(forcedAi) >= 0); var aiOpen = ao[0], setAiOpen = ao[1];
+    // Lo que el asistente no entendió, y el paso al que volver (Revisión) después de completarlo.
+    var ms = React.useState({}); var aiMissing = ms[0], setAiMissing = ms[1];
+    var rt = React.useState(null); var returnTo = rt[0], setReturnTo = rt[1];
+    var aiDone = function (r) {
+      setForm(function (f) { return Object.assign({}, f, r.patch, { fromAi: true }); });
+      setAiMissing(r.missing); setAiOpen(false); setStep(STEPS.length - 1);
+    };
+    React.useEffect(function () { if (forcedAi === 'review') aiDone(draftToForm(mockDraft('Fútbol 5 el sábado a las 19, faltan 3, nivel intermedio'))); }, []);
+    var MISSING_STEP = { sport: 0, place: 1, when: 2 };
+    var firstMissing = ['sport', 'place', 'when'].find(function (k) { return aiMissing[k]; });
+    var fix = function (k) {
+      setAiMissing(function (m) { var n = Object.assign({}, m); delete n[k]; return n; });
+      setReturnTo(STEPS.length - 1); setStep(MISSING_STEP[k]);
+    };
     var last = step === STEPS.length - 1;
-    var next = function () { if (last) onPublish(form); else setStep(function (s) { return s + 1; }); };
+    var next = function () {
+      if (last && firstMissing) fix(firstMissing);
+      else if (last) onPublish(form);
+      else if (returnTo != null) { setStep(returnTo); setReturnTo(null); }
+      else setStep(function (s) { return s + 1; });
+    };
     var back = function () { if (step === 0) onClose(); else setStep(function (s) { return s - 1; }); };
 
     /* ---- horizontal scroller used by day / hour / minute ----
@@ -137,6 +327,13 @@
     }
 
     var bodyChildren = [h(Hint, { key: 'hint' }, 'Paso ' + (step + 1) + ' \u00B7 ' + STEPS[step])];
+
+    if (form.fromAi && last) {
+      bodyChildren.push(h('div', { key: 'aipill', style: { display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, padding: '6px 10px', borderRadius: 99, background: 'var(--accent-tint)', color: 'var(--accent)', fontSize: 13, fontWeight: 600 } }, [
+        React.cloneElement(SparklesGlyph(14), { key: 'g' }),
+        firstMissing ? 'Completá lo que falta' : 'Revisá antes de publicar'
+      ]));
+    }
 
     if (step === 0) {
       bodyChildren.push(h(Question, { key: 'q' }, '¿A qué vas a jugar?'));
@@ -246,8 +443,11 @@
         ])
       ]));
       bodyChildren.push(h('div', { key: 'sum', style: { display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 } }, [
-        h(Summary, { key: 's1', icon: 'map-pin', label: 'Lugar', value: form.place || 'River Courts' }),
-        h(Summary, { key: 's2', icon: 'calendar', label: 'Cuándo', value: form.day + ' \u00B7 ' + form.time }),
+        aiMissing.sport ? h(Summary, { key: 's0', icon: 'trophy', label: 'Deporte', value: 'Falta completar', missing: true, onClick: function () { fix('sport'); } }) : null,
+        aiMissing.place ? h(Summary, { key: 's1', icon: 'map-pin', label: 'Lugar', value: 'Falta completar', missing: true, onClick: function () { fix('place'); } })
+          : h(Summary, { key: 's1', icon: 'map-pin', label: 'Lugar', value: form.place || 'River Courts' }),
+        aiMissing.when ? h(Summary, { key: 's2', icon: 'calendar', label: 'Cuándo', value: 'Falta completar', missing: true, onClick: function () { fix('when'); } })
+          : h(Summary, { key: 's2', icon: 'calendar', label: 'Cuándo', value: form.day + ' \u00B7 ' + form.time }),
         h(Summary, { key: 's3', icon: 'users', label: 'Jugadores', value: form.players + ' \u00B7 ' + esLevel(form.level) }),
         h('div', { key: 'host', style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 'var(--radius-md)', background: 'var(--glass)', boxShadow: 'var(--ring-glass)' } }, [
           h(Avatar, { key: 'av', name: 'Alex Moreno', ring: 'accent' }),
@@ -269,18 +469,28 @@
       ]),
       // body
       h('div', { key: 'body', style: { position: 'absolute', top: 120, left: 0, right: 0, bottom: 120, overflowY: 'auto', padding: '20px 24px' } }, bodyChildren),
-      // footer CTA
-      h('div', { key: 'foot', style: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: '16px 24px calc(20px + var(--safe-bottom))', background: 'linear-gradient(to top, var(--bg-base) 60%, rgba(0,0,0,0))', zIndex: 5 } },
-        h(Button, { fullWidth: true, size: 'lg', variant: 'primary', iconRight: last ? 'check' : 'arrow-right', onClick: next }, last ? 'Publicar partido' : 'Continuar'))
+      // footer CTA; en el primer paso, al lado, el botón redondo que abre el asistente
+      h('div', { key: 'foot', style: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: '16px 24px calc(20px + var(--safe-bottom))', background: 'linear-gradient(to top, var(--bg-base) 60%, rgba(0,0,0,0))', zIndex: 5, display: 'flex', gap: 12, alignItems: 'center' } }, [
+        step === 0 ? h('button', {
+          key: 'ai', 'aria-label': 'Armar el partido con el asistente', title: 'Armar con el asistente', onClick: function () { setAiOpen(true); },
+          style: Object.assign(roundBtn(), { color: 'var(--accent)', boxShadow: 'var(--ring-glass), 0 0 18px rgba(78,168,255,0.25)' })
+        }, SparklesGlyph(24)) : null,
+        h(Button, { key: 'cta', fullWidth: true, size: 'lg', variant: 'primary', style: { flex: 1 },
+          iconRight: last && !firstMissing ? 'check' : 'arrow-right', onClick: next },
+          last ? (firstMissing ? 'Completar lo que falta' : 'Publicar partido') : returnTo != null ? 'Volver al resumen' : 'Continuar')
+      ]),
+      aiOpen ? h(AiScreen, { key: 'aiscr', onClose: function () { setAiOpen(false); }, onDone: aiDone }) : null
     ]);
   }
 
   function Summary(props) {
     var Icon = (window.SportMatchDesignSystem_7eff40 || {}).Icon;
-    return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 'var(--radius-md)', background: 'var(--glass)', boxShadow: 'var(--ring-glass)' } }, [
-      h(Icon, { key: 'i', name: props.icon, size: 20, color: 'var(--accent)' }),
+    // Con onClick es un botón: la fila que el asistente no completó lleva a su paso.
+    return h(props.onClick ? 'button' : 'div', { onClick: props.onClick, style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, width: '100%', boxSizing: 'border-box', border: 0, textAlign: 'left', cursor: props.onClick ? 'pointer' : 'default', borderRadius: 'var(--radius-md)', background: 'var(--glass)', boxShadow: props.missing ? '0 0 0 1px var(--warning)' : 'var(--ring-glass)' } }, [
+      h(Icon, { key: 'i', name: props.icon, size: 20, color: props.missing ? 'var(--warning)' : 'var(--accent)' }),
       h('span', { key: 'l', style: { flex: 1, color: 'var(--ink-46)', font: 'var(--text-caption)' } }, props.label),
-      h('span', { key: 'v', style: { color: '#fff', fontWeight: 700, fontFamily: 'var(--font-display)', fontSize: 16 } }, props.value)
+      h('span', { key: 'v', style: { color: props.missing ? 'var(--warning)' : '#fff', fontWeight: 700, fontFamily: 'var(--font-display)', fontSize: 16 } }, props.value),
+      props.onClick ? h(Icon, { key: 'c', name: 'chevron-right', size: 18, color: 'var(--ink-46)' }) : null
     ]);
   }
 
