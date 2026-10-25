@@ -274,7 +274,7 @@
     var ms = React.useState({}); var aiMissing = ms[0], setAiMissing = ms[1];
     var rt = React.useState(null); var returnTo = rt[0], setReturnTo = rt[1];
     var aiDone = function (r) {
-      setForm(function (f) { return Object.assign({}, f, r.patch, { fromAi: true }); });
+      setForm(function (f) { return Object.assign({}, f, r.patch); });
       setAiMissing(r.missing); setAiOpen(false); setStep(STEPS.length - 1);
     };
     React.useEffect(function () { if (forcedAi === 'review') aiDone(draftToForm(mockDraft('Fútbol 5 el sábado a las 19, nivel intermedio'))); }, []);
@@ -325,13 +325,6 @@
     }
 
     var bodyChildren = [h(Hint, { key: 'hint' }, 'Paso ' + (step + 1) + ' \u00B7 ' + STEPS[step])];
-
-    if (form.fromAi && last && firstMissing) {
-      bodyChildren.push(h('div', { key: 'aipill', style: { display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 14, padding: '6px 10px', borderRadius: 99, background: 'var(--accent-tint)', color: 'var(--accent)', fontSize: 13, fontWeight: 600 } }, [
-        React.cloneElement(SparklesGlyph(14), { key: 'g' }),
-        'Completá lo que falta'
-      ]));
-    }
 
     if (step === 0) {
       bodyChildren.push(h(Question, { key: 'q' }, '¿A qué vas a jugar?'));
