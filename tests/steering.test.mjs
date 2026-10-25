@@ -43,3 +43,18 @@ test('Gantt progress line sits on the earned-schedule date of the last steering'
   const esDate = new Date(Date.UTC(2026, 7, 6) + Math.round(es * 7) * 86400000).toISOString().slice(0, 10);
   assert.equal(date, esDate);
 });
+
+// La v5 calcula la línea en vivo (earnedDate en gantt.html) sobre la línea base del Steering 2:
+// con el avance y la fecha del corte del 15/10 tiene que dar la misma fecha que el steering.
+test('Gantt v5 computes the earned-schedule date live from the Steering 2 baseline', async () => {
+  const gantt = await readFile(new URL('../leadership/gantt.html', import.meta.url), 'utf8');
+  const evm = new Function(`return ${gantt.match(/progress: \{ evm: (\{[\s\S]*?\}) \}/)[1]}`)();
+  const d = STEERINGS.v2, m = compute(d);
+  near(evm.bacDev, m.bacDev);
+  near(evm.loeWeek, m.loeWeek);
+  near(evm.kc, m.kc);
+  m.pv.forEach((pv, i) => near(evm.pv[i], pv));
+  const fn = (name) => gantt.match(new RegExp(`function ${name}\\([\\s\\S]*?\\}(?=\\n)`))[0];
+  const earnedDate = new Function(`const DAY_MS = 86400000;\n${fn('parse')}\n${fn('days')}\n${fn('earnedDate')}\nreturn earnedDate;`)();
+  assert.equal(earnedDate(evm, d.avance.done[1] / d.devEffort, '2026-10-15'), '2026-10-17');
+});
