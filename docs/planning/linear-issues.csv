@@ -120,7 +120,7 @@ SPO-253,Done,completed,2,2026-10-01T21:33:09,2026-10-04T12:27:20,ipacheco
 SPO-254,Canceled,canceled,1,,,
 SPO-255,Canceled,canceled,1,,,
 SPO-256,Canceled,canceled,1,,,
-SPO-257,In Review,started,1,2026-10-25T13:30:43,,jrudolph
+SPO-257,Done,completed,1,2026-10-25T13:30:43,2026-10-25T14:30:50,jrudolph
 SPO-258,Done,completed,1,2026-10-08T23:31:16,2026-10-09T03:36:37,jfsiaba
 SPO-259,Done,completed,1,2026-10-22T13:54:55,2026-10-22T23:12:22,jrudolph
 SPO-260,Canceled,canceled,1,,,
@@ -133,11 +133,11 @@ SPO-266,Done,completed,1,2026-10-16T10:15:41,2026-10-16T18:52:35,ipacheco
 SPO-267,Done,completed,1,2026-10-08T21:03:38,2026-10-09T00:18:40,ipacheco
 SPO-268,Done,completed,1,2026-10-22T13:55:04,2026-10-22T23:02:59,jrudolph
 SPO-269,Done,completed,1,2026-10-16T10:23:33,2026-10-16T18:55:06,ipacheco
-SPO-270,In Review,started,2,2026-10-22T23:04:48,,ipacheco
-SPO-271,In Review,started,1,2026-10-25T14:05:14,,ipacheco
-SPO-272,Todo,unstarted,1,,,jrudolph
-SPO-273,Backlog,backlog,2,,,jrudolph
-SPO-274,In Review,started,1,2026-10-25T13:56:19,,ipacheco
+SPO-270,Done,completed,2,2026-10-22T23:04:48,2026-10-25T15:05:13,ipacheco
+SPO-271,Done,completed,1,2026-10-25T14:05:14,2026-10-25T20:04:22,ipacheco
+SPO-272,Done,completed,1,2026-10-25T21:25:05,2026-10-26T18:56:04,jrudolph
+SPO-273,Todo,unstarted,1,,,jrudolph
+SPO-274,Done,completed,1,2026-10-25T13:56:19,2026-10-25T15:07:34,ipacheco
 SPO-275,Done,completed,0,2026-10-02T00:59:42,2026-10-03T16:31:20,jfsiaba
 SPO-276,Done,completed,1,2026-10-06T15:48:01,2026-10-06T18:35:12,jrudolph
 SPO-277,Done,completed,1,2026-10-06T18:54:50,2026-10-06T19:21:27,jrudolph
@@ -150,12 +150,22 @@ SPO-283,Done,completed,1,2026-10-08T21:10:30,2026-10-09T00:20:35,ipacheco
 SPO-284,Done,completed,1,2026-10-13T21:52:43,2026-10-15T00:26:25,jfsiaba
 SPO-285,Done,completed,2,2026-10-16T20:22:22,2026-10-21T04:04:58,jfsiaba
 SPO-286,Done,completed,1,2026-10-16T18:55:51,2026-10-21T04:02:09,jfsiaba
-SPO-287,In Review,started,2,2026-10-23T21:59:21,,jfsiaba
-SPO-288,Todo,unstarted,2,,,ipacheco
-SPO-289,In Progress,started,2,2026-10-25T13:41:46,,jrudolph
+SPO-287,Done,completed,2,2026-10-23T21:59:21,2026-10-26T16:00:48,jfsiaba
+SPO-288,Done,completed,2,2026-10-26T01:55:32,2026-10-26T18:49:22,ipacheco
+SPO-289,Done,completed,2,2026-10-25T13:41:46,2026-10-25T21:30:07,jrudolph
 SPO-290,Done,completed,1,2026-10-22T13:55:10,2026-10-22T23:06:54,jrudolph
-SPO-291,Todo,unstarted,2,,,jfsiaba
-SPO-292,Todo,unstarted,2,,,jfsiaba
-SPO-293,Todo,unstarted,2,,,ipacheco
-SPO-294,Todo,unstarted,2,,,jrudolph
-SPO-295,Backlog,backlog,3,,,ipacheco
+SPO-291,Done,completed,2,2026-10-26T18:21:22,2026-10-26T19:00:58,jfsiaba
+SPO-292,Done,completed,2,2026-10-26T19:40:52,2026-10-29T15:08:31,jfsiaba
+SPO-293,Done,completed,2,2026-10-28T00:31:35,2026-10-28T10:10:29,ipacheco
+SPO-294,Done,completed,2,2026-10-28T20:57:23,2026-10-28T23:19:26,jrudolph
+SPO-295,Todo,unstarted,2,,,ipacheco
+SPO-296,Todo,unstarted,2,,,jrudolph
+SPO-297,Todo,unstarted,2,,,jrudolph
+SPO-298,Todo,unstarted,1,,,jfsiaba
+SPO-299,Todo,unstarted,1,,,jrudolph
+SPO-300,Backlog,backlog,2,,,jfsiaba
+SPO-301,Todo,unstarted,3,,,ipacheco
+SPO-302,Todo,unstarted,2,,,jfsiaba
+SPO-303,Todo,unstarted,1,,,jfsiaba
+SPO-304,Todo,unstarted,1,,,ipacheco
+SPO-305,Todo,unstarted,2,,,jfsiaba

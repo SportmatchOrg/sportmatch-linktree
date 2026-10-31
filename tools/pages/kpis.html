@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportMatch - KPIs</title>
+<link rel="icon" type="image/svg+xml" href="/assets/brand/logo-mark.svg">
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --panel: #ffffff;
+    --ink: #172033;
+    --muted: #667085;
+    --line: #d8e0ec;
+    --brand: #0270c2;
+    --shadow: 0 16px 36px rgba(22, 37, 67, 0.10);
+    --bar: #4c9be0;
+    --bar-last: #0270c2;
+    --empty: #e4e9f1;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      linear-gradient(180deg, #eef6ff 0, rgba(238, 246, 255, 0) 270px),
+      var(--bg);
+    color: var(--ink);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .page {
+    width: min(1080px, calc(100% - 36px));
+    margin: 0 auto;
+    padding: 34px 0 46px;
+  }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 { margin: 0; font-size: clamp(24px, 5.4vw, 32px); line-height: 1.08; }
+
+  .summary {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+    max-width: 720px;
+  }
+
+  h2 {
+    margin: 30px 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .ranges {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--panel);
+  }
+  .ranges button {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .ranges button[aria-pressed="true"] { background: #e8f2fc; color: var(--brand); }
+  .ranges button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+  #dashboard[aria-busy="true"] .card { opacity: .55; }
+
+  /* `start`: abrir la (i) de una tarjeta no estira a las vecinas de la fila. */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); align-items: start; gap: 14px; }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    transition: opacity .14s;
+  }
+
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+
+  .card-name { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.25; }
+
+  .info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--panel);
+    color: var(--muted);
+    font: 700 12px/1 Georgia, serif;
+    font-style: italic;
+    cursor: pointer;
+    transition: border-color .14s, background .14s, color .14s;
+  }
+  .info:hover, .info[aria-expanded="true"] { border-color: #a9c6e6; background: #f3f8ff; color: var(--brand); }
+  .info:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  .value {
+    margin: 4px 0 0;
+    font-size: 28px;
+    font-weight: 750;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+  .value small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 4px; }
+
+  .delta { margin: 0; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+  .explain {
+    margin: 4px 0 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfdff;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .explain dl { display: grid; gap: 8px; margin: 0; }
+  .explain dt { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+  .explain dd { margin: 2px 0 0; }
+
+  /* Barras desde cero: la altura es el valor del período. Un período sin datos
+     queda como un tope gris bajo, no desaparece. */
+  .chart { display: flex; align-items: flex-end; gap: 2px; height: 64px; margin-top: auto; padding-top: 10px; }
+  .bar {
+    flex: 1;
+    min-width: 2px;
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--bar);
+  }
+  .bar:last-child { background: var(--bar-last); }
+  .bar[data-empty] { height: 4px; background: var(--empty); }
+  .bar:hover, .bar:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  .axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .note {
+    margin: 30px 0 0;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfdff;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .note strong { color: var(--ink); }
+  .note a { color: var(--brand); }
+
+  .error {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid #f0c2c2;
+    border-radius: 8px;
+    background: #fdf4f4;
+    color: #b32f2f;
+    font-size: 14px;
+  }
+
+  .tooltip {
+    position: fixed;
+    z-index: 10;
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 10px));
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+  <p class="eyebrow">SportMatch</p>
+  <h1>KPIs</h1>
+  <p class="summary">
+    Los 10 KPIs que SportMatch reporta todos los días al dashboard de la cátedra,
+    agrupados por día, semana o mes. Tocá la <strong>i</strong> de cada tarjeta para
+    ver cómo se calcula.
+  </p>
+
+  <div class="toolbar">
+    <div class="ranges" role="group" aria-label="Granularidad">
+      <button type="button" data-granularity="day" aria-pressed="true">Día</button>
+      <button type="button" data-granularity="week" aria-pressed="false">Semana</button>
+      <button type="button" data-granularity="month" aria-pressed="false">Mes</button>
+    </div>
+    <span id="updated">Cargando…</span>
+  </div>
+
+  <div id="dashboard" aria-live="polite" aria-busy="true"></div>
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <p class="note">
+    <strong>De dónde salen.</strong> El workflow <em>Reporte de KPIs</em> de
+    <code>agents-copilot</code> corre todos los días a la 01:15 de Buenos Aires: el back
+    calcula los 7 de negocio (<code>POST /kpis/snapshots</code>) y el workflow mide los 3
+    técnicos. Se publican los 10 juntos o ninguno. Los de negocio ya son ventanas móviles
+    de 30 días, así que el valor de un día resume el último mes.
+    <a href="https://lab4-kpis.github.io/kpis/#/cumplimiento" target="_blank" rel="noopener noreferrer">Ver cumplimiento en la cátedra</a>
+  </p>
+</main>
+
+<script>
+  const API_URL = "/api/kpis";
+
+  const dashboard = document.getElementById("dashboard");
+  const updated = document.getElementById("updated");
+  const tooltip = document.getElementById("tooltip");
+  const buttons = document.querySelectorAll(".ranges button");
+
+  const SECTIONS = [
+    ["business", "Negocio"],
+    ["technical", "Técnicos"],
+    ["health", "Salud"],
+  ];
+
+  const PERIOD = {
+    day: { name: "día", previous: "el día anterior", label: { weekday: "short", day: "2-digit", month: "2-digit" } },
+    week: { name: "semana", previous: "la semana anterior", label: { day: "2-digit", month: "2-digit" } },
+    month: { name: "mes", previous: "el mes anterior", label: { month: "short", year: "numeric" } },
+  };
+
+  const AGGREGATION = {
+    avg: "promedio de los valores diarios",
+    sum: "suma de los valores diarios",
+    min: "mínimo de los valores diarios",
+    max: "máximo de los valores diarios",
+    last: "último valor diario",
+    count: "cantidad de días reportados",
+  };
+
+  // La unidad "1" es una proporción (api_reachable): se muestra como porcentaje.
+  function unitOf(kpi) {
+    if (kpi.unit === "1") return { factor: 100, suffix: "%" };
+    if (kpi.unit === "{match}/{user}") return { factor: 1, suffix: "partidos/usuario" };
+    return { factor: 1, suffix: kpi.unit.replace(/[{}]/g, "") };
+  }
+
+  function number(value, digits = 2) {
+    return value.toLocaleString("es-AR", { maximumFractionDigits: digits });
+  }
+
+  function formatted(kpi, value) {
+    const unit = unitOf(kpi);
+    return `${number(value * unit.factor)} ${unit.suffix}`;
+  }
+
+  function periodLabel(start, granularity) {
+    // Fechas calendario: se leen en UTC para que no corran un día.
+    const text = new Date(`${start}T00:00:00Z`).toLocaleDateString("es-AR", { ...PERIOD[granularity].label, timeZone: "UTC" });
+    return granularity === "week" ? `semana del ${text}` : text;
+  }
+
+  function describeBucket(kpi, bucket, granularity) {
+    const when = periodLabel(bucket.start, granularity);
+    if (bucket.value === null) return `${when} · sin datos`;
+    const days = granularity === "day" ? "" : ` · ${bucket.samples} ${bucket.samples === 1 ? "día" : "días"}`;
+    return `${when} · ${formatted(kpi, bucket.value)}${days}`;
+  }
+
+  function buildExplain(kpi, granularity, id) {
+    const box = document.createElement("div");
+    box.className = "explain";
+    box.id = id;
+    box.hidden = true;
+
+    const list = document.createElement("dl");
+    const rows = [
+      ["Cómo se calcula", kpi.description],
+      [`Por ${PERIOD[granularity].name}`, granularity === "day"
+        ? "El valor que se reportó para ese día."
+        : `El ${AGGREGATION[kpi.aggregation]} del período (agregación "${kpi.aggregation}" del catálogo).`],
+      ["Fuente", kpi.source],
+      ["Por qué importa", kpi.justification],
+    ];
+    for (const [term, detail] of rows) {
+      if (!detail) continue;
+      const dt = document.createElement("dt");
+      dt.textContent = term;
+      const dd = document.createElement("dd");
+      dd.textContent = detail;
+      list.append(dt, dd);
+    }
+    box.append(list);
+    return box;
+  }
+
+  function buildCard(kpi, granularity) {
+    const withData = kpi.buckets.filter(bucket => bucket.value !== null);
+    const latest = withData.at(-1);
+    const previous = withData.at(-2);
+    const unit = unitOf(kpi);
+
+    const card = document.createElement("article");
+    card.className = "card";
+
+    const head = document.createElement("div");
+    head.className = "card-head";
+    const name = document.createElement("h3");
+    name.className = "card-name";
+    name.textContent = kpi.name;
+    const info = document.createElement("button");
+    info.type = "button";
+    info.className = "info";
+    info.textContent = "i";
+    info.setAttribute("aria-label", `Cómo se calcula ${kpi.name}`);
+    info.setAttribute("aria-expanded", "false");
+    info.setAttribute("aria-controls", `explain-${kpi.id}`);
+    head.append(name, info);
+
+    const explain = buildExplain(kpi, granularity, `explain-${kpi.id}`);
+    info.addEventListener("click", () => {
+      explain.hidden = !explain.hidden;
+      info.setAttribute("aria-expanded", String(!explain.hidden));
+    });
+
+    const value = document.createElement("p");
+    value.className = "value";
+    const delta = document.createElement("p");
+    delta.className = "delta";
+    if (latest) {
+      value.textContent = number(latest.value * unit.factor);
+      const suffix = document.createElement("small");
+      suffix.textContent = unit.suffix;
+      value.append(suffix);
+      // Sin color de "bueno/malo": para algunos KPIs subir es mejor y para otros peor.
+      const change = previous ? (latest.value - previous.value) * unit.factor : null;
+      delta.textContent = change === null
+        ? periodLabel(latest.start, granularity)
+        : `${change > 0 ? "▲ +" : change < 0 ? "▼ " : "= "}${number(change)} vs ${PERIOD[granularity].previous} · ${periodLabel(latest.start, granularity)}`;
+    } else {
+      value.textContent = "—";
+      delta.textContent = "Sin datos en este rango";
+    }
+
+    const chart = document.createElement("div");
+    chart.className = "chart";
+    const max = Math.max(...withData.map(bucket => bucket.value), 0);
+    for (const bucket of kpi.buckets) {
+      const bar = document.createElement("span");
+      bar.className = "bar";
+      bar.tabIndex = 0;
+      bar.setAttribute("aria-label", describeBucket(kpi, bucket, granularity));
+      if (bucket.value === null) bar.dataset.empty = "";
+      else bar.style.height = `${max > 0 ? (bucket.value / max) * 100 : 0}%`;
+      chart.append(bar);
+    }
+
+    const axis = document.createElement("div");
+    axis.className = "axis";
+    const from = document.createElement("span");
+    from.textContent = periodLabel(kpi.buckets[0].start, granularity);
+    const top = document.createElement("span");
+    top.textContent = withData.length ? `máx ${formatted(kpi, max)}` : "";
+    const to = document.createElement("span");
+    to.textContent = periodLabel(kpi.buckets.at(-1).start, granularity);
+    axis.append(from, top, to);
+
+    card.append(head, value, delta, explain, chart, axis);
+    return card;
+  }
+
+  function render(payload) {
+    const blocks = [];
+    for (const [kind, title] of SECTIONS) {
+      const kpis = payload.kpis.filter(kpi => kpi.kind === kind);
+      if (!kpis.length) continue;
+      const heading = document.createElement("h2");
+      heading.textContent = `${title} · ${kpis.length}`;
+      const cards = document.createElement("div");
+      cards.className = "cards";
+      cards.append(...kpis.map(kpi => buildCard(kpi, payload.granularity)));
+      blocks.push(heading, cards);
+    }
+    dashboard.replaceChildren(...blocks);
+    updated.textContent = payload.reportedAt
+      ? `Último envío: ${new Date(payload.reportedAt).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}`
+      : "Todavía no hay envíos en este rango";
+  }
+
+  function showTooltip(event) {
+    const bar = event.target.closest(".bar");
+    if (!bar) return;
+    const box = bar.getBoundingClientRect();
+    tooltip.textContent = bar.getAttribute("aria-label");
+    tooltip.style.left = `${Math.min(Math.max(box.left + box.width / 2, 120), window.innerWidth - 120)}px`;
+    tooltip.style.top = `${box.top}px`;
+    tooltip.hidden = false;
+  }
+
+  function hideTooltip() {
+    tooltip.hidden = true;
+  }
+
+  async function load(granularity) {
+    buttons.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.granularity === granularity)));
+    dashboard.setAttribute("aria-busy", "true");
+    try {
+      const response = await fetch(`${API_URL}?granularity=${granularity}`);
+      if (response.status === 503) throw new Error("el dashboard todavía no está configurado");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      render(await response.json());
+    } catch (error) {
+      const box = document.createElement("p");
+      box.className = "error";
+      box.textContent = `No se pudieron cargar los KPIs: ${error.message}`;
+      dashboard.replaceChildren(box);
+      updated.textContent = "";
+    } finally {
+      dashboard.setAttribute("aria-busy", "false");
+    }
+  }
+
+  buttons.forEach(button => button.addEventListener("click", () => load(button.dataset.granularity)));
+  dashboard.addEventListener("mouseover", showTooltip);
+  dashboard.addEventListener("focusin", showTooltip);
+  dashboard.addEventListener("mouseout", hideTooltip);
+  dashboard.addEventListener("focusout", hideTooltip);
+  load("day");
+</script>
+
+</body>
+</html>

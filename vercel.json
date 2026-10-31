@@ -15,6 +15,7 @@
     { "src": "/tools/?", "dest": "/tools/index.html" },
     { "src": "/home/?", "dest": "/tools/pages/home.html" },
     { "src": "/status/?", "dest": "/tools/pages/status.html" },
+    { "src": "/kpis/?", "dest": "/tools/pages/kpis.html" },
     { "src": "/", "dest": "/index.html" }
   ]
 }

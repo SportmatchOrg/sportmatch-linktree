@@ -191,3 +191,14 @@ SPO-292,14.1.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-292/foto-del-p
 SPO-293,15.1.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-293/post-aimatch-draft-texto-libre-borrador-de-partido
 SPO-294,15.1.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-294/crear-partido-por-texto-o-voz-en-el-wizard
 SPO-295,15.2.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-295/generar-foto-de-perfil-o-de-partido-con-ia
+SPO-296,,si,https://linear.app/sportmatch-dirproy/issue/SPO-296/deportes-y-partidos-con-tanstack-query-precarga-al-entrar-a-la-app
+SPO-297,,si,https://linear.app/sportmatch-dirproy/issue/SPO-297/notificaciones-e-invitaciones-con-tanstack-query
+SPO-298,7.1.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-298/bug-15-mapa-los-filtros-en-una-sola-fila-con-scroll-horizontal
+SPO-299,6.2.1,si,https://linear.app/sportmatch-dirproy/issue/SPO-299/bug-16-horario-el-desplegable-de-hora-y-minutos-con-el-estilo-del
+SPO-300,7.2.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-300/bug-14-skeletons-en-lugar-del-spinner-generico
+SPO-300,6.3.4,no,https://linear.app/sportmatch-dirproy/issue/SPO-300/bug-14-skeletons-en-lugar-del-spinner-generico
+SPO-301,4.1.4,si,https://linear.app/sportmatch-dirproy/issue/SPO-301/bug-13-sesion-en-cookie-httponly-en-lugar-de-token-en-el-navegador
+SPO-302,7.3.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-302/mapa-agrupar-los-pines-cercanos-en-un-contador-al-alejar-el-zoom
+SPO-303,6.3.4,si,https://linear.app/sportmatch-dirproy/issue/SPO-303/tus-partidos-la-card-se-sale-de-la-pantalla-en-mobile-y-la-foto-tapa
+SPO-304,15.1.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-304/asistente-layout-de-desktop-y-ejemplos-que-arman-el-partido-completo
+SPO-305,7.3.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-305/mapa-en-mobile-que-ocupe-toda-la-pantalla-detras-de-la-barra-de

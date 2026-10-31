@@ -80,6 +80,18 @@ every 30 minutes:
 `STATUS_CRON_SECRET` must be set in the Vercel project; without it the endpoint
 answers 503 and records nothing.
 
+## KPIs
+
+`/kpis` shows the 10 KPIs that the `kpi-report` workflow in `agents-copilot`
+publishes every day to the course dashboard (lab4-kpis, Supabase), aggregated by
+day, week or month. `api/kpis.js` reads them server-side, so the project key never
+reaches the browser. Set these in the Vercel project, with the same values as the
+`prod` environment of `agents-copilot`; without them the page answers 503:
+
+- `KPI_SUPABASE_URL`
+- `KPI_SUPABASE_PUBLISHABLE_KEY`
+- `KPI_PROJECT_KEY` (the `prod` key: each key only reads its own environment)
+
 ## Source-of-truth rules
 
 - Edit prototype code only under `prototype/sportmatch/`.
