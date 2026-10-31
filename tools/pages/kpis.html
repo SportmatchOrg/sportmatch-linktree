@@ -99,7 +99,6 @@
 
   #dashboard[aria-busy="true"] .card { opacity: .55; }
 
-  /* `start`: abrir la (i) de una tarjeta no estira a las vecinas de la fila. */
   .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); align-items: start; gap: 14px; }
 
   .card {
@@ -114,7 +113,7 @@
     transition: opacity .14s;
   }
 
-  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .card-head { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 
   .card-name { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.25; }
 
@@ -134,7 +133,7 @@
     cursor: pointer;
     transition: border-color .14s, background .14s, color .14s;
   }
-  .info:hover, .info[aria-expanded="true"] { border-color: #a9c6e6; background: #f3f8ff; color: var(--brand); }
+  .info:hover, .info:focus-visible { border-color: #a9c6e6; background: #f3f8ff; color: var(--brand); }
   .info:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
   .value {
@@ -148,8 +147,15 @@
 
   .delta { margin: 0; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 
+  /* Tooltip de la (i): aparece con hover o foco de teclado, sin click. */
   .explain {
-    margin: 4px 0 2px;
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 5;
+    width: min(320px, calc(100vw - 32px));
+    box-shadow: var(--shadow);
     padding: 12px 14px;
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -157,6 +163,7 @@
     font-size: 13px;
     line-height: 1.5;
   }
+  .info:hover + .explain, .info:focus-visible + .explain { display: block; }
   .explain dl { display: grid; gap: 8px; margin: 0; }
   .explain dt { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
   .explain dd { margin: 2px 0 0; }
@@ -228,7 +235,7 @@
   <h1>KPIs</h1>
   <p class="summary">
     Los 10 KPIs que SportMatch reporta todos los días al dashboard de la cátedra,
-    agrupados por día, semana o mes. Tocá la <strong>i</strong> de cada tarjeta para
+    agrupados por día, semana o mes. Pasá el mouse por la <strong>i</strong> de cada tarjeta para
     ver cómo se calcula.
   </p>
 
@@ -316,7 +323,7 @@
     const box = document.createElement("div");
     box.className = "explain";
     box.id = id;
-    box.hidden = true;
+    box.setAttribute("role", "tooltip");
 
     const list = document.createElement("dl");
     const rows = [
@@ -358,15 +365,8 @@
     info.className = "info";
     info.textContent = "i";
     info.setAttribute("aria-label", `Cómo se calcula ${kpi.name}`);
-    info.setAttribute("aria-expanded", "false");
-    info.setAttribute("aria-controls", `explain-${kpi.id}`);
-    head.append(name, info);
-
-    const explain = buildExplain(kpi, granularity, `explain-${kpi.id}`);
-    info.addEventListener("click", () => {
-      explain.hidden = !explain.hidden;
-      info.setAttribute("aria-expanded", String(!explain.hidden));
-    });
+    info.setAttribute("aria-describedby", `explain-${kpi.id}`);
+    head.append(name, info, buildExplain(kpi, granularity, `explain-${kpi.id}`));
 
     const value = document.createElement("p");
     value.className = "value";
@@ -410,7 +410,7 @@
     to.textContent = periodLabel(kpi.buckets.at(-1).start, granularity);
     axis.append(from, top, to);
 
-    card.append(head, value, delta, explain, chart, axis);
+    card.append(head, value, delta, chart, axis);
     return card;
   }
 

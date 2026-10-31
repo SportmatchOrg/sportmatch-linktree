@@ -146,7 +146,7 @@ test('the KPI page parses, offers every granularity and never sees the project k
   for (const granularity of Object.keys(testing.GRANULARITIES)) {
     assert.match(page, new RegExp(`data-granularity="${granularity}"`));
   }
-  assert.match(page, /aria-expanded/);
+  assert.match(page, /aria-describedby/);
   assert.doesNotMatch(page, /X-Project-Key|kpi_[A-Za-z0-9]{16,}|supabase\.co/);
 });
 
