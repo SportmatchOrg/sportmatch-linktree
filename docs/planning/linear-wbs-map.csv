@@ -202,3 +202,6 @@ SPO-302,7.3.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-302/mapa-agrupa
 SPO-303,6.3.4,si,https://linear.app/sportmatch-dirproy/issue/SPO-303/tus-partidos-la-card-se-sale-de-la-pantalla-en-mobile-y-la-foto-tapa
 SPO-304,15.1.3,si,https://linear.app/sportmatch-dirproy/issue/SPO-304/asistente-layout-de-desktop-y-ejemplos-que-arman-el-partido-completo
 SPO-305,7.3.2,si,https://linear.app/sportmatch-dirproy/issue/SPO-305/mapa-en-mobile-que-ocupe-toda-la-pantalla-detras-de-la-barra-de
+SPO-306,7.1.3,no,https://linear.app/sportmatch-dirproy/issue/SPO-306/bug-17-mapa-y-descubrir-tardan-2-s-el-puntaje-de-los-organizadores-se
+SPO-306,5.1.4,no,https://linear.app/sportmatch-dirproy/issue/SPO-306/bug-17-mapa-y-descubrir-tardan-2-s-el-puntaje-de-los-organizadores-se
+SPO-307,7.1.1,no,https://linear.app/sportmatch-dirproy/issue/SPO-307/bug-18-get-matches-trae-todos-los-partidos-del-pais-paginar-filtrar

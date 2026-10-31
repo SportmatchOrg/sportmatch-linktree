@@ -17,3 +17,4 @@ neon.ts
 *.py
 
 bookmarks.html
+outputs/seed-load
