@@ -83,12 +83,12 @@
 | 6.5.3 | Aceptación de invitación | 3.00 | 0.00 | Rudolph | 08/10 | 29/10 | ⬜ |
 | 10.1.1 | Manual de uso y descripción de funcionalidades | 6.00 | 15.29 | Siaba | 22/10 | 29/10 | ⬜ |
 | 10.2.2 | Documentación de APIs | 1.50 | 5.40 | Siaba | 15/10 | 22/10 | ⬜ |
-| 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Rudolph | 22/10 | 29/10 | ⬜ |
+| 11.1.4 | Job de recordatorio pre-partido | 3.12 | 3.78 | Rudolph | 15/10 | 29/10 | ⬜ |
 | 12.1.1 | Modelo de reporte | 2.35 | 5.84 | Siaba | 08/10 | 22/10 | ⬜ |
 | 12.1.2 | Endpoint de creación de reporte | 1.63 | 5.84 | Siaba | 08/10 | 22/10 | ⬜ |
-| 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Pache | 29/10 | 05/11 | ⬜ |
-| 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Pache | 22/10 | 29/10 | ⬜ |
-| 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Rudolph | 29/10 | 05/11 | ⬜ |
+| 12.1.3 | Interfaz de reporte | 3.00 | 8.10 | Pache | 15/10 | 05/11 | ⬜ |
+| 12.2.1 | Panel de revisión de reportes | 6.27 | 5.84 | Pache | 15/10 | 29/10 | ⬜ |
+| 12.2.2 | Suspensión de usuario | 4.03 | 5.84 | Rudolph | 22/10 | 05/11 | ⬜ |
 | 12.2.3 | Historial de moderación | 3.12 | 6.75 | Siaba | 29/10 | 05/11 | ⬜ |
 
 ## Calendario semana a semana
