@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { generate, toSql } from '../scripts/seed-load.mjs';
+import { CITIES, generate, onLand, toSql } from '../scripts/seed-load.mjs';
 
 const HOUR = 3_600_000;
 const now = Date.UTC(2026, 9, 31, 15);
@@ -46,11 +46,21 @@ test('quien faltó no da ni recibe calificaciones en ese partido', () => {
   }
 });
 
-test('coordenadas dentro de Argentina y nunca nulas', () => {
+test('coordenadas dentro de Argentina, nunca nulas y en tierra firme según la máscara', () => {
+  const cities = new Map(CITIES.map((c) => [c.name, c]));
   for (const m of d.matches) {
     assert.ok(m.latitude > -55.2 && m.latitude < -21.7, `lat ${m.latitude}`);
     assert.ok(m.longitude > -73.6 && m.longitude < -53.5, `lng ${m.longitude}`);
+    const c = cities.get(m.cityName);
+    const x = (m.longitude - c.lng) * 111 * Math.cos((c.lat * Math.PI) / 180), y = (m.latitude - c.lat) * 111;
+    assert.ok(onLand(c, x, y), `agua en ${m.cityName} ${m.latitude},${m.longitude}`);
   }
+});
+
+test('la máscara marca agua en el Río de la Plata y tierra en el Obelisco', () => {
+  const caba = CITIES.find((c) => c.name === 'CABA');
+  assert.ok(onLand(caba, 0, 0));
+  assert.ok(!onLand(caba, 8, 3)); // ~8 km al este del Obelisco: en el río
 });
 
 test('usuarios: emails únicos con dominios reales, marca seed_ y alta antes de su primera aparición', () => {

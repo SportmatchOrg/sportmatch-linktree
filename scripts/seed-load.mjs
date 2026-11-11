@@ -5,64 +5,88 @@
 //
 // Solo genera outputs/seed-load/load.sql e imprime conteos (dry run). No se conecta a ninguna base.
 // REGLA DURA: no toca el repo sportmatch. El schema está copiado a mano de origin/dev.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 
 /** Última migración de sportmatch (origin/dev) contra la que se escribió este script. */
-export const SCHEMA_MIGRATION = '20261026184358_add_ai_usage';
+export const SCHEMA_MIGRATION = '20261101144210_add_moderation_actions';
 
 const MIN = 60_000;
 const HOUR = 60 * MIN;
 const DAY = 24 * HOUR;
 const AR_OFFSET = 3 * HOUR; // Argentina = UTC-3, sin horario de verano
 
-// [nombre, lat, lng, peso (miles de hab.), costa ('E' | 'S' | null), localidades que se muestran en User.city]
-const CITIES = [
-  ['CABA', -34.6037, -58.3816, 3100, null, ['CABA']],
-  ['AMBA Norte', -34.4708, -58.5286, 1500, null, ['San Isidro', 'Vicente López', 'Tigre', 'San Fernando', 'Pilar']],
-  ['AMBA Oeste', -34.6534, -58.6198, 2000, null, ['Morón', 'Ituzaingó', 'Castelar', 'Haedo', 'Merlo', 'Ramos Mejía']],
-  ['AMBA Sur', -34.7609, -58.4063, 2000, null, ['Lomas de Zamora', 'Banfield', 'Lanús', 'Quilmes', 'Adrogué', 'Avellaneda']],
-  ['La Plata', -34.9214, -57.9545, 900, null],
-  ['Córdoba', -31.4201, -64.1888, 1600, null],
-  ['Rosario', -32.9442, -60.6505, 1350, null],
-  ['Mendoza', -32.8895, -68.8458, 1100, null],
-  ['San Miguel de Tucumán', -26.8083, -65.2176, 900, null],
-  ['Mar del Plata', -38.0055, -57.5426, 650, 'E'],
-  ['Salta', -24.7821, -65.4232, 620, null],
-  ['Santa Fe', -31.6333, -60.7, 530, null],
-  ['San Juan', -31.5375, -68.5364, 500, null],
-  ['Resistencia', -27.4606, -58.9839, 400, null],
-  ['Santiago del Estero', -27.7951, -64.2615, 400, null],
-  ['Neuquén', -38.9516, -68.0591, 380, null],
-  ['Corrientes', -27.4692, -58.8306, 380, null],
-  ['Posadas', -27.3671, -55.8961, 360, null],
-  ['San Salvador de Jujuy', -24.1858, -65.2995, 330, null],
-  ['Bahía Blanca', -38.7196, -62.2724, 300, null],
-  ['Paraná', -31.7333, -60.5297, 270, null],
-  ['Formosa', -26.1775, -58.1781, 240, null],
-  ['San Luis', -33.3017, -66.3378, 200, null],
-  ['La Rioja', -29.4131, -66.8558, 200, null],
-  ['Catamarca', -28.4696, -65.7795, 200, null],
-  ['Comodoro Rivadavia', -45.8641, -67.4966, 180, 'E'],
-  ['Río Cuarto', -33.1232, -64.3493, 170, null],
-  ['Concordia', -31.3929, -58.0209, 170, null],
-  ['San Carlos de Bariloche', -41.1335, -71.3103, 135, null],
-  ['San Nicolás', -33.3303, -60.2269, 140, null],
-  ['Tandil', -37.3217, -59.1332, 130, null],
-  ['San Rafael', -34.6177, -68.3301, 120, null],
-  ['Santa Rosa', -36.6167, -64.2833, 120, null],
-  ['Puerto Madryn', -42.7692, -65.0385, 100, 'E'],
-  ['Trelew', -43.249, -65.3051, 100, null],
-  ['Río Gallegos', -51.623, -69.2168, 100, 'E'],
-  ['Rafaela', -31.2503, -61.4867, 100, null],
-  ['Pergamino', -33.8895, -60.5736, 100, null],
-  ['Junín', -34.5856, -60.9589, 95, null],
-  ['Villa María', -32.4075, -63.2402, 90, null],
-  ['Olavarría', -36.8927, -60.3225, 90, null],
-  ['Ushuaia', -54.8019, -68.303, 80, 'S'],
-  ['Villa Carlos Paz', -31.4241, -64.4978, 70, null],
-].map(([name, lat, lng, weight, coast, towns]) => ({ name, lat, lng, weight, coast, towns: towns ?? [name] }));
+// [nombre, lat, lng, peso (miles de hab.), localidades que se muestran en User.city]
+export const CITIES = [
+  ['CABA', -34.6037, -58.3816, 3100, ['CABA']],
+  ['AMBA Norte', -34.4708, -58.5286, 1500, ['San Isidro', 'Vicente López', 'Tigre', 'San Fernando', 'Pilar']],
+  ['AMBA Oeste', -34.6534, -58.6198, 2000, ['Morón', 'Ituzaingó', 'Castelar', 'Haedo', 'Merlo', 'Ramos Mejía']],
+  ['AMBA Sur', -34.7609, -58.4063, 2000, ['Lomas de Zamora', 'Banfield', 'Lanús', 'Quilmes', 'Adrogué', 'Avellaneda']],
+  ['La Plata', -34.9214, -57.9545, 900],
+  ['Córdoba', -31.4201, -64.1888, 1600],
+  ['Rosario', -32.9442, -60.6505, 1350],
+  ['Mendoza', -32.8895, -68.8458, 1100],
+  ['San Miguel de Tucumán', -26.8083, -65.2176, 900],
+  ['Mar del Plata', -38.0055, -57.5426, 650],
+  ['Salta', -24.7821, -65.4232, 620],
+  ['Santa Fe', -31.6333, -60.7, 530],
+  ['San Juan', -31.5375, -68.5364, 500],
+  ['Resistencia', -27.4606, -58.9839, 400],
+  ['Santiago del Estero', -27.7951, -64.2615, 400],
+  ['Neuquén', -38.9516, -68.0591, 380],
+  ['Corrientes', -27.4692, -58.8306, 380],
+  ['Posadas', -27.3671, -55.8961, 360],
+  ['San Salvador de Jujuy', -24.1858, -65.2995, 330],
+  ['Bahía Blanca', -38.7196, -62.2724, 300],
+  ['Paraná', -31.7333, -60.5297, 270],
+  ['Formosa', -26.1775, -58.1781, 240],
+  ['San Luis', -33.3017, -66.3378, 200],
+  ['La Rioja', -29.4131, -66.8558, 200],
+  ['Catamarca', -28.4696, -65.7795, 200],
+  ['Comodoro Rivadavia', -45.8641, -67.4966, 180],
+  ['Río Cuarto', -33.1232, -64.3493, 170],
+  ['Concordia', -31.3929, -58.0209, 170],
+  ['San Carlos de Bariloche', -41.1335, -71.3103, 135],
+  ['San Nicolás', -33.3303, -60.2269, 140],
+  ['Tandil', -37.3217, -59.1332, 130],
+  ['San Rafael', -34.6177, -68.3301, 120],
+  ['Santa Rosa', -36.6167, -64.2833, 120],
+  ['Puerto Madryn', -42.7692, -65.0385, 100],
+  ['Trelew', -43.249, -65.3051, 100],
+  ['Río Gallegos', -51.623, -69.2168, 100],
+  ['Rafaela', -31.2503, -61.4867, 100],
+  ['Pergamino', -33.8895, -60.5736, 100],
+  ['Junín', -34.5856, -60.9589, 95],
+  ['Villa María', -32.4075, -63.2402, 90],
+  ['Olavarría', -36.8927, -60.3225, 90],
+  ['Ushuaia', -54.8019, -68.303, 80],
+  ['Villa Carlos Paz', -31.4241, -64.4978, 70],
+].map(([name, lat, lng, weight, towns]) => ({ name, lat, lng, weight, towns: towns ?? [name] }));
+
+/** σ del jitter en km: 6 en ciudades de más de 1M de habitantes, 3 en el resto. */
+export const sigmaKm = (city) => (city.weight >= 1000 ? 6 : 3);
+
+// Máscara de tierra firme por ciudad (grilla de MASK_CELL_KM sobre ±3σ), armada con
+// scripts/seed-land-mask.mjs a partir de OSM. Fuera de la ventana cuenta como agua.
+export const MASK_FILE = new URL('./seed-land-mask.json', import.meta.url);
+export const MASK_CELL_KM = 0.2;
+export const maskHalfKm = (city) => 3 * sigmaKm(city);
+let landMask;
+
+/** ¿El punto a (x, y) km del centro de la ciudad (x al este, y al norte) es tierra firme? */
+export function onLand(city, x, y) {
+  landMask ??= JSON.parse(readFileSync(MASK_FILE, 'utf8'));
+  const m = landMask.cities[city.name];
+  if (!m || m.half !== maskHalfKm(city) || landMask.cellKm !== MASK_CELL_KM) {
+    throw new Error(`Máscara desactualizada para ${city.name}: correr node scripts/seed-land-mask.mjs`);
+  }
+  m.bits ??= Buffer.from(m.land, 'base64');
+  const col = Math.floor((x + m.half) / MASK_CELL_KM), row = Math.floor((y + m.half) / MASK_CELL_KM);
+  if (col < 0 || row < 0 || col >= m.n || row >= m.n) return false;
+  const i = row * m.n + col;
+  return (m.bits[i >> 3] >> (i & 7)) & 1;
+}
 
 // [nombre en la tabla sports, peso, cupos posibles (el organizador no ocupa cupo)]
 const SPORTS = [
@@ -240,12 +264,15 @@ export function generate({ seed = 42, users: nUsers = 2000, matches: nMatches = 
     const level = rand() < 0.7 ? organizer.level
       : LEVELS[Math.min(2, Math.max(0, levelIdx + (rand() < 0.5 ? -1 : 1)))];
 
-    // jitter gaussiano; en ciudades costeras se refleja hacia tierra
-    const sigma = city.weight >= 1000 ? 6 : 3;
-    let dLat = (gauss() * sigma) / 111;
-    let dLng = (gauss() * sigma) / (111 * Math.cos((city.lat * Math.PI) / 180));
-    if (city.coast === 'E' && dLng > 0) dLng = -dLng;
-    if (city.coast === 'S' && dLat < 0) dLat = -dLat;
+    // jitter gaussiano; se vuelve a sortear si cae en agua o a menos de ~200 m (máscara OSM, §5)
+    const sigma = sigmaKm(city);
+    let x, y, tries = 0;
+    do {
+      if (++tries > 1000) throw new Error(`No hay tierra firme cerca de ${city.name}`);
+      [x, y] = [gauss() * sigma, gauss() * sigma];
+    } while (!onLand(city, x, y));
+    const dLat = y / 111;
+    const dLng = x / (111 * Math.cos((city.lat * Math.PI) / 180));
 
     let createdAt = date - between(2 * HOUR, 7 * DAY);
     if (createdAt > now) createdAt = now - between(10 * MIN, 3 * DAY);

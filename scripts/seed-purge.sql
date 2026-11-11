@@ -29,6 +29,8 @@ DELETE FROM ratings          WHERE "raterId" IN (SELECT id FROM _seed) OR "rated
 DELETE FROM no_show_reports  WHERE "reporterId" IN (SELECT id FROM _seed) OR "reportedUserId" IN (SELECT id FROM _seed);
 DELETE FROM late_withdrawals WHERE "userId" IN (SELECT id FROM _seed);
 DELETE FROM reports          WHERE "reporterId" IN (SELECT id FROM _seed) OR "reportedUserId" IN (SELECT id FROM _seed);
+-- moderation_actions apunta a users con ON DELETE RESTRICT: si un admin moderó a un sintético, el paso 3 falla
+DELETE FROM moderation_actions WHERE "targetUserId" IN (SELECT id FROM _seed);
 
 -- 3. Los usuarios: el cascade se lleva user_sports, notificaciones, actividad, push y uso de IA
 DELETE FROM users WHERE id IN (SELECT id FROM _seed);

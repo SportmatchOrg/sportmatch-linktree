@@ -12,3 +12,5 @@ brag-output/
 .agents/skills/brag
 # SQL generado por scripts/seed-load.mjs (~60 MB)
 outputs/seed-load/
+
+PRESENTACION.md

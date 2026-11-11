@@ -159,8 +159,21 @@ Con el código actual, un `Participant` solo nace al aceptar una `JoinRequest`, 
 ## 5. Geografía
 
 El script elige la ciudad según su peso (proporcional a la población) y después suma un jitter gaussiano:
-σ = 6 km en ciudades de más de 1M de habitantes y σ = 3 km en el resto. En ciudades costeras, si el
-punto cae al este de la ciudad, el desplazamiento en longitud se invierte para que no quede en el mar.
+σ = 6 km en ciudades de más de 1M de habitantes y σ = 3 km en el resto.
+
+**Ningún partido cae en el agua.** Antes se invertía el desplazamiento en las ciudades costeras, pero eso
+no cubría el Río de la Plata (CABA, AMBA), el Paraná (Rosario, Santa Fe, Paraná, Corrientes, Posadas),
+la laguna Setúbal, el Nahuel Huapi, el San Roque ni el Beagle. Ahora cada ciudad tiene una **máscara de
+tierra firme**: una grilla de 200 m sobre ±3σ, armada con el agua de OpenStreetMap (costa, `natural=water`,
+`riverbank` y `reservoir`). Una celda solo cuenta como tierra si ni ella ni sus 8 vecinas tocan agua (unos
+200 m de margen). Si el punto sorteado cae en agua o fuera de la ventana, se vuelve a sortear.
+
+- La máscara (`scripts/seed-land-mask.json`) está versionada, y el generador la lee sin conectarse a nada.
+  Se rearma con `node scripts/seed-land-mask.mjs` (Overpass, con cache en `outputs/seed-load/osm/`) **solo**
+  si cambian las ciudades o su σ. Si no coincide, el generador aborta.
+- `node scripts/seed-land-mask.mjs --check` genera los datos por defecto y valida cada partido contra la
+  geometría vectorial de OSM (no contra la grilla): ninguno en agua ni a menos de 100 m de ella.
+- Las islas del Delta cuentan como tierra.
 
 Para AMBA se usan cinco centros en lugar de uno solo, así los pins no se amontonan en el Obelisco.
 
@@ -224,6 +237,7 @@ Todo vive en `sportmatch-linktree` y no agrega ninguna dependencia.
 | `scripts/seed-load.mjs` | Generador en Node 24, solo stdlib. Escribe `outputs/seed-load/load.sql` e imprime los conteos por tabla y por ciudad. **Generar los archivos es el dry run**: no se conecta a ninguna base |
 | `outputs/seed-load/load.sql` | Generado, ~60 MB, en ~6 s. Un `COPY … FROM stdin` por tabla, en el orden `users` → `user_sports` → `matches` → `join_requests` → `participants` → `ratings` → `no_show_reports` → `late_withdrawals`. `user_sports` y `matches` pasan por una tabla temporal para resolver `sportId` por nombre en cada entorno. Está en `.gitignore` y `.vercelignore` |
 | `scripts/seed-purge.sql` | Estático y versionado: los `DELETE` de §3 |
+| `scripts/seed-land-mask.mjs` / `.json` | Máscara de tierra firme por ciudad (§5) y su verificación (`--check`) |
 | `tests/seed-load.test.mjs` | `node --test`, como el resto del repo. Corre el generador con una semilla chica (20 usuarios y 100 partidos) y verifica las invariantes: participantes ≤ cupo, organizador fuera del plantel, calificaciones solo dentro de las 48 h, coordenadas dentro del bbox de Argentina y emails únicos |
 
 **Ejecución:** con `psql` desde la imagen `postgres:18-alpine`, la misma del `docker-compose` de la app, así
@@ -243,7 +257,7 @@ nada. **No** hay que pasar `-1`.
 - Columnas en camelCase y entre comillas (`"organizerId"`, `"firebaseUid"`).
 - Enums: `level`, `match_status`, `join_request_status`, `join_request_origin`.
 - El script declara en una constante la última migración contra la que se escribió (hoy
-  `20261026184358_add_ai_usage`) y el runbook la compara antes de cada corrida.
+  `20261101144210_add_moderation_actions`) y el runbook la compara antes de cada corrida.
 
 **Antes de escribir** el SQL, el generador valida en memoria las invariantes de §4 y aborta si alguna falla.
 
@@ -283,6 +297,10 @@ no toca `sports`. Quedaron 2.854 partidos futuros activos, todos con coordenadas
 −54.8 a −24.1, lng −71.4 a −55.8), y 47 usuarios con 3 o más faltas. Los organizadores más activos
 recibieron ~450 calificaciones, con puntajes de 4,1-4,2.
 
+**Resultado en local (11/11), con las migraciones de `origin/main` y la máscara de tierra:** carga en ~50 s
+y purge en ~25 s. El purge pasa aunque un admin haya moderado a un sintético (`moderation_actions`). La
+recarga funciona. `--check`: 0 partidos en agua y la distancia mínima al agua es 217 m.
+
 Esta etapa sirve para ajustar el generador y para revisar los datos con queries SQL (conteos, faltas por
 usuario, distribución por ciudad). La UI se prueba en dev.
 
@@ -312,6 +330,13 @@ PR #158/#159, mergeado a dev hoy a las 13:50 UTC; su smoke test de login figura 
 back de dev responde bien (`/health` → `db: up`). Se informa al autor del PR; el arreglo va por el repo
 de la app.
 
+**Actualización (11/11):** se mergeó el release `dev` → `main` (PR #180). Hasta entonces, prod estaba en
+el schema del 08/10, sin `role`, `onboardedAt` ni `reminderSentAt`, y la carga habría fallado. Ahora `main`
+y `dev` tienen las mismas migraciones, hasta `20261101144210_add_moderation_actions`. Esa migración agrega
+`moderation_actions`, con FK `RESTRICT` a `users`, así que el purge la borra antes que a los usuarios. Entran
+también SPO-313 (el Mapa pide solo la zona visible) y SPO-314 (Descubrir de a 30): cambian las hipótesis de
+`findUpcoming` en §7.4. **El gate de dev se corre de nuevo con este código.**
+
 **Gate para pasar a prod:** todos los ítems del checklist en dev quedan tildados, o quedan anotados con una
 decisión explícita del equipo ("es lento, pero vamos igual"). Si el checklist encuentra algo que rompe la
 app, se arregla primero en la app (por el flujo normal de ese repo, fuera de este plan) y se vuelve a
@@ -321,7 +346,8 @@ pasar por dev.
 
 1. Verificar que el servidor de Azure Postgres tenga **point-in-time restore** activo y anotar la hora. Ese
    es el rollback de verdad.
-2. Repetir el paso 1 de dev (comparar la migración).
+2. Repetir el paso 1 de dev, pero contra **`origin/main`**, que es la rama que se despliega en prod
+   (`pipeline.yml`). Además, el último run de `Pipeline` en `main` tiene que estar en verde.
 3. En una shell nueva, sin `.env`: `export DATABASE_URL='<prod, sin ?schema=public>'`.
 4. **Regenerar `load.sql` el mismo día de la carga**, con la misma semilla. Las fechas son relativas al
    momento en que se genera; un archivo de hace días carga partidos "futuros" que ya pasaron, sin
