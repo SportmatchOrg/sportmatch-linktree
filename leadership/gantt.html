@@ -663,7 +663,7 @@ const DATA = {
   v5: {
     label: 'WBS v5 · 3 devs · 86 tareas',
     sub: '3 devs · 86 tareas · 241 h de desarrollo · semanas de jueves a jueves (cierre 18 h) · el S1 y el S2 con fechas reales de Linear, el S3 planificado a 6 h por dev y semana con las lanes rotadas el 24/09 · 10.1 (de los PMs) fuera del cronograma y 11.2.3 descartado · el desarrollo cierra el 05/11 y la semana hasta la entrega es de reserva',
-    rangeEnd: '2026-11-20',
+    rangeEnd: '2026-11-26',   // una semana de aire para la etiqueta del 12/11
     // Cronograma ganado en vivo (ver progressMark): la curva PV y los parámetros son la línea base
     // del Steering 2 (leadership/steering.html v2, lo verifica el test); el avance sale de Linear.
     // pv: PV acumulado al cierre de cada semana, la 1 cierra el 13/08.
@@ -840,8 +840,8 @@ const DATA = {
     { date:"2026-08-13", label:"Kickoff", type:"event" },
     { date:"2026-09-17", label:"Steering 1 · Entrega 1", type:"delivery" },
     { date:"2026-10-15", label:"Steering 2 · Entrega 2", type:"delivery" },
-    { date:"2026-11-05", label:"Fin desarrollo", type:"event" },
-    { date:"2026-11-12", label:"Entrega 3", type:"delivery" },
+    // El desarrollo terminó el 12/11, el día de la entrega: los últimos tickets (SPO-308 a SPO-318) cerraron en la semana de reserva.
+    { date:"2026-11-12", label:"Fin desarrollo · Entrega 3", type:"delivery" },
     ],
     // Hitos del Charter: rombo dorado sobre la barra del paquete (X.X) al que pertenecen.
     // "Aprobación Project Charter" (11/06) queda fuera: es anterior al rango y a los paquetes del Gantt.
@@ -1187,8 +1187,11 @@ function progressMark(){
   const p = DATA[VER].progress;
   if(!p || !p.evm) return p;
   const asOf = LINEAR.syncedAt.slice(0, 10), pct = linearPct(DATA[VER].tasks);
-  const date = earnedDate(p.evm, pct, asOf);
   const dm = (d) => d.slice(8, 10) + "/" + d.slice(5, 7);
+  // Con todo terminado, el cronograma ganado topa en el fin del PV (05/11); la línea va a la
+  // fecha en que efectivamente se terminó, la del corte.
+  if(pct >= 1 - 1e-9) return { date: asOf, note: `todo el alcance terminado en Linear al ${dm(asOf)}` };
+  const date = earnedDate(p.evm, pct, asOf);
   return { date, note: `con el ${Math.round(pct * 100)} % de las horas terminado en Linear al ${dm(asOf)}, lo hecho equivale al plan del ${dm(date)} (cronograma ganado)` };
 }
 
