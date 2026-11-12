@@ -15,8 +15,8 @@
     --ink: #0f172a;
     --muted: #64748b;
     --border: #e2e8f0;
-    /* Los tres colores del cronograma (los mismos en el JS: C_PLAN, C_EXEC, C_DONE). */
-    --plan: #94a3b8;
+    /* Los colores del cronograma (los mismos en el JS: C_EXEC, C_DONE, C_TODO). */
+    --todo: #cbd5e1;
     --exec: #93c5fd;
     --done: #1d4ed8;
   }
@@ -146,7 +146,7 @@
   /* Nivel "entregables": una fila por paquete X.X.X, agrupadas bajo su sub-paquete X.X. */
   .task-label.leaf{ padding-left:36px; }
   .task-label.leaf .idx{ min-width:46px; }
-  .task-label .st{ width:8px; height:8px; border-radius:50%; flex:none; background:var(--plan); }
+  .task-label .st{ width:8px; height:8px; border-radius:50%; flex:none; background:var(--todo); }
   .task-label .st.done{ background:var(--done); }
   .task-label .st.wip{ background:var(--exec); }
   .task-label .dev{
@@ -270,8 +270,7 @@
   <button class="ctl" id="btn-svg">Exportar SVG</button>
   <button class="ctl" id="btn-png">Exportar PNG</button>
   <div class="sep"></div>
-  <span class="legend" title="Gris: el plan (en la v5, la línea base del Cronograma v4). Azul claro: la ejecución, las semanas de cada paquete. Azul oscuro: la parte completada (horas de paquetes cerrados)">
-    <span><i style="background:var(--plan)"></i>Plan</span>
+  <span class="legend" title="Azul claro: la ejecución, las semanas de cada paquete. Azul oscuro: la parte completada (horas de paquetes cerrados)">
     <span><i style="background:var(--exec)"></i>Ejecución</span>
     <span><i style="background:var(--done)"></i>% completado</span>
   </span>
@@ -670,11 +669,8 @@ const DATA = {
     progress: { evm: { start: '2026-08-06', bacDev: 2559.42, loeWeek: 320, kc: 1.1,
       pv: [616, 1166, 1716, 2280.45, 2896.45, 3446.45, 3996.45, 4560.91, 5110.91, 5726.91, 6276.91, 6841.36, 7391.36] } },
     weekly: true,
-    // Las barras de `tasks` son la ejecución (azul); el plan (gris) es la línea base v4:
-    // inicio y fin de cada paquete en §4 de docs/planning/Cronograma-y-PERT-v4.md, que no
-    // cambia nunca. Los paquetes que sumó la v5 no están en la v4: su plan es su propia barra.
-    exec: true,
-    plan: {"3.1.1":["2026-08-06","2026-08-13"],"3.1.2":["2026-08-13","2026-08-20"],"3.1.3":["2026-08-06","2026-08-13"],"3.2.1":["2026-08-13","2026-08-20"],"3.2.2":["2026-08-13","2026-08-27"],"3.2.3":["2026-08-20","2026-09-03"],"4.1.1":["2026-08-13","2026-08-20"],"4.1.2":["2026-08-20","2026-08-27"],"4.1.3":["2026-08-13","2026-08-20"],"4.1.4":["2026-08-13","2026-08-20"],"4.2.1":["2026-08-13","2026-08-20"],"4.2.2":["2026-08-13","2026-08-20"],"4.2.3":["2026-08-13","2026-08-20"],"4.2.4":["2026-09-10","2026-09-17"],"4.2.5":["2026-08-20","2026-09-03"],"5.1.2":["2026-08-13","2026-09-10"],"5.1.3":["2026-08-27","2026-09-17"],"5.1.5":["2026-09-10","2026-09-17"],"5.2.1":["2026-08-20","2026-09-10"],"5.2.4":["2026-09-03","2026-09-17"],"5.2.5":["2026-09-10","2026-09-17"],"6.1.1":["2026-08-20","2026-08-27"],"6.1.2":["2026-08-20","2026-09-03"],"6.1.3":["2026-08-27","2026-09-10"],"6.1.5":["2026-08-27","2026-09-03"],"6.2.1":["2026-08-20","2026-09-10"],"6.2.2":["2026-09-10","2026-09-17"],"6.2.3":["2026-08-27","2026-09-03"],"6.2.4":["2026-09-03","2026-09-10"],"6.3.1":["2026-09-03","2026-09-10"],"6.3.2":["2026-09-03","2026-09-10"],"6.3.3":["2026-09-03","2026-09-10"],"6.3.4":["2026-09-03","2026-09-17"],"6.3.5":["2026-08-20","2026-09-03"],"6.4.1":["2026-09-10","2026-09-17"],"6.4.2":["2026-09-10","2026-09-17"],"7.2.1":["2026-08-27","2026-09-03"],"7.2.2":["2026-08-27","2026-09-10"],"9.1.1":["2026-08-27","2026-09-03"],"9.1.2":["2026-08-27","2026-09-03"],"9.1.3":["2026-08-27","2026-09-03"],"9.1.4":["2026-08-20","2026-08-27"],"10.2.1":["2026-08-13","2026-08-20"],"5.1.1":["2026-08-13","2026-10-01"],"5.1.4":["2026-09-10","2026-10-08"],"5.2.2":["2026-10-08","2026-10-15"],"5.2.3":["2026-09-03","2026-10-15"],"6.1.4":["2026-09-17","2026-09-24"],"6.2.5":["2026-09-24","2026-10-01"],"6.2.6":["2026-10-08","2026-10-15"],"6.4.3":["2026-09-17","2026-09-24"],"7.1.1":["2026-09-03","2026-09-24"],"7.1.2":["2026-10-08","2026-10-15"],"7.1.3":["2026-10-01","2026-10-08"],"7.3.1":["2026-09-24","2026-10-01"],"7.3.2":["2026-10-01","2026-10-08"],"7.3.3":["2026-10-01","2026-10-08"],"10.1.2":["2026-09-17","2026-09-24"],"11.1.1":["2026-09-17","2026-09-24"],"11.1.2":["2026-09-17","2026-09-24"],"11.1.3":["2026-09-24","2026-10-01"],"11.2.1":["2026-09-24","2026-10-01"],"11.2.2":["2026-10-01","2026-10-08"],"11.2.3":["2026-10-01","2026-10-08"],"13.1.1":["2026-10-01","2026-10-08"],"13.1.2":["2026-10-01","2026-10-15"],"6.5.1":["2026-10-15","2026-10-22"],"6.5.2":["2026-10-15","2026-10-22"],"6.5.3":["2026-10-22","2026-10-29"],"10.1.1":["2026-10-22","2026-10-29"],"10.2.2":["2026-10-15","2026-10-22"],"11.1.4":["2026-10-22","2026-10-29"],"12.1.1":["2026-10-15","2026-10-22"],"12.1.2":["2026-10-15","2026-10-22"],"12.1.3":["2026-10-29","2026-11-05"],"12.2.1":["2026-10-22","2026-10-29"],"12.2.2":["2026-10-29","2026-11-05"],"12.2.3":["2026-10-29","2026-11-05"]},
+    // El avance sale de Linear (ver pkgDone), no del estado congelado al 15/10.
+    live: true,
     // Épicas que no se dibujan (ni en pantalla ni en el export): la documentación sumaba ruido.
     // Los paquetes siguen en los datos y en el Cronograma v5; nada depende de ellos.
     hiddenMods: ["10.0 Documentación Final"],
@@ -887,10 +883,10 @@ const CRITICAL_L3 = ["4.1.1","6.1.3","6.3.1","6.2.3","9.1.1","6.3.2","6.4.3","7.
 
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const STATUS_LABEL = { done:"hecho", wip:"parcial", todo:"pendiente" };
-/* Tres colores, uno por cosa (devolución del Steering: «separar plan, ejecución y porcentaje
-   completado»). Las épicas ya no llevan color propio: las separa la fila. */
-const C_PLAN = "#94a3b8", C_EXEC = "#93c5fd", C_DONE = "#1d4ed8", C_GROUP = "#475569";
-const LEGEND = [["Plan", C_PLAN], ["Ejecución", C_EXEC], ["% completado", C_DONE]];
+/* Un color por cosa (devolución del Steering: «simplificar los colores»): la barra es la
+   ejecución y se rellena con lo completado. Las épicas ya no llevan color propio: las separa la fila. */
+const C_EXEC = "#93c5fd", C_DONE = "#1d4ed8", C_TODO = "#cbd5e1", C_GROUP = "#475569";
+const LEGEND = [["Ejecución", C_EXEC], ["% completado", C_DONE]];
 
 /* ---------------- HELPERS ---------------- */
 function parse(d){ const [y,m,dd] = d.split("-").map(Number); return new Date(Date.UTC(y, m-1, dd)); }
@@ -1334,53 +1330,40 @@ function visibleRows(){
 }
 
 /* Un paquete está completo cuando cerraron todos sus issues de Linear (como en el EVM: los
-   parciales no suman); sin issues, o en una versión sin ejecución, vale su estado. */
+   parciales no suman); sin issues, o en una versión que no es `live`, vale su estado. */
 function pkgDone(t){
-  const iss = DATA[VER].exec ? (LINEAR.byPkg[t.id] || []).map(k => LINEAR.issues[k]).filter(i => i && i.k !== "canceled") : [];
+  const iss = DATA[VER].live ? (LINEAR.byPkg[t.id] || []).map(k => LINEAR.issues[k]).filter(i => i && i.k !== "canceled") : [];
   return iss.length ? iss.every(i => i.k === "completed") : t.status === "done";
 }
 
-/* Plan, ejecución y avance de un conjunto de paquetes. Sin `exec`, las barras de la versión son
-   el plan. Con `exec`, son la ejecución y el plan sale de `plan` (la línea base). El avance es
-   la fracción de sus horas en paquetes completos. */
+/* Fechas y avance de un conjunto de paquetes: la envolvente de sus barras y la fracción de sus
+   horas en paquetes completos. */
 function track(ids){
   const ts = RAW.filter(t => ids.includes(t.id));
-  const span = (pairs) => pairs.length ? [pairs.map(p => p[0]).sort()[0], pairs.map(p => p[1]).sort().at(-1)] : null;
   const hours = ts.reduce((s, t) => s + t.hours, 0);
   return {
-    plan: span(ts.map(t => (DATA[VER].plan || {})[t.id] || [t.start, t.end])),
-    real: DATA[VER].exec ? span(ts.map(t => [t.start, t.end])) : null,
+    start: ts.map(t => t.start).sort()[0], end: ts.map(t => t.end).sort().at(-1),
     pct: hours ? ts.filter(pkgDone).reduce((s, t) => s + t.hours, 0) / hours : 0,
   };
 }
 
-/* Una fila, un color por capa: gris el plan; con fechas reales, el plan baja a una franja
-   fina y arriba va la ejecución en azul claro; lo completado la pinta de azul oscuro desde
-   la izquierda. Sin fechas reales, lo completado se pinta sobre el plan. */
+/* La barra es la ejecución (azul claro) y lo completado la pinta de azul oscuro desde la izquierda. */
 function drawTrack(parent, tr, rowY, opacity = 1){
-  // Con fechas reales la fila lleva dos barras (ejecución y plan): se le da más alto.
-  const H = Math.min(ROW_H - 4, Math.max(18, Math.round(ROW_H * (tr.real ? 0.62 : 0.45)))), y0 = rowY + (ROW_H - H)/2;
-  const rect = (g, y, h, fill) => parent.appendChild(svgEl("rect", {
-    x:g.x, y, width:g.w, height:h, rx:Math.min(4, h/2), fill, "fill-opacity":opacity }));
-  const planH = tr.real ? Math.max(4, Math.round(H * 0.3)) : H;
-  const p = barGeom(tr.plan[0], tr.plan[1]);
-  let main = rect(p, y0 + H - planH, planH, C_PLAN), m = p, mY = y0 + H - planH, mH = planH;
-  if(tr.real){
-    m = barGeom(tr.real[0], tr.real[1]);
-    mY = y0; mH = H - planH - 2;
-    main = rect(m, mY, mH, C_EXEC);
-  }
-  if(tr.pct > 0) rect({ x:m.x, w:m.w * tr.pct }, mY, mH, C_DONE);
+  const H = Math.min(ROW_H - 4, Math.max(18, Math.round(ROW_H * 0.45))), y = rowY + (ROW_H - H)/2;
+  const { x, w } = barGeom(tr.start, tr.end);
+  const rect = (w, fill) => parent.appendChild(svgEl("rect", { x, y, width:w, height:H, rx:5, fill, "fill-opacity":opacity }));
+  rect(w, C_EXEC);
+  if(tr.pct > 0) rect(w * tr.pct, C_DONE);
   // El borde va encima de todo, para que el camino crítico no quede tapado por el avance.
-  const edge = parent.appendChild(svgEl("rect", { x:m.x, y:mY, width:m.w, height:mH, rx:Math.min(4, mH/2),
+  const edge = parent.appendChild(svgEl("rect", { x, y, width:w, height:H, rx:5,
     fill:"none", stroke:"rgba(15,23,42,0.25)", "stroke-width":1, "stroke-opacity":opacity }));
-  return { edge, x:m.x, w:m.w, barY:mY, barH:mH };
+  return { edge, x, w, barY:y, barH:H };
 }
 
 /* Estado del punto de la etiqueta: con ejecución, el mismo avance que pinta la barra; si no,
    el estado que trae la versión. */
 function shownStatus(t){
-  if(!DATA[VER].exec || !t.pkgs) return t.status;
+  if(!DATA[VER].live || !t.pkgs) return t.status;
   const pct = track(t.pkgs).pct;
   return pct >= 1 - 1e-9 ? "done" : pct > 0 ? "wip" : "todo";
 }
@@ -1552,8 +1535,8 @@ function showTip(e, t){
     <dl>
       ${t.block ? `<dt>Paquetes</dt><dd>${t.pkgs.join(", ")}</dd>`
         : t.group && t.group !== t.id ? `<dt>Sub-paquete</dt><dd>${t.group} · ${NAMES[t.group] || ""}</dd>` : ``}
-      <dt>Plan</dt><dd>${t.start} → ${t.end}</dd>
-      ${t.tr && t.tr.real ? `<dt>Real</dt><dd>${t.tr.real[0]} → ${t.tr.real[1]}</dd>` : ``}
+      <dt>Inicio</dt><dd>${t.start}</dd>
+      <dt>Fin</dt><dd>${t.end}</dd>
       ${t.tr ? `<dt>Completado</dt><dd>${Math.round(t.tr.pct * 100)} %</dd>` : ``}
       <dt>Horas</dt><dd>${t.hours.toFixed(2)} h</dd>
       ${t.dev ? `<dt>Dev</dt><dd>${DEVS[t.dev] || ("D" + t.dev)}</dd>` : ``}
@@ -1817,7 +1800,7 @@ function buildExportSvg(){
     // El punto de estado también va en las filas de bloque: es lo que se lee en la lámina.
     if((leaf || (r.type === "task" && item.block)) && item.status)
       out.appendChild(svgEl("circle", { cx:x0 - 8 * FS, cy:cy - 4 * FS, r:4 * FS,
-        fill:{ done:C_DONE, wip:C_EXEC }[shownStatus(item)] || C_PLAN }));
+        fill:{ done:C_DONE, wip:C_EXEC }[shownStatus(item)] || C_TODO }));
     const hrs = item.hours.toFixed(1) + " h", dev = leaf && item.dev ? (DEVS[item.dev] || "D" + item.dev) : "";
     const tail = (dev ? dev + "  " : "") + hrs;
     const size = (r.type === "sub" ? 11.5 : 12.5) * FS, weight = r.type === "sub" ? 700 : 400;
