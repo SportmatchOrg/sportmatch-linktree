@@ -6,6 +6,7 @@
  *   node --env-file=.env.local scripts/sync-linear.mjs --push     además escribe en Linear
  *   node --env-file=.env.local scripts/sync-linear.mjs --corte    Todo, In Progress e In Review cuentan como Done
  *                                                                  (sólo en el repo, para el corte semanal)
+ *   node --env-file=.env.local scripts/sync-linear.mjs --done=SPO-318   esos issues cuentan como Done (sólo en el repo)
  *
  * Entradas
  *   docs/planning/linear-wbs-map.csv          issue -> paquete de la WBS (a mano)
@@ -31,6 +32,8 @@ const TEAM = 'SPO';
 const PROJECT_NAME = 'SportMatch';
 const PUSH = process.argv.includes('--push');
 const CORTE = process.argv.includes('--corte');
+// --done=SPO-1,SPO-2: esos issues cuentan como Done en el repo aunque Linear diga otra cosa (cierre del proyecto).
+const DONE = new Set(process.argv.find((a) => a.startsWith('--done='))?.slice(7).split(',') ?? []);
 
 // Épica -> nombre y fecha objetivo del milestone. Las épicas 1 y 2 no llevan (decisión 4).
 const MILESTONES = {
@@ -134,9 +137,10 @@ const wbsIds = new Set([...readFileSync(WBS_MD, 'utf8').matchAll(/^\*\*(\d+\.\d+
 const epicOf = (wbsId) => Number(wbsId.split('.')[0]);
 
 const issues = await fetchIssues();
-if (CORTE) {
+if (CORTE || DONE.size) {
   const now = new Date().toISOString();
-  for (const i of issues.filter((i) => ['Todo', 'In Progress', 'In Review'].includes(i.state.name))) {
+  const open = (i) => CORTE && ['Todo', 'In Progress', 'In Review'].includes(i.state.name);
+  for (const i of issues.filter((i) => open(i) || DONE.has(i.identifier))) {
     i.state = { name: 'Done', type: 'completed' };
     i.startedAt ??= now;
     i.completedAt ??= now;
@@ -272,12 +276,25 @@ for (const i of issues) {
     };
   }
 }
+// Ejecución real por paquete, para la barra azul del Gantt: del primer ticket arrancado al último
+// cerrado, sólo los que mueven fechas (fechas=si). Fechas en hora de Argentina (UTC−3).
+const art = (ts) => new Date(Date.parse(ts) - 3 * 3600e3).toISOString().slice(0, 10);
+const real = {};
+for (const r of map) {
+  const i = byId.get(r.issue);
+  if (!r.wbs_id || r.fechas !== 'si' || i?.state.type !== 'completed' || !i.completedAt) continue;
+  const [s, e] = [art(i.startedAt ?? i.completedAt), art(i.completedAt)];
+  const cur = (real[r.wbs_id] ??= [s, e]);
+  if (s < cur[0]) cur[0] = s;
+  if (e > cur[1]) cur[1] = e;
+}
 const block = `// linear-begin — generado por scripts/sync-linear.mjs el ${new Date().toISOString().slice(0, 10)}
 const LINEAR = {
   syncedAt: ${JSON.stringify(new Date().toISOString())},
   milestones: ${JSON.stringify(Object.fromEntries(Object.keys(MILESTONES).map((e) => [e, msName(Number(e))])))},
   issues: ${JSON.stringify(shown)},
-  byPkg: ${JSON.stringify(byPkg)}
+  byPkg: ${JSON.stringify(byPkg)},
+  real: ${JSON.stringify(real)}
 };
 // linear-end`;
 const html = readFileSync(GANTT, 'utf8');

@@ -37,7 +37,7 @@ El plan completo y por qué cada pieza es así: `docs/planning/plan-linear.md`.
 node --env-file=.env.local scripts/sync-linear.mjs
 ```
 
-Sin `--push` no escribe nada en Linear. Con `--corte`, los issues en Todo, In Progress e In Review cuentan como Done (solo en el repo), para cerrar la semana antes de un steering. Actualiza `linear-issues.csv`, el bloque del Gantt, y agrega al
+Sin `--push` no escribe nada en Linear. Con `--corte`, los issues en Todo, In Progress e In Review cuentan como Done (solo en el repo), para cerrar la semana antes de un steering. Con `--done=SPO-1,SPO-2`, esos issues cuentan como Done aunque estén en Backlog (por ejemplo, al cierre del proyecto); tampoco toca Linear. Actualiza `linear-issues.csv`, el bloque del Gantt, y agrega al
 mapa los issues nuevos con `wbs_id` vacío.
 
 Lo que reporta y qué significa cada cosa. Que los paquetes de las épicas 1 y 2 no tengan milestone es esperado y no se reporta:

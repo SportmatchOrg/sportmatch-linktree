@@ -383,7 +383,7 @@ with io.open(ACT_CSV, encoding='utf-8') as f:
         base = D(r['fin_base'])
         real = None
         if estado == 'Finaliz.':
-            real = max([art(x['completed']) for x in ts if x['completed']] or [wend(sched[k]['ew']) for k in pkgs if k in sched] or [None])
+            real = max([art(x['completed']) for x in ts if x['completed']] or [wend(sched[k]['ew']) for k in pkgs if k in sched] or [cut])   # sin tickets ni plan (8.2): termina en el corte
         # Lo pendiente termina cuando lo ubica el planificador, nunca antes del cierre de esta semana.
         # Sin paquetes de desarrollo (8.2, 8.3) no hay planificador: queda la línea base.
         planned = [wend(sched[k]['ew']) for k in pkgs if k in sched]

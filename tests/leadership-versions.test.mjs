@@ -584,7 +584,7 @@ test("Gantt runtime: el panel de issues abre por épica, paquete y entregable", 
     (() => {
       loadVersion("v4");
       const parent = { appendChild: (c) => (parent.last = c) };
-      drawEnvelope(parent, "2026-08-06", "2026-10-29", "#10b981", 0, 0.35, "6");
+      drawEnvelope(parent, RAW.filter((t) => t.id.startsWith("6.")).map((t) => t.id), 0, 0.35, "6");
       parent.last.on.click();
       return openPkg + " · " + panelEl.innerHTML.includes("6.0 Gestión de Partidos");
     })()`);
