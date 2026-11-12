@@ -33,6 +33,22 @@ test('steering v2 matches outputs/Steering 2.xlsx (leads as level of effort, act
   near(m.evH.at(-1), done[1]);
 });
 
+test('steering v3 closes development on 05/11 with the full v5 scope and the Steering 2 cost baseline', () => {
+  const d = STEERINGS.v3, m = compute(d);
+  near(m.bac, compute(STEERINGS.v2).bac);   // el alcance agregado no cambia el BAC: capacidad fija
+  near(m.PV, m.bac);
+  near(m.EV, m.bac);                        // 100 % de las 242,81 h de la línea base v5
+  near(m.AC, 6839.42);                      // subtotal + 120 USD de Lab4; el challenge 2 no tuvo costo
+  near(m.spi, 1);
+  near(m.cpi * 1000, 1080.70);
+  near(m.cpiNoCont * 1000, 982.45);         // sin la contingencia, los 120 USD de Lab4 quedan por encima
+  near(m.vac, 551.94);                      // la contingencia que no se usó
+  near(m.mr, 671.94);                       // reserva de gestión intacta, fuera del BAC
+  const { done, wip, todo } = d.avance;
+  near(done[1] + wip[1] + todo[1], d.devEffort);
+  near(m.evH.at(-1), done[1]);
+});
+
 test('Gantt progress line sits on the earned-schedule date of the last steering', async () => {
   const gantt = await readFile(new URL('../leadership/gantt.html', import.meta.url), 'utf8');
   const date = gantt.match(/progress: \{ date: '(\d{4}-\d{2}-\d{2})'/)[1];

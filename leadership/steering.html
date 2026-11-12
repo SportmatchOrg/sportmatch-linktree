@@ -324,6 +324,67 @@ const STEERINGS = {
       ["R5", "Un nuevo challenge de la cátedra, como el de KPIs, que saque horas del plan.", "Probable · impacto desconocido", "Mismo protocolo que en la semana 9: ADR, diferir issues fuera del camino crítico y absorber con el margen del S3 y la semana de reserva."],
     ],
   },
+  v3: {
+    name: "Steering 12/11",
+    sources: "Linear (sync del 04/11, corte del 05/11: In Review cuenta como Done) · docs/planning/Cronograma-y-PERT-v5.md (§4) · WBS-SportMatch-v5.md · línea base de costos del Steering 2",
+    weeks: ["13/08","20/08","27/08","03/09","10/09","17/09","24/09","01/10","08/10","15/10","22/10","29/10","05/11"],
+    start: "06/08",
+    // Cierre del desarrollo: las 13 semanas completas. La semana de reserva (05/11 → 12/11) no entra en el BAC.
+    cut: 13,
+    reserve: "05/11 → 12/11",
+    // Línea base v5: las 227,62 h de la v4 + 25,99 h del alcance agregado (5.3, 7.1.4, 14.0, 15.0)
+    // − 9,17 h de 10.1.1/10.1.2 (pasan a los PMs) − 1,63 h de 11.2.3 (descartado) = 242,81 h en 86 paquetes.
+    // El BAC en USD no cambia: el costo de desarrollo es capacidad fija; el alcance nuevo cambia el % completo.
+    devEffort: 242.81,
+    avance: { done: [86, 242.81], wip: [0, 0], todo: [0, 0] },
+    roles: [
+      { rol: "Gestión", who: "PM, PO, Tech Lead", people: 3, hWeek: 4, rate: 20, evm: true, loe: true },
+      { rol: "Desarrollo", who: "3 devs", people: 3, hWeek: 6, rate: 10, evm: true },
+      { rol: "QA", who: "QA Lead", people: 1, hWeek: 4, rate: 20, evm: true, loe: true },
+    ],
+    // Mismos costos no laborales que la línea base; las semanas 11 a 13 no suman cargos nuevos.
+    other: [
+      { name: "IA · Claude Code/ChatGPT · 3 × 20 USD/mes", byWeek: { 1: 60, 5: 60, 10: 60 } },
+      { name: "Infra · Azure B1 (back) · 13,14 USD/mes, desde el deploy del 29/08", byWeek: { 4: 13.14, 8: 13.14, 12: 13.14 } },
+      { name: "Infra · Vercel, Neon, Firebase, GitHub Actions, Google Maps y Places (plan gratuito)", byWeek: {} },
+    ],
+    contingency: 0.10,
+    contingencyInEvm: true,
+    managementReserve: 0.10,
+    actualHours: [18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18],
+    // Semana 9: +6 h de Lab4 (challenge 1). El challenge 2 (linktree, carga de datos, catálogo de agentes,
+    // rotación de QA) no sumó horas: ya estaba hecho o planificado.
+    loeActualHours: [16, 16, 16, 16, 16, 16, 16, 16, 22, 16, 16, 16, 16],
+    acNote: "Semana 9: los leads suman 6 h de Lab4 del challenge 1 (+120 USD de AC) por encima de su nivel de esfuerzo; las cubre la contingencia de actividades (672 → 552 USD). El challenge 2 no tuvo costo. La reserva de gestión (672 USD, fuera del BAC) no se usó. Respecto del Steering 2, el EV histórico baja un poco porque el % completo se mide sobre las 242,81 h de la línea base v5.",
+    // Semanas 1 a 10 como en el Steering 2; 11 a 13 con la fecha de cierre de Linear (Cronograma v5 §4).
+    earned: [
+      { h: 5.5,   pkgs: ["3.1.1", "3.1.3"] },
+      { h: 32.71, pkgs: ["3.1.2", "3.2.1", "4.1.1", "4.1.3", "4.1.4", "4.2.1", "4.2.2", "4.2.3", "10.2.1"] },
+      { h: 8.72,  pkgs: ["3.2.2", "4.1.2", "6.1.1", "9.1.4"] },
+      { h: 30.3,  pkgs: ["3.2.3", "4.2.5", "6.1.2", "6.1.5", "6.2.3", "6.3.5", "7.2.1", "9.1.1", "9.1.2", "9.1.3"] },
+      { h: 26.29, pkgs: ["5.1.2", "5.2.1", "6.1.3", "6.2.1", "6.2.4", "6.3.1", "6.3.2", "6.3.3", "7.2.2"] },
+      { h: 20.18, pkgs: ["4.2.4", "5.1.3", "5.1.5", "5.2.4", "5.2.5", "6.2.2", "6.3.4", "6.4.1", "6.4.2"] },
+      { h: 7.83,  pkgs: ["5.2.3", "6.1.4", "6.2.5", "11.1.1"] },
+      { h: 21.14, pkgs: ["6.2.6", "7.1.1", "7.3.2", "7.3.3", "11.1.3", "11.2.1"] },
+      { h: 24.42, pkgs: ["5.1.1", "5.1.4", "6.4.3", "7.1.3", "7.3.1", "11.1.2", "11.2.2", "13.1.1", "13.1.2"] },
+      { h: 16.22, pkgs: ["5.2.2", "6.5.2", "6.5.3", "7.1.2", "12.1.1", "12.1.2"] },
+      { h: 3.08,  pkgs: ["5.3.1", "7.1.4"] },
+      { h: 36.72, pkgs: ["5.3.2", "5.3.3", "6.5.1", "10.2.2", "11.1.4", "12.1.3", "12.2.1", "12.2.2", "14.1.1", "14.1.2", "14.1.3", "15.1.1", "15.1.2"] },
+      { h: 9.70,  pkgs: ["12.2.3", "15.1.3", "15.2.1"] },
+    ],
+    hitos: [
+      ["Kick-off técnico", "Principios de agosto", "13/08", "✅ Cumplido"],
+      ["MVP funcional", "Fines de octubre", "29/10, con el primer uso (5.3) de la v5", "✅ Cumplido"],
+      ["Deploy del sistema", "Principios de noviembre", "Operativo desde el S1", "✅ Adelantado ~2 meses"],
+      ["Finalización del proyecto", "Fines de noviembre", "Desarrollo cerrado el 05/11; entrega final 12/11", "✅ Cumplido"],
+    ],
+    riesgos: [
+      ["R2", "12.2.1 obliga a introducir un rol de administrador que no existía.", "✅ Cerrado", "SPO-266 fue lo primero de la semana 11; la moderación cerró en la semana 12."],
+      ["R4", "Capacidad del S3 (92 % con el alcance de la v5).", "✅ No ocurrió", "Entró todo, incluido 15.2.1, el primer paquete del orden de corte."],
+      ["R5", "Un nuevo challenge de la cátedra que saque horas del plan.", "Ocurrió · absorbido", "Challenge 1: 6 h diferidas y 120 USD de contingencia. Challenge 2: sin costo."],
+      ["Residual", "Planes gratuitos de infraestructura al límite (Neon se quedó sin CPU el 10/10 y el 07/11).", "Abierto", "Si el producto sigue: plan pago o caché de las consultas del mapa y Descubrir."],
+    ],
+  },
 };
 
 /* ---- Actividades clave: un snapshot por semana ---------------------------
@@ -479,7 +540,9 @@ const pct = (v) => num(v * 100, 1) + " %";
 const signed = (v) => (v >= 0 ? "+" : "−") + usd(Math.abs(v));
 const $ = (id) => document.getElementById(id);
 const kpi = (k, v, s = "", hl = false) => `<div class="kpi${hl ? " hl" : ""}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
-const trend = (x, good, bad) => x >= 1 ? `<span class="up">▲ ${good}</span>` : `<span class="down">▼ ${bad}</span>`;
+// Al cierre el SPI vale 1 por definición (EV = PV = BAC): ahí no es adelanto, es "en fecha".
+const trend = (x, good, bad, even = "en plan") => Math.abs(x - 1) < 0.005 ? `<span class="up">● ${even}</span>`
+  : x > 1 ? `<span class="up">▲ ${good}</span>` : `<span class="down">▼ ${bad}</span>`;
 const row = (cells, cls = "") => `<tr${cls ? ` class="${cls}"` : ""}>${cells.join("")}</tr>`;
 const td = (v, cls = "") => `<td${cls ? ` class="${cls}"` : ""}>${v}</td>`;
 const head = (cols) => `<thead><tr>${cols.map(([t, cls]) => `<th${cls ? ` class="${cls}"` : ""}>${t}</th>`).join("")}</tr></thead>`;
@@ -569,11 +632,11 @@ function render(ver) {
     kpi("EV", usd(m.EV), `${num(m.evH[k])} h de WBS cerradas${m.loeWeek ? " + leads" : ""} · ${pct(m.EV / m.bac)} de la línea base`, true) +
     kpi("AC", usd(m.AC), `${sum(d.actualHours) + sum(d.loeActualHours || [])} h de dedicación pactada`);
   $("evm-kpis-2").innerHTML =
-    kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
+    kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados", "en fecha")) +
     kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
   $("evm-formula").innerHTML = [
     `SV = EV − PV = ${signed(m.EV - m.PV)}`, `CV = EV − AC = ${signed(m.EV - m.AC)}`,
-    (m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC") + (m.kc > 1 ? `, × ${num(m.kc, 1)}` : ""), "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${num(m.tcpi)}`,
+    (m.loeWeek ? "EV = % completo × BAC desarrollo + PV leads" : "EV = % completo × BAC") + (m.kc > 1 ? `, × ${num(m.kc, 1)}` : ""), "SPI = EV / PV", "CPI = EV / AC", `TCPI = ${m.bac - m.EV < 0.005 ? "— (no queda trabajo)" : num(m.tcpi)}`,
   ].map((f) => `<span>${f}</span>`).join("");
   $("evm-note").innerHTML = `<b>Cómo se mide el EV:</b> % completo × BAC. El % completo son las horas estimadas de los paquetes de la WBS cerrados sobre el esfuerzo total de desarrollo (${num(m.evH[k])} h / ${num(d.devEffort)} h). Los paquetes parciales no suman hasta cerrarse.` +
     (m.loeWeek ? ` Ese % se aplica al BAC de desarrollo (${usd(m.bacDev, 2)}). Los leads (${m.loeWeekH} h/sem) son nivel de esfuerzo: su trabajo no se cierra por paquetes, así que su EV es igual a su PV.` : "") +
@@ -611,11 +674,11 @@ function render(ver) {
       kpi("Línea base EVM", usd(m.bac), m.kc > 1 ? `= BAC del proyecto, con ${d.contingency * 100} % de contingencia` : `BAC del proyecto ${usd(m.total)} con ${d.contingency * 100} % de contingencia`) +
       kpi("EV", usd(m.EV), `${pct(m.EV / m.bac)} de la línea base ganado`, true) +
       kpi("AC", usd(m.AC), `${pct(m.AC / m.bac)} de la línea base gastado`) +
-      kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados")) +
+      kpi("SPI", num(m.spi), trend(m.spi, "adelantados", "atrasados", "en fecha")) +
       kpi("CPI", num(m.cpi), trend(m.cpi, "eficientes", "sobre costo"));
     $("wk-read").innerHTML = `<b>Lectura:</b> en ${m.c} de ${m.n} semanas (${pct(m.c / m.n)} del calendario) el equipo ganó el ${pct(m.EV / m.bac)} de la línea base EVM (${usd(m.bac)}) ` +
       `y gastó el ${pct(m.AC / m.bac)}. `+
-      `Quedan ${num(d.devEffort - m.evH[k])} h de WBS por cerrar.`;
+      (d.devEffort - m.evH[k] < 0.005 ? "Toda la WBS está cerrada." : `Quedan ${num(d.devEffort - m.evH[k])} h de WBS por cerrar.`);
   };
   const showWeek = (i) => {
     const spi = m.ev[i] / m.pv[i], cpi = m.ev[i] / m.ac[i];
@@ -623,7 +686,7 @@ function render(ver) {
     $("wk-kpis").innerHTML =
       kpi(`PV · semana ${i + 1}`, usd(m.pv[i]), `al ${d.weeks[i]}`) + kpi("EV", usd(m.ev[i]), `${num(m.evH[i])} h de WBS cerradas`, true) +
       kpi("AC", usd(m.ac[i]), "costo real acumulado") +
-      kpi("SPI", num(spi), trend(spi, "adelantados", "atrasados")) + kpi("CPI", num(cpi), trend(cpi, "eficientes", "sobre costo"));
+      kpi("SPI", num(spi), trend(spi, "adelantados", "atrasados", "en fecha")) + kpi("CPI", num(cpi), trend(cpi, "eficientes", "sobre costo"));
     $("wk-read").innerHTML = `<b>Lectura:</b> al ${d.weeks[i]} el trabajo terminado vale ${usd(m.ev[i])} contra ${usd(m.pv[i])} planificados ` +
       `(${signed(m.ev[i] - m.pv[i])}) y costó ${usd(m.ac[i])} (${signed(m.ev[i] - m.ac[i])} de diferencia con lo ganado). ` +
       `Esa semana cierran: ${d.earned[i].pkgs.join(", ") || "ningún paquete"}.`;
@@ -647,13 +710,16 @@ function render(ver) {
     m.kc > 1 && `<b>La contingencia${m.mr ? " de actividades" : ""} entra en el EVM:</b> es parte de la línea base de costos (PMBOK 7.3), así que se reparte en proporción al trabajo planificado y el BAC del EVM pasa de ${usd(m.bacNoCont)} a ${usd(m.bac)}. En el Steering 1 el EVM se midió sin contingencia.`,
     "La <b>PV no es lineal</b>: los costos mensuales de IA y de Azure generan escalones en la curva.",
   ]);
-  const weak = d.earned.map((_, i) => i).filter((i) => m.ev[i] / m.pv[i] < 1);
+  const weak = d.earned.map((_, i) => i).filter((i) => Math.round(m.ev[i] / m.pv[i] * 100) < 100);   // con el mismo redondeo que se muestra
+  // Proyecto cerrado: todo el alcance terminado al corte (EV = BAC).
+  const closed = m.bac - m.EV < 0.005;
   $("evm-recalcar").innerHTML = li([
     Math.abs(m.PV - m.AC) < 0.005 && `<b>PV = AC no es casualidad:</b> el AC no sale de horas cargadas —no hay time tracking— sino de la <b>dedicación pactada</b> de ${m.devWeek + m.loeWeekH} h/sem, que el equipo sostuvo las ${m.c} semanas, más los costos de infra e IA, que fueron los planeados. Por eso <b>SPI = CPI</b>, y toda la diferencia está en el EV: cuánto valor rinde cada hora.`,
     m.loeWeek && `<b>Los leads acercan los índices a 1:</b> como su EV es igual a su PV, diluyen el desvío. Midiendo solo desarrollo, infra e IA, el SPI da <b>${num(m.spiDev)}</b>.`,
-    `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
+    closed ? `<b>SPI = 1 al cierre es por definición:</b> con todo el alcance terminado en la fecha del plan, EV = PV = BAC. Lo que cuenta cómo se llegó es la evolución semana a semana de la tabla.`
+    : `<b>SPI ${m.spi >= 1 ? "&gt;" : "&lt;"} 1 no significa «terminamos ${m.spi >= 1 ? "antes" : "después"}»:</b> significa que el trabajo entregado a la fecha vale ${m.spi >= 1 ? "más" : "menos"} que el planificado a la fecha: <b>${pct(m.EV / m.bac)} ganado vs ${pct(m.PV / m.bac)} planificado</b>.`,
     m.kc > 1 && `<b>El CPI incluye la contingencia que no se usó:</b> sin ella da <b>${num(m.cpiNoCont)}</b>, es decir, el gasto va casi exacto al plan. Cada vez que se use contingencia, el AC sube y el CPI baja, que es lo esperable.`,
-    `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
+    !closed && `<b>TCPI = ${num(m.tcpi)}:</b> para terminar dentro del presupuesto alcanza con rendir al ${Math.round(m.tcpi * 100)} % de lo planificado.`,
     weak.length && `<b>Semanas con SPI &lt; 1:</b> ${weak.map((i) => `semana ${i + 1} (${num(m.ev[i] / m.pv[i])})`).join(", ")}. El EV sube cuando cierra un paquete, no mientras se trabaja: las semanas en que cierran paquetes grandes compensan a las anteriores.`,
   ]);
 
