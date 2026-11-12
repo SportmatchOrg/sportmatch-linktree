@@ -276,25 +276,12 @@ for (const i of issues) {
     };
   }
 }
-// Ejecución real por paquete, para la barra azul del Gantt: del primer ticket arrancado al último
-// cerrado, sólo los que mueven fechas (fechas=si). Fechas en hora de Argentina (UTC−3).
-const art = (ts) => new Date(Date.parse(ts) - 3 * 3600e3).toISOString().slice(0, 10);
-const real = {};
-for (const r of map) {
-  const i = byId.get(r.issue);
-  if (!r.wbs_id || r.fechas !== 'si' || i?.state.type !== 'completed' || !i.completedAt) continue;
-  const [s, e] = [art(i.startedAt ?? i.completedAt), art(i.completedAt)];
-  const cur = (real[r.wbs_id] ??= [s, e]);
-  if (s < cur[0]) cur[0] = s;
-  if (e > cur[1]) cur[1] = e;
-}
 const block = `// linear-begin — generado por scripts/sync-linear.mjs el ${new Date().toISOString().slice(0, 10)}
 const LINEAR = {
   syncedAt: ${JSON.stringify(new Date().toISOString())},
   milestones: ${JSON.stringify(Object.fromEntries(Object.keys(MILESTONES).map((e) => [e, msName(Number(e))])))},
   issues: ${JSON.stringify(shown)},
-  byPkg: ${JSON.stringify(byPkg)},
-  real: ${JSON.stringify(real)}
+  byPkg: ${JSON.stringify(byPkg)}
 };
 // linear-end`;
 const html = readFileSync(GANTT, 'utf8');
